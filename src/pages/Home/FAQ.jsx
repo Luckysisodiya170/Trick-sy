@@ -1,101 +1,74 @@
-import React, { useState } from 'react';
-import { Plus, Minus, HelpCircle, Sparkles } from 'lucide-react';
+import React from 'react';
+import { HelpCircle, ArrowRight, MessageSquare } from 'lucide-react';
 
-const FAQ = () => {
-  const [openIndex, setOpenIndex] = useState(0);
-
-  const faqs = [
-    {
-      question: "How much does cleaning cost?",
-      answer: "Pricing depends on the area size and service type. We offer competitive flat rates for standard apartments and custom quotes for luxury villas."
-    },
-    {
-      question: "How long does deep cleaning take?",
-      answer: "Typically, a deep clean takes 4-6 hours depending on the property condition. Our team works efficiently to ensure every corner sparkles."
-    },
-    {
-      question: "Do you provide free estimates?",
-      answer: "Absolutely! We provide transparent, no-obligation estimates via WhatsApp or a quick site visit to give you the most accurate pricing."
-    },
-    {
-      question: "How often should cleaning be done?",
-      answer: "For Dubai homes, we recommend a professional deep clean every 3-4 months, with regular maintenance cleaning once or twice a week."
-    }
+const FAQ = ({ faqData }) => {
+  // 🔥 PRODUCTION RULE 1: Graceful Fallbacks (Default Data)
+  const defaultFaqs = [
+    { question: "How much does cleaning cost?", answer: "We offer competitive flat rates for standard apartments and custom quotes for luxury villas. Pricing depends entirely on the area size and service type." },
+    { question: "How long does deep cleaning take?", answer: "Typically, a deep clean takes 4-6 hours depending on the property's condition. Our team works efficiently to ensure every corner sparkles." },
+    { question: "Do you provide free estimates?", answer: "Absolutely! We provide transparent, no-obligation estimates via WhatsApp or a quick site visit to give you the most accurate pricing." },
+    { question: "How often should cleaning be done?", answer: "For Dubai homes, we recommend a professional deep clean every 3-4 months, with regular maintenance cleaning once or twice a week." }
   ];
 
+  // 🔥 PRODUCTION RULE 2: Defensive Programming
+  // Array check prevents crashes if backend sends null or an object instead of an array.
+  const faqsToDisplay = Array.isArray(faqData) && faqData.length > 0 ? faqData : defaultFaqs;
+
   return (
-    <section className="py-16 bg-[#F8FAFC]">
-      <div className="max-w-6xl mx-auto px-6">
+    <section className="py-20 bg-slate-50 border-y border-slate-100">
+      <div className="max-w-[1280px] mx-auto px-6 md:px-10 lg:px-12 w-full">
         
-        <div className="grid lg:grid-cols-12 gap-12 items-start">
-          
-          {/* Left Side: Static Content */}
-          <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white text-primary-600 border border-slate-200 shadow-sm">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span className="text-[10px] font-black uppercase tracking-widest">Support</span>
+        {/* HEADER SECTION */}
+        <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-16">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-slate-800 font-bold text-[10px] uppercase tracking-[0.2em] mb-6 shadow-sm">
+              <HelpCircle className="w-3.5 h-3.5 text-primary-500" />
+              Support Center
             </div>
             
-            <h2 className="text-5xl lg:text-6xl font-black text-slate-900 leading-[0.9] tracking-tighter">
-              Got <span className="text-primary-500">Questions?</span> <br/> We've Got Answers.
+            <h2 className="text-6xl md:text-7xl lg:text-8xl font-black text-slate-900 leading-[0.9] tracking-tighter">
+              FAQ<span className="text-primary-500">.</span>
             </h2>
-            
-            <p className="text-slate-500 font-medium text-sm max-w-xs">
-              Everything you need to know about our premium maintenance services in Dubai.
-            </p>
-
-            <div className="p-6 bg-slate-900 rounded-[2rem] text-white flex items-center justify-between group cursor-pointer hover:bg-primary-600 transition-all">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary-400">Still confused?</p>
-                <h4 className="font-bold">Chat with us now</h4>
-              </div>
-              <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center group-hover:rotate-45 transition-transform">
-                <HelpCircle className="w-5 h-5" />
-              </div>
+          </div>
+          
+          {/* Quick Contact Box */}
+          <div className="bg-white p-4 lg:p-5 rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-slate-900 p-3 rounded-xl text-white">
+              <MessageSquare className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Still unsure?</p>
+              {/* 🔥 PRODUCTION RULE 3: SEO & Safe Links */}
+              <a 
+                href="#contact" 
+                onClick={(e) => { e.preventDefault(); console.log("Open Contact Chat API"); }} // Prevents page jump
+                className="text-sm font-black text-slate-900 flex items-center gap-1.5 hover:text-primary-600 transition-colors group"
+              >
+                Chat with our team <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </a>
             </div>
           </div>
-
-          {/* Right Side: Interactive Accordion */}
-          <div className="lg:col-span-7 space-y-3">
-            {faqs.map((faq, index) => (
-              <div 
-                key={index}
-                className={`group border transition-all duration-300 rounded-[1.5rem] overflow-hidden ${
-                  openIndex === index 
-                  ? 'bg-white border-primary-200 shadow-xl shadow-primary-500/5' 
-                  : 'bg-transparent border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                <button
-                  onClick={() => setOpenIndex(openIndex === index ? -1 : index)}
-                  className="w-full flex items-center justify-between p-6 text-left transition-all"
-                >
-                  <span className={`font-bold text-lg tracking-tight ${
-                    openIndex === index ? 'text-primary-600' : 'text-slate-700'
-                  }`}>
-                    {faq.question}
-                  </span>
-                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                    openIndex === index ? 'bg-primary-500 text-white rotate-180' : 'bg-slate-100 text-slate-400'
-                  }`}>
-                    {openIndex === index ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                  </div>
-                </button>
-                
-                <div 
-                  className={`transition-all duration-300 ease-in-out px-6 overflow-hidden ${
-                    openIndex === index ? 'max-h-40 pb-6 opacity-100' : 'max-h-0 opacity-0'
-                  }`}
-                >
-                  <p className="text-slate-500 text-sm leading-relaxed font-medium border-t border-slate-50 pt-4">
-                    {faq.answer}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
         </div>
+
+        {/* 🔥 DYNAMIC GRID LAYOUT 🔥 */}
+        <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+          {faqsToDisplay.map((faq, index) => (
+            <div 
+              // 🔥 PRODUCTION RULE 4: Reliable Keys
+              key={faq?.id || `faq-item-${index}`} 
+              className="bg-white p-8 lg:p-10 rounded-[2rem] border border-slate-200 hover:border-primary-300 hover:shadow-xl transition-all duration-300 group"
+            >
+              {/* 🔥 PRODUCTION RULE 5: Optional Chaining protects against missing API fields */}
+              <h3 className="text-xl font-black text-slate-900 mb-4 group-hover:text-primary-600 transition-colors leading-tight">
+                {faq?.question || "Question Placeholder"}
+              </h3>
+              <p className="text-slate-500 font-medium leading-relaxed">
+                {faq?.answer || "Answer placeholder. Content will load here from the API."}
+              </p>
+            </div>
+          ))}
+        </div>
+
       </div>
     </section>
   );

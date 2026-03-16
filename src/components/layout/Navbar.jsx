@@ -1,74 +1,104 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom'; // URL track karne ke liye add kiya
-import { Menu, X, Phone, Calendar, Settings, Wrench, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { useLocation, Link } from 'react-router-dom'; 
+import { 
+  Menu, X, Phone, Calendar, ChevronDown, CheckCircle2, 
+  Sparkles, Wind, Building2, Armchair, Paintbrush, Wrench, MessageCircle 
+} from 'lucide-react';
 
-const Header = () => {
+const Header = ({ navData, dropdownServices, contactInfo }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
   
-  // Current page ka URL pata karne ke liye
   const location = useLocation();
-  const currentPath = location.pathname;
+  const currentPath = location?.pathname || '/';
 
+  // 1. Scroll Effect for Navbar styling
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true }); 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const services = [
-    { name: 'Cleaning Services', icon: <CheckCircle2 className="w-4 h-4 text-primary-500" /> },
-    { name: 'Home Maintenance', icon: <Wrench className="w-4 h-4 text-primary-500" /> },
-    { name: 'Technical Services', icon: <Settings className="w-4 h-4 text-primary-500" /> },
+  // 🔥 2. SCROLL TO TOP FIX: Jab bhi route change hoga, page top se start hoga
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
+  // Default Fallback Data for Navigation
+  const defaultNavLinks = [
+    { name: 'Home', path: '/' },
+    { name: 'About', path: '/about' },
+    { name: 'Technical', path: '/technical' },
+    { name: 'Blog', path: '/blog' },
+    { name: 'Contact', path: '/contact' }
   ];
 
-  // Yeh function check karta hai ki link active hai ya nahi aur us hisaab se style deta hai
+  // 🔥 AAPI 6 SERVICES (With beautiful matching icons)
+  const defaultServices = [
+    { name: 'Deep Cleaning', path: '/services/deep-cleaning', icon: <Sparkles className="w-4 h-4 text-emerald-500" /> },
+    { name: 'AC Duct Cleaning', path: '/services/ac-duct-cleaning', icon: <Wind className="w-4 h-4 text-emerald-500" /> },
+    { name: 'Commercial Cleaning', path: '/services/commercial-cleaning', icon: <Building2 className="w-4 h-4 text-emerald-500" /> },
+    { name: 'Upholstery Cleaning', path: '/services/upholstery-cleaning', icon: <Armchair className="w-4 h-4 text-emerald-500" /> },
+    { name: 'Painting Services', path: '/services/painting-services', icon: <Paintbrush className="w-4 h-4 text-emerald-500" /> },
+    { name: 'Handyman Services', path: '/services/handyman-services', icon: <Wrench className="w-4 h-4 text-emerald-500" /> },
+  ];
+
+  const phoneDetails = contactInfo?.phone || "+971501234567";
+
+  // Defensive array checks
+  const navLinks = Array.isArray(navData) && navData.length > 0 ? navData : defaultNavLinks;
+  const services = Array.isArray(dropdownServices) && dropdownServices.length > 0 ? dropdownServices : defaultServices;
+
+  // Premium Active Link Helpers (Emerald Theme)
   const getLinkStyle = (path) => {
     const isActive = currentPath === path;
-    return `font-semibold transition-all text-[15px] tracking-wide relative group ${isActive ? 'text-primary-600' : 'text-slate-700 hover:text-primary-600'}`;
+    return `font-bold transition-all text-[13px] uppercase tracking-widest relative group flex items-center ${isActive ? 'text-emerald-500' : 'text-zinc-700 hover:text-emerald-500'}`;
   };
 
   const getUnderlineStyle = (path) => {
     const isActive = currentPath === path;
-    return `absolute -bottom-1 left-0 h-0.5 bg-primary-500 transition-all ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`;
+    return `absolute -bottom-1 left-0 h-0.5 bg-emerald-500 transition-all ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`;
   };
 
-  // Services dropdown tabhi highlight hoga jab URL '/services' se shuru ho
   const isServicesActive = currentPath.startsWith('/services');
+
+  const renderNavLinks = (linksArray) => {
+    return linksArray.map((link, index) => (
+      <Link key={index} to={link?.path || '/'} className={getLinkStyle(link?.path)}>
+        {link?.name || "Link"}
+        <span className={getUnderlineStyle(link?.path)}></span>
+      </Link>
+    ));
+  };
 
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 w-full ${
         isScrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-sm py-2' 
-          : 'bg-transparent py-3' 
+          ? 'bg-white/95 backdrop-blur-md shadow-sm py-3 border-b border-zinc-100' 
+          : 'bg-white py-4 border-b border-zinc-100' 
       }`}
     >
-      <div className="w-full max-w-[1800px] mx-auto px-6 md:px-12 lg:px-16 2xl:px-24">
+      <div className="w-full max-w-[1400px] mx-auto px-6 md:px-12">
         <div className="flex justify-between items-center">
           
-          {/* Logo */}
-          <div className="flex-shrink-0 cursor-pointer flex items-center gap-1.5">
-            <span className="text-[22px] font-black tracking-tighter text-gray-900">
-              TRICKSY
+          {/* 🔥 Premium "T" Logo */}
+          <Link to="/" className="flex-shrink-0 cursor-pointer flex items-center gap-2 z-50 group">
+            <div className="w-10 h-10 bg-zinc-950 rounded-xl flex items-center justify-center transform group-hover:-rotate-12 transition-transform duration-300 shadow-[4px_4px_0px_0px_rgba(16,185,129,1)]">
+              <span className="text-white font-black text-xl">T</span>
+            </div>
+            <span className="text-2xl font-black tracking-tighter text-zinc-900">
+              TRICKSY<span className="text-emerald-500">.</span>
             </span>
-            <span className="w-2 h-2 rounded-full bg-primary-500 mt-1"></span>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6 lg:space-x-8">
-            <a href="/" className={getLinkStyle('/')}>
-              Home
-              <span className={getUnderlineStyle('/')}></span>
-            </a>
+          <nav className="hidden lg:flex items-center space-x-6 lg:space-x-8">
             
-            <a href="/about" className={getLinkStyle('/about')}>
-              About
-              <span className={getUnderlineStyle('/about')}></span>
-            </a>
+            {renderNavLinks(navLinks.slice(0, 2))}
             
             {/* Services Dropdown */}
             <div 
@@ -76,102 +106,149 @@ const Header = () => {
               onMouseEnter={() => setServicesDropdownOpen(true)}
               onMouseLeave={() => setServicesDropdownOpen(false)}
             >
-              <button className={`flex items-center gap-1.5 font-semibold transition-colors py-1.5 text-[15px] tracking-wide relative group ${isServicesActive ? 'text-primary-600' : 'text-slate-700 hover:text-primary-600'}`}>
+              <button 
+                className={`flex items-center gap-1.5 font-bold transition-colors py-1.5 text-[13px] uppercase tracking-widest relative group focus:outline-none ${isServicesActive ? 'text-emerald-500' : 'text-zinc-700 hover:text-emerald-500'}`}
+                aria-expanded={servicesDropdownOpen}
+              >
                 Services <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${servicesDropdownOpen ? 'rotate-180' : ''}`} />
-                <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary-500 transition-all ${isServicesActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
+                <span className={`absolute -bottom-1 left-0 h-0.5 bg-emerald-500 transition-all ${isServicesActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
               </button>
               
               <div 
-                className={`absolute top-full left-1/2 -translate-x-1/2 w-60 bg-white rounded-xl shadow-lg border border-slate-100 p-2.5 transition-all duration-200 origin-top
-                  ${servicesDropdownOpen ? 'opacity-100 scale-100 translate-y-2 visible' : 'opacity-0 scale-95 translate-y-0 invisible'}`}
+                className={`absolute top-[120%] left-1/2 -translate-x-1/2 w-72 bg-white rounded-2xl shadow-xl border border-zinc-100 p-2.5 transition-all duration-200 origin-top
+                  ${servicesDropdownOpen ? 'opacity-100 scale-100 translate-y-0 visible' : 'opacity-0 scale-95 -translate-y-2 invisible'}`}
               >
                 {services.map((service, index) => (
-                  <a key={index} href={`/services`} className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 rounded-lg transition-colors group/item">
-                    <span className="p-1.5 bg-primary-50/50 rounded-md group-hover/item:bg-primary-100 transition-colors">
-                      {service.icon}
+                  <Link 
+                    key={index} 
+                    to={service?.path || '/services'} 
+                    className="flex items-center gap-3 px-3 py-3 hover:bg-zinc-50 rounded-xl transition-colors group/item"
+                    onClick={() => setServicesDropdownOpen(false)} 
+                  >
+                    <span className="w-9 h-9 flex items-center justify-center bg-zinc-100 rounded-lg group-hover/item:bg-white group-hover/item:shadow-sm border border-transparent group-hover/item:border-zinc-200 transition-all">
+                      {service?.icon || <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
                     </span>
-                    <span className="text-[15px] font-semibold text-slate-700 group-hover/item:text-primary-600">{service.name}</span>
-                  </a>
+                    <span className="text-sm font-bold text-zinc-700 group-hover/item:text-emerald-600 transition-colors">
+                      {service?.name || "Service"}
+                    </span>
+                  </Link>
                 ))}
               </div>
             </div>
 
-            <a href="/technical" className={getLinkStyle('/technical')}>
-              Technical
-              <span className={getUnderlineStyle('/technical')}></span>
-            </a>
+            {renderNavLinks(navLinks.slice(2))}
             
-            <a href="/blog" className={getLinkStyle('/blog')}>
-              Blog
-              <span className={getUnderlineStyle('/blog')}></span>
-            </a>
-            
-            <a href="/contact" className={getLinkStyle('/contact')}>
-              Contact
-              <span className={getUnderlineStyle('/contact')}></span>
-            </a>
           </nav>
 
-          {/* Call to Actions */}
-          <div className="hidden md:flex items-center space-x-3">
-            <a href="tel:+18001234567" className="flex items-center gap-2 group">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-sm border border-slate-100 group-hover:border-primary-200 group-hover:bg-primary-50 transition-all">
-                <Phone className="w-4 h-4 text-slate-600 group-hover:text-primary-600" />
-              </div>
+          {/* 🔥 Call to Actions (Desktop) - Call, WhatsApp, Book Now */}
+          <div className="hidden lg:flex items-center space-x-3">
+            {/* Call Icon */}
+            <a href={`tel:${phoneDetails}`} className="w-10 h-10 rounded-xl bg-zinc-50 flex items-center justify-center border border-zinc-200 hover:bg-zinc-950 hover:text-white transition-colors text-zinc-600" title="Call Us">
+              <Phone className="w-4 h-4" />
             </a>
-            <button className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-md hover:shadow-lg text-[15px]">
-              <Calendar className="w-4 h-4" />
-              <span>Book Now</span>
+            
+            {/* WhatsApp Icon */}
+            <a href={`https://wa.me/${phoneDetails.replace('+', '')}`} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl bg-[#E8F8F5] flex items-center justify-center border border-[#A9DFD8] hover:bg-[#25D366] hover:text-white transition-colors text-[#25D366]" title="WhatsApp Us">
+              <MessageCircle className="w-5 h-5" />
+            </a>
+
+            {/* Book Now Button */}
+            <button 
+              onClick={() => console.log("Book Now Clicked")}
+              className="flex items-center gap-2 bg-zinc-950 text-white px-6 py-2.5 rounded-xl font-black uppercase text-xs tracking-widest transition-all shadow-[4px_4px_0px_0px_rgba(16,185,129,1)] hover:translate-y-1 hover:shadow-none hover:bg-emerald-500 border-2 border-transparent hover:border-zinc-950"
+            >
+              <Calendar className="w-4 h-4" /> Book Now
             </button>
           </div>
 
           {/* Mobile Menu Button */}
           <button 
-            className="md:hidden p-1.5 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+            className="lg:hidden p-2 text-zinc-900 bg-zinc-100 rounded-xl transition-colors z-50 focus:outline-none border border-zinc-200"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle Menu"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu - Isme bhi active page highlight hoga */}
-      <div className={`md:hidden absolute top-full left-0 w-full bg-white border-b border-slate-100 shadow-xl transition-all duration-300 origin-top ${mobileMenuOpen ? 'opacity-100 scale-y-100' : 'opacity-0 scale-y-0 invisible'}`}>
+      {/* --- Mobile Menu --- */}
+      <div className={`lg:hidden absolute top-full left-0 w-full bg-white border-b border-zinc-100 shadow-xl transition-all duration-300 origin-top ${mobileMenuOpen ? 'opacity-100 scale-y-100 visible' : 'opacity-0 scale-y-0 invisible'}`}>
         <div className="px-6 py-6 space-y-4 max-h-[85vh] overflow-y-auto w-full">
-          <a href="/" className={`block font-bold text-[16px] ${currentPath === '/' ? 'text-primary-600' : 'text-slate-800'}`}>Home</a>
-          <a href="/about" className={`block font-bold text-[16px] ${currentPath === '/about' ? 'text-primary-600' : 'text-slate-800'}`}>About</a>
           
+          {navLinks.slice(0, 2).map((link, idx) => (
+            <Link 
+              key={idx} 
+              to={link?.path || '/'} 
+              className={`block font-black text-[18px] uppercase tracking-tight ${currentPath === link?.path ? 'text-emerald-500' : 'text-zinc-900'}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {link?.name}
+            </Link>
+          ))}
+          
+          {/* Mobile Services Dropdown */}
           <div className="space-y-2">
-            <div className={`font-bold text-[16px] flex justify-between items-center cursor-pointer ${isServicesActive ? 'text-primary-600' : 'text-slate-800'}`} onClick={() => setServicesDropdownOpen(!servicesDropdownOpen)}>
+            <button 
+              className={`w-full font-black text-[18px] uppercase tracking-tight flex justify-between items-center focus:outline-none ${isServicesActive ? 'text-emerald-500' : 'text-zinc-900'}`} 
+              onClick={() => setServicesDropdownOpen(!servicesDropdownOpen)}
+            >
               Services
-              <ChevronDown className={`w-5 h-5 transition-transform ${servicesDropdownOpen ? 'rotate-180 text-primary-600' : ''}`} />
-            </div>
+              <ChevronDown className={`w-5 h-5 transition-transform ${servicesDropdownOpen ? 'rotate-180 text-emerald-500' : ''}`} />
+            </button>
+            
             {servicesDropdownOpen && (
-              <div className="pl-4 space-y-3 py-2 border-l-2 border-primary-100 ml-2">
+              <div className="pl-4 space-y-3 py-3 border-l-2 border-emerald-100 ml-2">
                 {services.map((service, index) => (
-                  <a key={index} href="/services" className="flex items-center gap-3 text-slate-600 font-semibold hover:text-primary-600 text-[15px]">
-                    <span className="p-1.5 bg-primary-50 rounded-md">
-                      {service.icon}
+                  <Link 
+                    key={index} 
+                    to={service?.path || '/services'} 
+                    className="flex items-center gap-3 text-zinc-600 font-bold hover:text-emerald-600 text-[14px]"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <span className="p-1.5 bg-zinc-100 rounded-md">
+                      {service?.icon || <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
                     </span>
-                    <span>{service.name}</span>
-                  </a>
+                    <span>{service?.name || "Service"}</span>
+                  </Link>
                 ))}
               </div>
             )}
           </div>
           
-          <a href="/technical" className={`block font-bold text-[16px] ${currentPath === '/technical' ? 'text-primary-600' : 'text-slate-800'}`}>Technical Services</a>
-          <a href="/blog" className={`block font-bold text-[16px] ${currentPath === '/blog' ? 'text-primary-600' : 'text-slate-800'}`}>Blog</a>
-          <a href="/contact" className={`block font-bold text-[16px] ${currentPath === '/contact' ? 'text-primary-600' : 'text-slate-800'}`}>Contact</a>
+          {navLinks.slice(2).map((link, idx) => (
+            <Link 
+              key={idx + 2} 
+              to={link?.path || '/'} 
+              className={`block font-black text-[18px] uppercase tracking-tight ${currentPath === link?.path ? 'text-emerald-500' : 'text-zinc-900'}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {link?.name}
+            </Link>
+          ))}
           
-          <div className="pt-6 mt-4 border-t border-slate-100 flex flex-col gap-3">
-            <button className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-slate-50 text-slate-800 font-bold border border-slate-200">
-              <Phone className="w-4 h-4" />
-              Call Us
-            </button>
-            <button className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-primary-600 text-white font-bold shadow-lg shadow-primary-500/25">
-              <Calendar className="w-4 h-4" />
-              Book Now
+          {/* 🔥 Mobile CTAs */}
+          <div className="pt-6 mt-4 border-t border-zinc-100 flex flex-col gap-3">
+            <div className="flex gap-3">
+              <a 
+                href={`tel:${phoneDetails}`}
+                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-zinc-50 text-zinc-800 font-bold border border-zinc-200 hover:bg-zinc-100"
+              >
+                <Phone className="w-4 h-4" /> Call
+              </a>
+              <a 
+                href={`https://wa.me/${phoneDetails.replace('+', '')}`}
+                target="_blank" rel="noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#E8F8F5] text-[#25D366] font-bold border border-[#A9DFD8] hover:bg-[#d1f4ed]"
+              >
+                <MessageCircle className="w-4 h-4" /> WhatsApp
+              </a>
+            </div>
+            <button 
+              onClick={() => console.log("Mobile Book Now Clicked")}
+              className="flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-zinc-950 text-white font-black shadow-[4px_4px_0px_0px_rgba(16,185,129,1)] uppercase tracking-widest text-sm"
+            >
+              <Calendar className="w-4 h-4" /> Book Now
             </button>
           </div>
         </div>
