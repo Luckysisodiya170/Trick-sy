@@ -1,6 +1,7 @@
 import React from 'react';
 import Header from './Navbar'; 
 import Footer from './Footer'; 
+import FloatingActions from '../Shared/FloatingActions';
 
 const MainLayout = ({ children }) => {
   return (
@@ -11,6 +12,7 @@ const MainLayout = ({ children }) => {
         {children}
       </main>
       <Footer />
+      <FloatingActions/>
     </div>
   );
 };

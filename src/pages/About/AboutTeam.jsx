@@ -134,7 +134,7 @@ const AboutTeam = ({ teamTitle = "Meet The", teamHighlight = "Masterminds", team
            
            <div className="bg-[#050A15] rounded-[2.5rem] p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8 relative z-10 border border-slate-800">
              <div className="text-center md:text-left">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-700 text-primary-400 font-bold text-[10px] uppercase tracking-widest mb-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-500 text-primary-300 font-bold text-[10px] uppercase tracking-widest mb-4">
                   We are Hiring
                 </div>
                 <h3 className="text-3xl md:text-4xl font-black text-white mb-3">Join the A-Team</h3>
