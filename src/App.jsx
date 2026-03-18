@@ -1,14 +1,12 @@
-// src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async'; // 🔥 SEO ke liye add kiya
+import { HelmetProvider } from 'react-helmet-async'; 
 
 import MainLayout from './components/layout/MainLayout';
 import Home from "./pages/Home/Home";
 import AboutPage from './pages/About/About';
 import ServiceDetail from './pages/Services/ServiceDetail';
 import BlogDetail from './pages/Blog/BlogDetail';
-// 404 Component Import Kiya
 import NotFound from './pages/NotFound/NotFound';
 import Contact from './pages/Contact/Contact';
 import Blog from './pages/Blog/Blog';
@@ -20,12 +18,15 @@ const Login = () => <div className="flex h-screen items-center justify-center bg
 
 function App() {
   return (
-    // 🔥 Poori app ko HelmetProvider mein wrap kar diya
     <HelmetProvider>
       <Router>
         <Routes>
-          {/* --- Routes JINME Header aur Footer chahiye --- */}
+          {/* home Routes */}
+
           <Route path="/" element={<MainLayout><Home /></MainLayout>} />
+
+          {/* About Routes */}
+
           <Route path="/about" element={<MainLayout><AboutPage /></MainLayout>} />
 
           {/* Service Routes */}
@@ -44,11 +45,11 @@ function App() {
           <Route path="/technical" element={<MainLayout><TechnicalServices /></MainLayout>} />
           <Route path="/technical-services/:serviceId" element={<MainLayout><TechnicalDetail /></MainLayout>} />
 
-          {/* --- Routes JINME Header aur Footer NAHI chahiye (Auth Pages) --- */}
+          {/* --Auth Pages --- */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<div>Register Page</div>} />
 
-          {/* 404 CATCH-ALL ROUTE */}
+          {/* 404 ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
