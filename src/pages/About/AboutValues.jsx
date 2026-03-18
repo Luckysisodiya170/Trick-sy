@@ -3,7 +3,6 @@ import { Eye, ShieldCheck, Zap, HeartHandshake, ArrowUpRight } from 'lucide-reac
 
 const AboutValues = ({ title, highlight, subtitle, valuesData }) => {
   
-  // 🔥 PRODUCTION RULE: Default data for safety and consistency
   const defaultValues = [
     { 
       title: "Transparency", 
@@ -41,7 +40,7 @@ const AboutValues = ({ title, highlight, subtitle, valuesData }) => {
       <div className="w-full max-w-[1400px] mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
           
-          {/* --- LEFT SIDE: STICKY HEADER --- */}
+          {/*LEFT SIDE*/}
           <div className="lg:col-span-5 lg:sticky lg:top-32">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-primary-600 font-bold text-[10px] uppercase tracking-widest mb-6">
               Core Principles
@@ -56,7 +55,7 @@ const AboutValues = ({ title, highlight, subtitle, valuesData }) => {
               {subtitle || "Hum sirf kaam nahi karte, hum ek standard maintain karte hain jo humein doosron se alag banata hai."}
             </p>
             
-            {/* Social Proof / Trust Mini-Section */}
+            {/* Mini-Section */}
             <div className="mt-12 p-6 rounded-3xl bg-slate-900 text-white flex items-center justify-between group cursor-pointer overflow-hidden relative">
               <div className="relative z-10">
                 <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Our Commitment</p>
@@ -65,19 +64,17 @@ const AboutValues = ({ title, highlight, subtitle, valuesData }) => {
               <div className="w-12 h-12 rounded-full bg-primary-500 flex items-center justify-center relative z-10 group-hover:rotate-45 transition-transform duration-500">
                 <ArrowUpRight className="w-6 h-6" />
               </div>
-              {/* Animated background element */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/20 rounded-full blur-2xl -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
             </div>
           </div>
 
-          {/* --- RIGHT SIDE: INTERACTIVE VALUE CARDS --- */}
+          {/*RIGHT SIDE */}
           <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
             {values.map((v, i) => (
               <div 
                 key={i} 
                 className="group relative p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-2xl hover:shadow-primary-500/10 transition-all duration-500"
               >
-                {/* Icon Wrapper with Dynamic Shadow */}
                 <div className={`w-14 h-14 rounded-2xl ${v.color || 'bg-primary-500'} text-white flex items-center justify-center mb-6 shadow-lg shadow-primary-500/20 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
                   {v.icon}
                 </div>
@@ -90,12 +87,10 @@ const AboutValues = ({ title, highlight, subtitle, valuesData }) => {
                   {v.desc}
                 </p>
 
-                {/* Subtle Hover Element */}
                 <div className="mt-6 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-primary-500 transition-colors">
                   Learn More <ArrowUpRight className="w-3 h-3" />
                 </div>
                 
-                {/* Card Corner Decoration */}
                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-10 transition-opacity">
                    <div className="w-12 h-12 border-t-2 border-r-2 border-primary-500 rounded-tr-xl"></div>
                 </div>

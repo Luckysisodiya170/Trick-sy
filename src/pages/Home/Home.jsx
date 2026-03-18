@@ -1,5 +1,5 @@
 import React from 'react';
-import Hero from './Hero'; // Path apne folder structure ke hisaab se adjust kar lein
+import Hero from './Hero'; 
 import CtaSection from './CtaSection';
 import AboutSection from './AboutSection';
 import ServicesSection from './ServicesSection';
@@ -14,7 +14,6 @@ const Home = () => {
   return (
     <div className="w-full flex flex-col">
 
-      {/* 1. Hero Section (Sabse upar) */}
       <Hero />
 
 

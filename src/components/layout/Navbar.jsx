@@ -13,7 +13,6 @@ const Header = ({ navData, dropdownServices, contactInfo }) => {
   const location = useLocation();
   const currentPath = location?.pathname || '/';
 
-  // 1. Scroll Effect for Navbar styling
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -22,12 +21,11 @@ const Header = ({ navData, dropdownServices, contactInfo }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // 🔥 2. SCROLL TO TOP FIX: Jab bhi route change hoga, page top se start hoga
+  //  whenever route will change it start from top
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  // Default Fallback Data for Navigation
   const defaultNavLinks = [
     { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
@@ -36,7 +34,6 @@ const Header = ({ navData, dropdownServices, contactInfo }) => {
     { name: 'Contact', path: '/contact' }
   ];
 
-  // 🔥 AAPI 6 SERVICES (With beautiful matching icons)
   const defaultServices = [
     { name: 'Deep Cleaning', path: '/services/deep-cleaning', icon: <Sparkles className="w-4 h-4 text-emerald-500" /> },
     { name: 'AC Duct Cleaning', path: '/services/ac-duct-cleaning', icon: <Wind className="w-4 h-4 text-emerald-500" /> },
@@ -48,11 +45,9 @@ const Header = ({ navData, dropdownServices, contactInfo }) => {
 
   const phoneDetails = contactInfo?.phone || "+971501234567";
 
-  // Defensive array checks
   const navLinks = Array.isArray(navData) && navData.length > 0 ? navData : defaultNavLinks;
   const services = Array.isArray(dropdownServices) && dropdownServices.length > 0 ? dropdownServices : defaultServices;
 
-  // Premium Active Link Helpers (Emerald Theme)
   const getLinkStyle = (path) => {
     const isActive = currentPath === path;
     return `font-bold transition-all text-[13px] uppercase tracking-widest relative group flex items-center ${isActive ? 'text-emerald-500' : 'text-zinc-700 hover:text-emerald-500'}`;
@@ -85,7 +80,7 @@ const Header = ({ navData, dropdownServices, contactInfo }) => {
       <div className="w-full max-w-[1400px] mx-auto px-6 md:px-12">
         <div className="flex justify-between items-center">
           
-          {/* 🔥 Premium "T" Logo */}
+          {/*Logo */}
           <Link to="/" className="flex-shrink-0 cursor-pointer flex items-center gap-2 z-50 group">
             <div className="w-10 h-10 bg-zinc-950 rounded-xl flex items-center justify-center transform group-hover:-rotate-12 transition-transform duration-300 shadow-[4px_4px_0px_0px_rgba(16,185,129,1)]">
               <span className="text-white font-black text-xl">T</span>
@@ -140,7 +135,7 @@ const Header = ({ navData, dropdownServices, contactInfo }) => {
             
           </nav>
 
-          {/* 🔥 Call to Actions (Desktop) - Call, WhatsApp, Book Now */}
+          {/* CTA */}
           <div className="hidden lg:flex items-center space-x-3">
             {/* Call Icon */}
             <a href={`tel:${phoneDetails}`} className="w-10 h-10 rounded-xl bg-zinc-50 flex items-center justify-center border border-zinc-200 hover:bg-zinc-950 hover:text-white transition-colors text-zinc-600" title="Call Us">
@@ -227,7 +222,7 @@ const Header = ({ navData, dropdownServices, contactInfo }) => {
             </Link>
           ))}
           
-          {/* 🔥 Mobile CTAs */}
+          {/*Mobile CTAs */}
           <div className="pt-6 mt-4 border-t border-zinc-100 flex flex-col gap-3">
             <div className="flex gap-3">
               <a 

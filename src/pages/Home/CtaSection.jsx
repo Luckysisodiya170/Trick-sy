@@ -2,7 +2,6 @@ import React from 'react';
 import { Phone, Calendar, Sparkles, ArrowRight, Shield } from 'lucide-react';
 
 const CtaSection = ({ ctaData }) => {
-  // 🔥 PRODUCTION RULE: Fallback logic for dynamic data
   const defaultContent = {
     badge: "We Are Ready To Help",
     titleLine1: "Need Professional",
@@ -10,7 +9,7 @@ const CtaSection = ({ ctaData }) => {
     description: "Book your service today and experience top-notch quality from our certified expert team. Your flawless space is just a click away.",
     primaryButtonText: "Book Appointment",
     secondaryButtonText: "Call Us Now",
-    phoneNumber: "+18001234567" // Production ready phone link
+    phoneNumber: "+18001234567"
   };
 
   const content = ctaData ? { ...defaultContent, ...ctaData } : defaultContent;
@@ -58,7 +57,6 @@ const CtaSection = ({ ctaData }) => {
                 </div>
               </button>
 
-              {/* 🔥 PRODUCTION RULE: Use 'tel:' link for phone calls on mobile */}
               <a 
                 href={`tel:${content.phoneNumber}`}
                 className="group flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-slate-900 px-8 py-5 rounded-2xl font-bold transition-all duration-300 text-[17px] hover:-translate-y-1 shadow-lg"

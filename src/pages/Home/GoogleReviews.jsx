@@ -1,14 +1,10 @@
 import React from 'react';
 import { Star, CheckCircle2, ArrowUpRight } from 'lucide-react'; 
-
-// 🔥 PRODUCTION RULE: Strict Local Imports
 import googlelogo from "../../assets/Google.webp"
 import reviewpic1 from "../../assets/aboutsectionimg/profileabout.jpeg";
 import reviewpic2 from "../../assets/aboutsectionimg/profileabout2.jpeg";
 
-// 'reviewsData' prop backend se aane wale data ke liye
 const GoogleReviews = ({ reviewsData }) => {
-  // Graceful Fallback (Default Data)
   const defaultReviews = [
     {
       id: 1,
@@ -16,7 +12,7 @@ const GoogleReviews = ({ reviewsData }) => {
       time: "2 days ago",
       text: "Best maintenance team in Dubai. Fixed my AC in 30 mins! Super professional and polite staff.",
       rating: 5,
-      avatar: reviewpic1 // Local asset
+      avatar: reviewpic1 
     },
     {
       id: 2,
@@ -24,21 +20,20 @@ const GoogleReviews = ({ reviewsData }) => {
       time: "1 week ago",
       text: "Highly recommend for deep cleaning. Every corner was spotless. Worth every dirham!",
       rating: 5,
-      avatar: reviewpic2 // Local asset
+      avatar: reviewpic2 
     }
   ];
 
-  // 🔥 PRODUCTION RULE: Defensive Array Check
   const reviewsToDisplay = Array.isArray(reviewsData) && reviewsData.length > 0 ? reviewsData : defaultReviews;
 
   return (
     <section className="py-16 bg-white border-y border-slate-100">
       <div className="max-w-[1280px] mx-auto px-6 md:px-10 lg:px-12 w-full">
         
-        {/* Main Review Card */}
+        {/* Main Card */}
         <div className="bg-slate-50 rounded-[2.5rem] p-6 md:p-10 flex flex-col lg:flex-row items-center gap-10">
           
-          {/* Left: Google Trust Score */}
+          {/* Left side */}
           <div className="w-full lg:w-1/3 text-center lg:text-left space-y-4 lg:border-r border-slate-200 lg:pr-10">
             <div className="flex justify-center lg:justify-start">
               <img src={googlelogo} alt="Google" loading="lazy" className="w-12 h-12 mb-2 object-contain" />
@@ -60,7 +55,7 @@ const GoogleReviews = ({ reviewsData }) => {
             </button>
           </div>
 
-          {/* Right: Floating Reviews */}
+          {/* Right*/}
           <div className="w-full lg:w-2/3 grid sm:grid-cols-2 gap-4">
             {reviewsToDisplay.map((rev, index) => (
               <div key={rev?.id || index} className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-xl transition-all duration-300">

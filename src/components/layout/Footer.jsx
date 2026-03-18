@@ -1,9 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom'; // 🔥 PRODUCTION RULE: Use Link for internal navigation
+import { Link } from 'react-router-dom'; 
 import { Mail, MapPin, Phone, Clock, Facebook, Twitter, Instagram, Linkedin, ArrowRight } from 'lucide-react';
 
 const Footer = ({ footerData }) => {
-  // 🔥 PRODUCTION RULE: Fallback Default Data
   const defaultContent = {
     companyDesc: "Your trusted partner for professional home maintenance, cleaning, and technical services. We deliver excellence with every visit.",
     address: "123 Service Stream Boulevard, Innovation District, NY 10001",
@@ -30,7 +29,6 @@ const Footer = ({ footerData }) => {
 
   const handleNewsletterSubmit = (e) => {
     e.preventDefault();
-    // Newsletter submission logic will go here
     console.log("Newsletter Subscribed!");
   };
 
@@ -53,7 +51,6 @@ const Footer = ({ footerData }) => {
               {content.companyDesc}
             </p>
             <div className="flex gap-3 pt-2">
-              {/* External links must use <a> tags with security attributes */}
               <a href={content.socialLinks.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-primary-500 hover:text-white transition-all hover:-translate-y-1">
                 <Facebook className="w-4 h-4" />
               </a>

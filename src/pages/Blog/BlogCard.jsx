@@ -1,4 +1,3 @@
-// src/pages/Blog/BlogCard.jsx
 import React from 'react';
 import { Clock, Calendar, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -10,20 +9,20 @@ const BlogCard = ({ post }) => {
   return (
     <article className="bg-white rounded-[2rem] border border-zinc-200 overflow-hidden hover:shadow-[12px_12px_0px_0px_rgba(24,24,27,1)] hover:-translate-y-2 transition-all duration-300 group flex flex-col h-full">
       
-      {/* Dynamic Image */}
+      {/* dynamic image */}
       <div className="relative h-60 overflow-hidden bg-zinc-100">
         <img 
           src={post.image} 
           alt={post.title} 
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
         />
-        {/* Category Badge */}
+        {/* category badge */}
         <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-4 py-1.5 rounded-full text-xs font-black text-zinc-950 uppercase tracking-widest shadow-sm">
           {post.category}
         </div>
       </div>
 
-      {/* Content */}
+      {/* content */}
       <div className="p-8 flex flex-col flex-grow">
         <div className="flex items-center gap-4 text-xs font-bold text-zinc-500 mb-4">
           <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4"/> {post.date}</span>
@@ -39,7 +38,6 @@ const BlogCard = ({ post }) => {
           {post.excerpt}
         </p>
 
-        {/* Read More Link (Production Safe routing) */}
         <Link to={`/blog/${post.slug}`} className="inline-flex items-center gap-2 text-zinc-950 font-black text-sm uppercase tracking-widest hover:text-emerald-600 transition-colors mt-auto">
           Read Article <ArrowRight className="w-4 h-4" />
         </Link>

@@ -1,14 +1,10 @@
 import React from 'react';
 import { Play, ArrowRight, Star, CheckCircle, MapPin } from 'lucide-react';
 import Button from "../../components/common/Button"
-
-// 🔥 PRODUCTION RULE: Local Image Import
 import heroimg from "../../assets/herosection-img/hero-img.avif" 
 
-// 'heroData' prop backend se aane wale data ke liye
 const Hero = ({ heroData }) => {
   
-  // Default Fallback Content
   const defaultContent = {
     badgeText: "Your Trusted Service Partner",
     titleLine1: "Professional",
@@ -17,7 +13,7 @@ const Hero = ({ heroData }) => {
     description: "Your ultimate destination for all home and office services. Explore our extensive collection of expert solutions for a spotless and well-maintained space.",
     primaryBtnText: "Book Service",
     secondaryBtnText: "Get Free Quote",
-    mainImage: heroimg // Local Asset fallback
+    mainImage: heroimg 
   };
 
   const content = heroData ? { ...defaultContent, ...heroData } : defaultContent;
@@ -25,7 +21,6 @@ const Hero = ({ heroData }) => {
   return (
     <section className="relative bg-gradient-to-br from-primary-50 via-white to-primary-50/40 overflow-hidden min-h-[90vh] flex items-center pt-24 lg:pt-28 pb-16 lg:pb-20">
       
-      {/* Background Decorative Elements */}
       <div className="absolute inset-0 w-full h-full pointer-events-none">
         <div className="absolute -top-32 -left-32 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-primary-100/60 rounded-full mix-blend-multiply filter blur-[80px]"></div>
         <div className="absolute -bottom-32 -right-32 w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] bg-green-100/50 rounded-full mix-blend-multiply filter blur-[100px]"></div>
@@ -34,9 +29,9 @@ const Hero = ({ heroData }) => {
       <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 md:px-12 lg:px-16 2xl:px-24 relative z-10">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8">
           
-          {/* Left Content Area */}
+          {/* Left Area */}
           <div className="w-full lg:w-1/2 text-center lg:text-left flex flex-col items-center lg:items-start mt-4 lg:mt-0">
-            {/* Pill Badge */}
+            {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white text-primary-700 font-semibold text-xs sm:text-sm mb-6 lg:mb-8 border border-primary-100 shadow-sm transition-transform hover:scale-105">
               <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-primary-500 text-primary-500" />
               {content.badgeText}
@@ -76,7 +71,7 @@ const Hero = ({ heroData }) => {
             </div>
           </div>
 
-          {/* Right Image/Visual Area */}
+          {/* Right Image */}
           <div className="w-full lg:w-1/2 flex justify-center lg:justify-end mt-10 lg:mt-0 relative px-4 sm:px-0">
             <div className="relative w-[280px] h-[280px] sm:w-[400px] sm:h-[400px] lg:w-[480px] lg:h-[480px] xl:w-[550px] xl:h-[550px] flex-shrink-0">
               

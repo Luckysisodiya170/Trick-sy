@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Home, Building2, Briefcase, Utensils, Dumbbell, Factory, Sparkles } from 'lucide-react';
 
-// 🔥 PRODUCTION RULE: Sabhi images ko assets se import karein
 import villaImg from "../../assets/popularimage/Villa.png";
 import officeImg from "../../assets/popularimage/Office.png";
 import apartmentImg from "../../assets/popularimage/Apartment.png";
@@ -12,7 +11,6 @@ import placeholderImg from "../../assets/herosection-img/hero-img.avif";
 
 const PopularServices = ({ servicesData }) => {
   
-  // Default data with specific images for each category
   const defaultServices = [
     { 
       id: 1, 
@@ -58,7 +56,6 @@ const PopularServices = ({ servicesData }) => {
     },
   ];
 
-  // Defensive array checking to prevent crash
   const displayServices = Array.isArray(servicesData) && servicesData.length > 0 
     ? servicesData 
     : defaultServices;
@@ -127,7 +124,7 @@ const PopularServices = ({ servicesData }) => {
             })}
           </div>
 
-          {/* Right Side: Image Display */}
+          {/* Right Side: Image shows */}
           <div className="w-full lg:w-7/12 h-[350px] sm:h-[400px] lg:h-[500px] relative rounded-[2rem] overflow-hidden shadow-2xl border-4 border-slate-50 bg-slate-100">
             {displayServices.map((service, index) => (
               <div 

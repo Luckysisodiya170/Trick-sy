@@ -1,7 +1,6 @@
 import React from 'react';
 import { Target, Users, ShieldCheck, Heart, CheckCircle2 } from 'lucide-react';
 
-// 🔥 PRODUCTION RULE: Local Asset Import
 import aboutMain from "../../assets/aboutsectionimg/aboutmain.png";
 
 const AboutMission = ({ 
@@ -11,7 +10,6 @@ const AboutMission = ({
   statsData 
 }) => {
   
-  // 🔥 PRODUCTION RULE: Fallback data to prevent crashes
   const defaultStats = [
     { label: "Founded", value: "2014", icon: <Target className="w-6 h-6" /> },
     { label: "Team Size", value: "150+", icon: <Users className="w-6 h-6" /> },
@@ -26,14 +24,9 @@ const AboutMission = ({
       <div className="w-full max-w-[1400px] mx-auto px-6">
         <div className="flex flex-col lg:flex-row gap-16 lg:gap-24 items-center">
           
-          {/* --- LEFT SIDE: Solid Image Layout --- */}
           <div className="w-full lg:w-1/2 relative">
-            
-            {/* Solid Offset Box (Matches the hero section's design language) */}
             <div className="absolute top-6 -left-6 w-full h-full bg-emerald-500 rounded-[2rem] hidden sm:block"></div>
-            
-            {/* Main Image Container with Crisp Borders */}
-            <div className="relative rounded-[2rem] overflow-hidden border-4 border-zinc-950 bg-zinc-100 z-10 h-[400px] sm:h-[500px]">
+                        <div className="relative rounded-[2rem] overflow-hidden border-4 border-zinc-950 bg-zinc-100 z-10 h-[400px] sm:h-[500px]">
               <img 
                 src={aboutMain} 
                 alt="TRICKSY Mission Team" 
@@ -42,7 +35,6 @@ const AboutMission = ({
               />
             </div>
             
-            {/* Solid Dark Floating Badge */}
             <div className="absolute -bottom-8 -right-8 hidden md:flex flex-col bg-zinc-950 text-white p-8 rounded-[2rem] border-4 border-zinc-800 z-20 w-[260px] transform hover:-translate-y-2 transition-transform duration-300">
               <div className="flex items-center gap-3 mb-2">
                 <CheckCircle2 className="w-10 h-10 text-emerald-500" />
@@ -54,27 +46,22 @@ const AboutMission = ({
             </div>
           </div>
 
-          {/* --- RIGHT SIDE: Crisp Typography & Stats --- */}
           <div className="w-full lg:w-1/2">
             
-            {/* Solid Minimal Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100 border border-zinc-200 mb-6">
               <span className="w-2 h-2 rounded-full bg-zinc-950"></span>
               <span className="text-zinc-900 font-black text-[10px] uppercase tracking-[0.2em]">Our Mission</span>
             </div>
 
-            {/* Solid Bold Heading */}
             <h2 className="text-5xl lg:text-7xl font-black text-zinc-950 leading-[1.05] tracking-tighter mb-6">
               {title} <br />
               <span className="text-emerald-500">{highlight}</span>
             </h2>
             
-            {/* Medium Weight Subtext */}
             <p className="text-zinc-500 text-lg font-medium leading-relaxed mb-12 max-w-lg">
               {description}
             </p>
 
-            {/* Bento-Style Solid Stats Grid */}
             <div className="grid grid-cols-2 gap-4 lg:gap-6">
               {stats.map((stat, idx) => (
                 <div 

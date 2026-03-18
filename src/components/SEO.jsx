@@ -1,13 +1,11 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-
+import logo from "../assets/logo.png"
 const SEO = ({ title, description, keywords, image }) => {
-  // Default values agar props na aayein
   const siteTitle = "TRICKSY | Premium Maintenance Services";
   const defaultDesc = "Premium home, office, and AC duct cleaning maintenance services in Dubai.";
   const defaultKeywords = "deep cleaning services, home cleaning, office cleaning, AC duct cleaning, maintenance services";
-  // Ek default image path rakho (Logo ya Banner)
-  const defaultImage = "https://yourdomain.com/default-og-image.jpg"; 
+  const defaultImage = logo; 
 
   return (
     <Helmet>
@@ -17,7 +15,7 @@ const SEO = ({ title, description, keywords, image }) => {
       <meta name="keywords" content={keywords || defaultKeywords} />
       <meta name="author" content="TRICKSY Dubai" />
 
-      {/* 2. Open Graph / Facebook (WhatsApp pe preview ke liye) */}
+      {/* 2. Open Graph  */}
       <meta property="og:type" content="website" />
       <meta property="og:title" content={title || siteTitle} />
       <meta property="og:description" content={description || defaultDesc} />
@@ -30,7 +28,7 @@ const SEO = ({ title, description, keywords, image }) => {
       <meta name="twitter:description" content={description || defaultDesc} />
       <meta name="twitter:image" content={image || defaultImage} />
 
-      {/* 4. Robots Tag (Taki Google index kare) */}
+      {/* 4. Robots Tag */}
       <meta name="robots" content="index, follow" />
     </Helmet>
   );

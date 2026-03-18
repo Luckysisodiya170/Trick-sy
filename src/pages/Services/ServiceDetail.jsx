@@ -1,4 +1,3 @@
-// src/pages/Services/ServiceDetail.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { CheckCircle2, ArrowRight, ChevronDown, ChevronUp, Loader2, ShieldCheck, Star, Clock } from 'lucide-react';
@@ -6,7 +5,6 @@ import { CheckCircle2, ArrowRight, ChevronDown, ChevronUp, Loader2, ShieldCheck,
 import SEO from '../../components/SEO';
 import { servicesData } from '../../data/servicesData';
 
-// 🔥 LOCAL ASSETS IMPORT (SEO aur UI ke liye zaroori)
 import deepclean from "../../assets/serviceimage/Deep-cleaning.png";
 import acmaintain from "../../assets/serviceimage/ac-maintainance.png";
 import plumbing from "../../assets/serviceimage/plumbing.png";
@@ -21,7 +19,6 @@ const ServiceDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [openFaq, setOpenFaq] = useState(0);
 
-  // 🖼️ Mapping function: Taki error na aaye aur sahi image dikhe
   const getServiceImage = (id) => {
     switch (id) {
       case 'deep-cleaning': return deepclean;
@@ -73,7 +70,6 @@ const ServiceDetail = () => {
 
   if (!serviceInfo) return <Navigate to="/404" />;
 
-  // 🔥 Is variable ko define na karne ki wajah se error aa raha tha
   const currentHeroImage = getServiceImage(serviceId);
 
   const colorfulIcons = [

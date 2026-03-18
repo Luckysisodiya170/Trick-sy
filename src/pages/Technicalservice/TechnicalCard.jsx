@@ -5,7 +5,7 @@ const TechnicalCard = ({ service, isActive, onHover, icon, index }) => {
   return (
     <div
       onMouseEnter={onHover}
-      className="relative group cursor-pointer mb-2" // Margin kam kiya
+      className="relative group cursor-pointer mb-2"
     >
       <button
         className={`relative w-full pl-6 pr-4 py-4 rounded-xl text-left transition-all duration-300 flex items-center justify-between overflow-hidden border ${
@@ -14,7 +14,7 @@ const TechnicalCard = ({ service, isActive, onHover, icon, index }) => {
           : 'bg-white border-zinc-100 hover:border-zinc-200 translate-x-0'
         }`}
       >
-        {/* Number - Very Subtle */}
+        {/* Number */}
         <div className={`absolute right-4 bottom-0 font-black text-5xl transition-all duration-500 pointer-events-none select-none ${
           isActive ? 'text-white/[0.03] translate-y-2' : 'opacity-0'
         }`}>

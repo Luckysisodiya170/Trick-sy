@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import BlogHero from './BlogHero';
 import BlogCard from './BlogCard';
 import { Loader2 } from 'lucide-react';
-
-// Fallback Data
 import { blogPosts as dummyPosts } from '../../data/blogData';
 
 const Blog = () => {
@@ -16,14 +14,13 @@ const Blog = () => {
     const fetchBlogs = async () => {
       setLoading(true);
       try {
-        // 🔥 PRODUCTION RULE: Pehle Backend API try karo
         const response = await fetch('https://api.tricksy.com/v1/blogs');
         if (!response.ok) throw new Error("Backend Error");
         const data = await response.json();
         setPosts(data);
       } catch (error) {
         console.log("Using Fallback Dummy Data");
-        setPosts(dummyPosts); // API fail hui toh dummy data dikhao
+        setPosts(dummyPosts); 
       } finally {
         setLoading(false);
       }

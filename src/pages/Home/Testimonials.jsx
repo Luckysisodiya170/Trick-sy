@@ -1,15 +1,12 @@
 import React from 'react';
 import { Star, Quote, Sparkles } from 'lucide-react';
 
-// 🔥 PRODUCTION RULE 1: Local Image Imports (Safe Fallbacks)
 import reviewpic1 from "../../assets/aboutsectionimg/profileabout.jpeg";
 import reviewpic2 from "../../assets/aboutsectionimg/profileabout2.jpeg";
 import reviewpic3 from "../../assets/aboutsectionimg/profileabout3.jpeg";
 
-// 🔥 PRODUCTION RULE 2: Accept dynamic data via props
 const Testimonials = ({ testimonialsData }) => {
   
-  // Default Data (Fallback agar API data na de)
   const defaultReviews = [
     {
       id: 1, name: 'Ahmed Khan', role: 'Villa Owner',
@@ -28,15 +25,13 @@ const Testimonials = ({ testimonialsData }) => {
     }
   ];
 
-  // 🔥 PRODUCTION RULE 3: Defensive Array Check
   const displayReviews = Array.isArray(testimonialsData) && testimonialsData.length > 0 ? testimonialsData : defaultReviews;
 
   return (
-    // Height aur padding ko control kiya hai taaki ek screen par fit aaye
     <section className="py-12 lg:py-16 bg-white border-y border-slate-50">
       <div className="max-w-[1280px] mx-auto px-6 md:px-10 lg:px-12 w-full">
         
-        {/* 🔥 HEADING IN THE CENTER (Beech Mein) 🔥 */}
+        {/* HEADING */}
         <div className="flex flex-col items-center text-center mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-50 text-primary-600 border border-primary-100 mb-4 shadow-sm">
             <Sparkles className="w-3.5 h-3.5" />
@@ -52,13 +47,10 @@ const Testimonials = ({ testimonialsData }) => {
           </p>
         </div>
 
-        {/* 3 Cards, 1 Single Row (No Scroll Design) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* 🔥 PRODUCTION RULE 4: .slice(0, 3) ensures UI never breaks even if backend sends 100 reviews */}
           {displayReviews.slice(0, 3).map((item, idx) => (
             <div 
-              key={item?.id || `testimonial-${idx}`} // Safe Key
-              // Beech wala card thoda highlight hoga (Dark theme)
+              key={item?.id || `testimonial-${idx}`} 
               className={`relative p-6 lg:p-8 rounded-[2rem] border transition-all duration-300 hover:-translate-y-1 ${
                 idx === 1 
                 ? 'bg-slate-900 text-white border-slate-800 shadow-xl shadow-slate-900/10' 
@@ -68,22 +60,19 @@ const Testimonials = ({ testimonialsData }) => {
                <Quote className={`absolute top-6 right-6 w-6 h-6 opacity-20 ${idx === 1 ? 'text-white' : 'text-primary-500'}`} />
                
                <div className="flex gap-1 mb-5">
-                {/* Dynamic rating support added */}
                 {[...Array(item?.rating || 5)].map((_, i) => (
                   <Star key={i} className={`w-3.5 h-3.5 fill-[#FBBC05] text-[#FBBC05]`} />
                 ))}
               </div>
               
-              {/* Safe Text Rendering */}
               <p className={`text-sm font-bold leading-relaxed mb-6 ${idx === 1 ? 'text-slate-200' : 'text-slate-600'}`}>
                 "{item?.comment || 'Excellent service and great team!'}"
               </p>
               
               <div className="flex items-center gap-3 mt-auto pt-4 border-t border-current" style={{ borderColor: idx === 1 ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
-                {/* Safe Image Rendering */}
                 <img 
                   src={item?.image || reviewpic1} 
-                  loading="lazy" // Performance optimization
+                  loading="lazy" 
                   className="w-10 h-10 rounded-full object-cover border-2 border-transparent" 
                   alt={item?.name || "Customer"} 
                 />

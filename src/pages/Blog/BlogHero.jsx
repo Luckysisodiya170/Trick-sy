@@ -1,10 +1,8 @@
-// src/pages/Blog/BlogHero.jsx
 import React from 'react';
 
 const BlogHero = () => {
   return (
     <section className="bg-zinc-950 py-20 lg:py-28 relative overflow-hidden border-b-[8px] border-emerald-500">
-      {/* Premium Grid Background */}
       <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)', backgroundSize: '48px 48px' }}></div>
       
       <div className="w-full max-w-[1280px] mx-auto px-6 relative z-10 text-center">

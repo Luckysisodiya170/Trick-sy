@@ -1,7 +1,6 @@
 import React from 'react';
 import { ArrowRight, Sparkles, Droplets, Snowflake, Wrench, Zap, Home, Shield } from 'lucide-react';
 
-// 🔥 PRODUCTION RULE 1: Strict Local Imports (No external URLs)
 import deepclean from "../../assets/serviceimage/Deep-cleaning.png";
 import acmaintain from "../../assets/serviceimage/ac-maintainance.png";
 import plumbing from "../../assets/serviceimage/plumbing.png";
@@ -9,10 +8,8 @@ import Electric from "../../assets/serviceimage/electric.png";
 import pest from "../../assets/serviceimage/pest.png";
 import handy from "../../assets/serviceimage/image.png";
 
-// 🔥 PRODUCTION RULE 2: Accept data via props for backend integration
 const ServicesSection = ({ servicesData }) => {
   
-  // Default Fallback Data (Agar API fail ho jaye ya abhi connect na ho)
   const defaultServices = [
     { id: 1, title: 'Deep Cleaning', desc: 'Complete deep cleaning for homes and offices to ensure a spotless environment.', icon: 'droplets', image: deepclean, color: 'blue' },
     { id: 2, title: 'AC Maintenance', desc: 'Expert AC repair, servicing, duct cleaning, and installation by certified pros.', icon: 'snowflake', image: acmaintain, color: 'cyan' },
@@ -22,10 +19,8 @@ const ServicesSection = ({ servicesData }) => {
     { id: 6, title: 'Pest Control', desc: 'Effective and eco-friendly pest removal and long-term prevention services.', icon: 'shield', image: pest, color: 'red' },
   ];
 
-  // 🔥 PRODUCTION RULE 3: Defensive Array Checking
   const displayServices = Array.isArray(servicesData) && servicesData.length > 0 ? servicesData : defaultServices;
 
-  // Safe Icon Renderer
   const renderIcon = (iconName) => {
     const iconProps = { className: `w-6 h-6 text-white` };
     switch (iconName?.toLowerCase()) {
@@ -35,7 +30,7 @@ const ServicesSection = ({ servicesData }) => {
       case 'zap': return <Zap {...iconProps} />;
       case 'home': return <Home {...iconProps} />;
       case 'shield': return <Shield {...iconProps} />;
-      default: return <Sparkles {...iconProps} />; // Fallback icon
+      default: return <Sparkles {...iconProps} />; 
     }
   };
 
@@ -48,13 +43,13 @@ const ServicesSection = ({ servicesData }) => {
       indigo: { gradient: 'from-indigo-500 to-indigo-600', light: 'bg-indigo-50', text: 'group-hover:text-indigo-600' },
       red: { gradient: 'from-rose-400 to-rose-500', light: 'bg-rose-50', text: 'group-hover:text-rose-500' },
     };
-    return styles[colorName?.toLowerCase()] || styles.blue; // Fallback to blue if undefined
+    return styles[colorName?.toLowerCase()] || styles.blue; 
   };
 
   return (
     <section className="py-20 lg:py-28 bg-slate-50 relative overflow-hidden">
       
-      {/* Background Glows */}
+      {/* Background */}
       <div className="absolute top-0 left-0 w-[40rem] h-[40rem] bg-blue-400/10 rounded-full blur-[100px] pointer-events-none -translate-x-1/2 -translate-y-1/2"></div>
       <div className="absolute bottom-0 right-0 w-[40rem] h-[40rem] bg-primary-400/10 rounded-full blur-[100px] pointer-events-none translate-x-1/3 translate-y-1/3"></div>
 
@@ -84,9 +79,9 @@ const ServicesSection = ({ servicesData }) => {
               >
                 <div className="relative w-full h-60 overflow-hidden">
                     <img 
-                        src={service?.image || deepclean} // Fallback image
+                        src={service?.image || deepclean} 
                         alt={service?.title || "Service"} 
-                        loading="lazy" // 🔥 PRODUCTION RULE 4: Lazy Loading
+                        loading="lazy" 
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-60"></div>

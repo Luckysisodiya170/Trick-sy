@@ -2,23 +2,19 @@ import React from 'react';
 import { HelpCircle, ArrowRight, MessageSquare } from 'lucide-react';
 
 const FAQ = ({ faqData }) => {
-  // 🔥 PRODUCTION RULE 1: Graceful Fallbacks (Default Data)
   const defaultFaqs = [
     { question: "How much does cleaning cost?", answer: "We offer competitive flat rates for standard apartments and custom quotes for luxury villas. Pricing depends entirely on the area size and service type." },
     { question: "How long does deep cleaning take?", answer: "Typically, a deep clean takes 4-6 hours depending on the property's condition. Our team works efficiently to ensure every corner sparkles." },
     { question: "Do you provide free estimates?", answer: "Absolutely! We provide transparent, no-obligation estimates via WhatsApp or a quick site visit to give you the most accurate pricing." },
     { question: "How often should cleaning be done?", answer: "For Dubai homes, we recommend a professional deep clean every 3-4 months, with regular maintenance cleaning once or twice a week." }
   ];
-
-  // 🔥 PRODUCTION RULE 2: Defensive Programming
-  // Array check prevents crashes if backend sends null or an object instead of an array.
   const faqsToDisplay = Array.isArray(faqData) && faqData.length > 0 ? faqData : defaultFaqs;
 
   return (
     <section className="py-20 bg-slate-50 border-y border-slate-100">
       <div className="max-w-[1280px] mx-auto px-6 md:px-10 lg:px-12 w-full">
         
-        {/* HEADER SECTION */}
+        {/* header section */}
         <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-16">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-slate-800 font-bold text-[10px] uppercase tracking-[0.2em] mb-6 shadow-sm">
@@ -38,7 +34,6 @@ const FAQ = ({ faqData }) => {
             </div>
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Still unsure?</p>
-              {/* 🔥 PRODUCTION RULE 3: SEO & Safe Links */}
               <a 
                 href="#contact" 
                 onClick={(e) => { e.preventDefault(); console.log("Open Contact Chat API"); }} // Prevents page jump
@@ -50,15 +45,12 @@ const FAQ = ({ faqData }) => {
           </div>
         </div>
 
-        {/* 🔥 DYNAMIC GRID LAYOUT 🔥 */}
         <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
           {faqsToDisplay.map((faq, index) => (
             <div 
-              // 🔥 PRODUCTION RULE 4: Reliable Keys
               key={faq?.id || `faq-item-${index}`} 
               className="bg-white p-8 lg:p-10 rounded-[2rem] border border-slate-200 hover:border-primary-300 hover:shadow-xl transition-all duration-300 group"
             >
-              {/* 🔥 PRODUCTION RULE 5: Optional Chaining protects against missing API fields */}
               <h3 className="text-xl font-black text-slate-900 mb-4 group-hover:text-primary-600 transition-colors leading-tight">
                 {faq?.question || "Question Placeholder"}
               </h3>

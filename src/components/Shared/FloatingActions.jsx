@@ -2,13 +2,13 @@ import React from 'react';
 import { MessageCircle, Headset, X } from 'lucide-react';
 
 const FloatingActions = () => {
-  const whatsappNumber = "+971XXXXXXXXX"; // Client ka UAE number yaha aayega
+  const whatsappNumber = "+971XXXXXXXXX";
   const message = "Hi Tricksy! I need a quote for maintenance services.";
 
   return (
     <div className="fixed bottom-8 right-8 z-[100] flex flex-col gap-4">
       
-      {/* 🟢 WhatsApp Button */}
+      {/* WhatsApp Button */}
       <a 
         href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`}
         target="_blank"
@@ -22,7 +22,7 @@ const FloatingActions = () => {
         </span>
       </a>
 
-      {/* 🔵 Live Chat Button (Placeholder for Tawk.to or Crisp) */}
+      {/* Live Chat Button  */}
       <button 
         onClick={() => console.log("Open Live Chat")}
         className="group relative flex items-center justify-center w-14 h-14 bg-zinc-950 text-white rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.2)] border border-white/10 transition-all hover:scale-110 active:scale-95"

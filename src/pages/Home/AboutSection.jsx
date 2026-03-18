@@ -1,8 +1,5 @@
 import React from 'react';
 import { CheckCircle2, Award, ArrowRight, Sparkles } from 'lucide-react';
-
-// 🔥 PRODUCTION RULE 1: STRICT LOCAL IMPORTS
-// Koi bhi external URL pure component mein nahi hai.
 import propic from "../../assets/aboutsectionimg/profileabout.jpeg"
 import propic1 from "../../assets/aboutsectionimg/profileabout2.jpeg"
 import propic2 from "../../assets/aboutsectionimg/profileabout3.jpeg"
@@ -10,55 +7,49 @@ import aboutmain from "../../assets/aboutsectionimg/aboutmain.png"
 import aboutmain2 from "../../assets/aboutsectionimg/aboutmain2.png"
 
 const AboutSection = ({ aboutData }) => {
-  // 🔥 PRODUCTION RULE 2: Graceful Fallbacks with Local Assets
-  // Agar backend se data nahi aata, toh hum ye strictly local data dikhayenge.
   const defaultContent = {
     badge: "About TRICKSY",
     title: "We Provide The Best",
     highlightText: "Home Maintenance",
     titleSuffix: "Solutions",
     description: "TRICKSY is your premium destination for home and office maintenance. From deep cleaning to expert repairs, our certified professionals ensure your space remains pristine.",
-    // Images use imported variables, not strings/URLs
-    mainImage: aboutmain, 
+    mainImage: aboutmain,
     secondaryImage: aboutmain2,
     features: ["100% Satisfaction", "Verified Professionals", "Transparent Pricing", "24/7 Support"],
     yearsExp: "10+",
     customersText: "5k+",
-    // Avatar array for dynamic rendering
     customerAvatars: [propic, propic1, propic2]
   };
 
-  // Safe merge: Incoming data overwrites defaults, but fallbacks protect against 'undefined'
   const content = aboutData ? { ...defaultContent, ...aboutData } : defaultContent;
 
   return (
     <section className="py-16 lg:py-20 bg-slate-50 overflow-hidden relative">
-      
-      {/* Light Decorative Background */}
+
       <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-emerald-50/50 rounded-full blur-3xl -z-10 translate-x-1/3 -translate-y-1/4 pointer-events-none"></div>
 
       <div className="w-full max-w-[1500px] mx-auto px-4 sm:px-6 md:px-10 lg:px-12 2xl:px-16">
-        
+
         <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
-          
-          {/* Left Side: Image Composition */}
+
+          {/*Left Side*/}
           <div className="w-full lg:w-1/2 relative px-4 sm:px-8 lg:px-0 mt-6 lg:mt-0">
             <div className="relative max-w-lg mx-auto lg:max-w-none lg:ml-auto lg:mr-8">
               <div className="absolute -top-4 -left-4 sm:-top-6 sm:-left-6 w-3/4 h-3/4 bg-slate-900 rounded-[2rem] z-0 opacity-95"></div>
-              
+
               {/* Main Image */}
               <div className="rounded-[2rem] overflow-hidden shadow-xl border-4 border-white relative z-10 w-full bg-slate-100">
-                <img 
-                  src={content.mainImage} // strictly local or strictly from backend
-                  alt="Professional Service Team" 
-                  loading="lazy" // 🔥 PRODUCTION RULE 3: Performance optimization
+                <img
+                  src={content.mainImage}
+                  alt="Professional Service Team"
+                  loading="lazy"
                   className="w-full h-[350px] sm:h-[450px] object-cover"
                 />
               </div>
 
-              {/* Smaller Overlapping Image */}
+              {/* Smaller Image */}
               <div className="absolute -bottom-8 -right-4 sm:-right-8 w-1/2 rounded-[1.5rem] overflow-hidden shadow-2xl border-[4px] sm:border-[6px] border-white z-20 bg-slate-100">
-                <img 
+                <img
                   src={content.secondaryImage}
                   alt="Service Detail Close-up"
                   loading="lazy"
@@ -79,7 +70,7 @@ const AboutSection = ({ aboutData }) => {
             </div>
           </div>
 
-          {/* Right Side: Content */}
+          {/* Right Side */}
           <div className="w-full lg:w-1/2 mt-16 lg:mt-0 relative z-10">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white font-semibold text-xs sm:text-sm mb-5 shadow-md">
               <Sparkles className="w-4 h-4 text-emerald-400" />
@@ -87,7 +78,7 @@ const AboutSection = ({ aboutData }) => {
             </div>
 
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 mb-4 leading-[1.2] tracking-tight">
-              {content.title} <br className="hidden sm:block"/>
+              {content.title} <br className="hidden sm:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-500">
                 {content.highlightText}
               </span> {content.titleSuffix}
@@ -97,7 +88,6 @@ const AboutSection = ({ aboutData }) => {
               {content.description}
             </p>
 
-            {/* 🔥 PRODUCTION RULE 4: Defensive Array Check */}
             {Array.isArray(content.features) && content.features.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-8">
                 {content.features.map((text, index) => (
@@ -114,25 +104,24 @@ const AboutSection = ({ aboutData }) => {
             {/* Action Area */}
             <div className="flex flex-col sm:flex-row items-center gap-6 pt-6 border-t border-slate-200/60">
               <button 
-                onClick={(e) => { e.preventDefault(); console.log("Navigate to About"); }} // API Action Ready
+                onClick={(e) => { e.preventDefault(); console.log("Navigate to About"); }}
                 className="group w-full sm:w-auto flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white px-7 py-3.5 sm:py-4 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-green-500/30 text-[15px] hover:-translate-y-1"
               >
                 More About Us
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </button>
 
-              {/* Trust Indicator / Avatars */}
+              {/* customers */}
               <div className="flex items-center gap-3">
-                {/* 🔥 PRODUCTION RULE 5: Dynamic Avatar rendering from assets */}
                 {Array.isArray(content.customerAvatars) && content.customerAvatars.length > 0 && (
                   <div className="flex -space-x-3">
                     {content.customerAvatars.slice(0, 3).map((avatarSrc, idx) => (
-                      <img 
+                      <img
                         key={idx}
-                        src={avatarSrc} 
-                        alt="Happy Customer Profile" 
+                        src={avatarSrc}
+                        alt="Happy Customer Profile"
                         loading="lazy"
-                        className="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover" 
+                        className="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover"
                       />
                     ))}
                     <div className="w-10 h-10 rounded-full border-2 border-white bg-slate-900 flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
@@ -150,8 +139,8 @@ const AboutSection = ({ aboutData }) => {
           </div>
         </div>
       </div>
-      
-      {/* Animations */}
+
+      {/* animation */}
       <style>{`
         @keyframes bounce-slow {
           0%, 100% { transform: translateY(-3%); }

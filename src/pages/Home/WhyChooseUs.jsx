@@ -2,7 +2,6 @@ import React from 'react';
 import { ShieldCheck, Leaf, BadgeDollarSign, Zap, Headphones, Sparkles, CheckCircle2 } from 'lucide-react';
 
 const WhyChooseUs = ({ featuresData }) => {
-  // 🔥 PRODUCTION RULE: Fallback Default Data
   const defaultFeatures = [
     { id: 1, title: 'Professional Team', iconName: 'shield', desc: 'Certified & verified experts.' },
     { id: 2, title: 'Eco-Friendly Products', iconName: 'leaf', desc: 'Safe for kids and pets.' },
@@ -11,10 +10,8 @@ const WhyChooseUs = ({ featuresData }) => {
     { id: 5, title: '24/7 Support', iconName: 'headphones', desc: 'Always here to help you.' },
   ];
 
-  // Defensive Array Check
   const displayFeatures = Array.isArray(featuresData) && featuresData.length > 0 ? featuresData : defaultFeatures;
 
-  // Safe Icon Mapping for Dynamic Data
   const getIcon = (iconName) => {
     switch(iconName?.toLowerCase()) {
       case 'shield': return ShieldCheck;
@@ -22,7 +19,7 @@ const WhyChooseUs = ({ featuresData }) => {
       case 'dollar': return BadgeDollarSign;
       case 'zap': return Zap;
       case 'headphones': return Headphones;
-      default: return CheckCircle2; // Fallback Icon
+      default: return CheckCircle2; 
     }
   };
 

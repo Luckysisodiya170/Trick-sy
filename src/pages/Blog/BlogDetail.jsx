@@ -19,7 +19,6 @@ const BlogDetail = () => {
         const data = await response.json();
         setPost(data);
       } catch (error) {
-        // Fallback search in dummy data
         const fallbackPost = dummyPosts.find((p) => p.slug === slug);
         setPost(fallbackPost);
       } finally {
@@ -52,7 +51,7 @@ const BlogDetail = () => {
           </span>
         </div>
 
-        {/* Title & Meta */}
+        {/* Title */}
         <h1 className="text-4xl md:text-6xl font-black text-zinc-950 leading-[1.05] tracking-tighter mb-8 text-pretty">
           {post.title}
         </h1>
@@ -70,18 +69,17 @@ const BlogDetail = () => {
           </div>
         </div>
 
-        {/* Responsive Image */}
+        {/* Image */}
         <figure className="relative w-full aspect-video rounded-[2.5rem] overflow-hidden mb-16 shadow-2xl">
           <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
         </figure>
 
-        {/* Content with rich typography */}
         <div className="max-w-[750px] mx-auto">
           <div className="prose prose-zinc prose-lg lg:prose-xl max-w-none">
             <p className="text-xl md:text-2xl text-zinc-600 font-medium leading-relaxed mb-10 first-letter:text-7xl first-letter:font-black first-letter:text-emerald-500 first-letter:mr-3 first-letter:float-left">
               {post.excerpt}
             </p>
-            {/* Yahan aapka baki blog content aayega */}
+            {/* remaining blog content */}
             <div className="text-zinc-700 leading-loose space-y-6">
               <p>Regular maintenance is the cornerstone of a healthy living environment. At Tricksy, we believe that a clean space fosters a clear mind and better productivity.</p>
               <blockquote className="border-l-8 border-emerald-500 bg-zinc-50 p-8 rounded-2xl text-2xl font-black text-zinc-950 italic">

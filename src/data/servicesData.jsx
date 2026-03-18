@@ -1,4 +1,3 @@
-// src/data/servicesData.jsx
 import React from 'react';
 import { 
   Sparkles, Droplets, Wind, Home, Paintbrush, Brush, 

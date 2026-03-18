@@ -13,6 +13,7 @@ import NotFound from './pages/NotFound/NotFound';
 import Contact from './pages/Contact/Contact';
 import Blog from './pages/Blog/Blog';
 import TechnicalServices from './pages/Technicalservice/TechnicalServices';
+import TechnicalDetail from './pages/Technicalservice/TechnicalDetail';
 
 // Dummy Pages
 const Login = () => <div className="flex h-screen items-center justify-center bg-gray-100">Login Page (No Header/Footer)</div>;
@@ -41,7 +42,7 @@ function App() {
 
           {/* Technical Route */}
           <Route path="/technical" element={<MainLayout><TechnicalServices /></MainLayout>} />
-          
+          <Route path="/technical-services/:serviceId" element={<MainLayout><TechnicalDetail /></MainLayout>} />
 
           {/* --- Routes JINME Header aur Footer NAHI chahiye (Auth Pages) --- */}
           <Route path="/login" element={<Login />} />
