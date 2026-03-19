@@ -23,6 +23,9 @@ import ProtectedRoute from './admin/routes/ProtectedRoute';
 import HomePageOverview from './admin/modules/Home/HomePageOverview';
 import HeroEditor from './admin/modules/Home/HeroEditor';
 import AboutEditor from './admin/modules/Home/AboutEditor';
+import ServiceEditor from './admin/modules/Home/ServiceEditor';
+import PopularEditor from './admin/modules/Home/PopularEditor';
+import WhyChooseEditor from './admin/modules/Home/WhyChooseEditor';
 // Dummy Pages
 const Login = () => <div className="flex h-screen items-center justify-center bg-gray-100">Login Page (No Header/Footer)</div>;
 
@@ -74,6 +77,9 @@ function App() {
               <Route path="pages/home" element={<HomePageOverview />} />
               <Route path="pages/home/hero" element={<HeroEditor />} />
               <Route path="pages/home/about" element={<AboutEditor />} />
+              <Route path="pages/home/services" element={<ServiceEditor />} />
+              <Route path="pages/home/popular" element={<PopularEditor />} />
+              <Route path="pages/home/why-us" element={<WhyChooseEditor />} />
 
             </Route>
           </Route>
