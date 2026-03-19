@@ -31,7 +31,9 @@ const Header = ({ navData, dropdownServices, contactInfo }) => {
     { name: 'About', path: '/about' },
     { name: 'Technical', path: '/technical' },
     { name: 'Blog', path: '/blog' },
-    { name: 'Contact', path: '/contact' }
+    { name: 'Contact', path: '/contact' },
+        { name: 'admin', path: '/admin' }
+
   ];
 
   const defaultServices = [
@@ -155,6 +157,8 @@ const Header = ({ navData, dropdownServices, contactInfo }) => {
               <Calendar className="w-4 h-4" /> Book Now
             </button>
           </div>
+
+          
 
           {/* Mobile Menu Button */}
           <button 
