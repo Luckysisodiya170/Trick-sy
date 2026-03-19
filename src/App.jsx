@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async'; 
+import { HelmetProvider } from 'react-helmet-async';
 
 import MainLayout from './components/layout/MainLayout';
 import Home from "./pages/Home/Home";
@@ -13,6 +13,16 @@ import Blog from './pages/Blog/Blog';
 import TechnicalServices from './pages/Technicalservice/TechnicalServices';
 import TechnicalDetail from './pages/Technicalservice/TechnicalDetail';
 
+
+// admin 
+
+import AdminDashboard from './admin/modules/Dashboard/AdminDashboard';
+import AdminLayout from './admin/layout/AdminLayout';
+import AdminLogin from './admin/auth/AdminLogin';
+import ProtectedRoute from './admin/routes/ProtectedRoute';
+import HomePageOverview from './admin/modules/Home/HomePageOverview';
+import HeroEditor from './admin/modules/Home/HeroEditor';
+import AboutEditor from './admin/modules/Home/AboutEditor';
 // Dummy Pages
 const Login = () => <div className="flex h-screen items-center justify-center bg-gray-100">Login Page (No Header/Footer)</div>;
 
@@ -51,6 +61,24 @@ function App() {
 
           {/* 404 ROUTE */}
           <Route path="*" element={<NotFound />} />
+
+          {/* ADMIN LOGIN */}
+          <Route path="/admin-login" element={<AdminLogin />} />
+
+          {/* SECURE ADMIN ROUTES */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+
+              {/* CMS ROUTES */}
+              <Route path="pages/home" element={<HomePageOverview />} />
+              <Route path="pages/home/hero" element={<HeroEditor />} />
+              <Route path="pages/home/about" element={<AboutEditor />} />
+
+            </Route>
+          </Route>
+
+
         </Routes>
       </Router>
     </HelmetProvider>
