@@ -120,15 +120,15 @@ const HomePageOverview = () => {
   const navigate = useNavigate();
 
   const sections = [
-    { id: 'hero', name: 'Hero', status: 'Live', icon: <LayoutTemplate size={18} />, path: '/admin/pages/home/hero', color: 'text-blue-500', bg: 'bg-blue-50' },
-    { id: 'about', name: 'About', status: 'Live', icon: <Type size={18} />, path: '/admin/pages/home/about', color: 'text-indigo-500', bg: 'bg-indigo-50' },
-    { id: 'services', name: 'Services', status: 'Live', icon: <Wrench size={18} />, path: '/admin/pages/home/services', color: 'text-emerald-500', bg: 'bg-emerald-50' },
-    { id: 'popular', name: 'Popular', status: 'Live', icon: <Star size={18} />, path: '/admin/pages/home/popular', color: 'text-amber-500', bg: 'bg-amber-50' },
-    { id: 'why-us', name: 'Why Us', status: 'Draft', icon: <ShieldCheck size={18} />, path: '/admin/pages/home/why-us', color: 'text-rose-500', bg: 'bg-rose-50' },
-    { id: 'testimonials', name: 'Reviews', status: 'Live', icon: <MessageSquare size={18} />, path: '/admin/pages/home/testimonials', color: 'text-sky-500', bg: 'bg-sky-50' },
-    { id: 'faq', name: 'FAQ', status: 'Draft', icon: <HelpCircle size={18} />, path: '/admin/pages/home/faq', color: 'text-violet-500', bg: 'bg-violet-50' },
-    { id: 'cta', name: 'Action', status: 'Live', icon: <MousePointerClick size={18} />, path: '/admin/pages/home/cta', color: 'text-fuchsia-500', bg: 'bg-fuchsia-50' },
-    { id: 'google', name: 'Google', status: 'Live', icon: <Globe size={18} />, path: '/admin/pages/home/reviews', color: 'text-cyan-500', bg: 'bg-cyan-50' },
+    { id: 'hero', name: 'Hero Banner', status: 'Live', icon: <LayoutTemplate size={18} />, path: '/admin/pages/home/hero', color: 'text-blue-500', bg: 'bg-blue-50' },
+    { id: 'about', name: 'About Us', status: 'Live', icon: <Type size={18} />, path: '/admin/pages/home/about', color: 'text-indigo-500', bg: 'bg-indigo-50' },
+    { id: 'services', name: 'Services Grid', status: 'Live', icon: <Wrench size={18} />, path: '/admin/pages/home/services', color: 'text-emerald-500', bg: 'bg-emerald-50' },
+    { id: 'popular', name: 'Popular Services', status: 'Live', icon: <Star size={18} />, path: '/admin/pages/home/popular', color: 'text-amber-500', bg: 'bg-amber-50' },
+    { id: 'why-us', name: 'Why Us Section', status: 'Live', icon: <ShieldCheck size={18} />, path: '/admin/pages/home/why-us', color: 'text-rose-500', bg: 'bg-rose-50' },
+    { id: 'testimonials', name: 'Testimonials', status: 'Live', icon: <MessageSquare size={18} />, path: '/admin/pages/home/testimonials', color: 'text-sky-500', bg: 'bg-sky-50' },
+    { id: 'faq', name: 'FAQ Section', status: 'Live', icon: <HelpCircle size={18} />, path: '/admin/pages/home/faq', color: 'text-violet-500', bg: 'bg-violet-50' },
+    { id: 'cta', name: 'Call to Action', status: 'Live', icon: <MousePointerClick size={18} />, path: '/admin/pages/home/cta', color: 'text-fuchsia-500', bg: 'bg-fuchsia-50' },
+    { id: 'google', name: 'Google Reviews', status: 'Live', icon: <Globe size={18} />, path: '/admin/pages/home/reviews', color: 'text-cyan-500', bg: 'bg-cyan-50' },
   ];
 
   return (
@@ -141,21 +141,18 @@ const HomePageOverview = () => {
             <Sparkles size={14} className="fill-blue-600" />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Live Editor</span>
           </div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Home Configuration</h1>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Home Section</h1>
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest italic">09 Modules Active</p>
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="px-5 py-2 text-xs font-bold text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all">
-            Drafts
-          </button>
+          
           <button className="px-6 py-2 text-xs font-bold text-white bg-slate-900 rounded-xl hover:shadow-xl hover:shadow-slate-200 transition-all active:scale-95">
             Publish Changes
           </button>
         </div>
       </div>
 
-      {/* --- Small & Colorful Bento Grid (Full Screen) --- */}
       <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {sections.map((sec) => (
           <div 
@@ -163,7 +160,7 @@ const HomePageOverview = () => {
             onClick={() => navigate(sec.path)}
             className="group relative bg-white p-4 rounded-[1.5rem] border border-slate-100 shadow-sm hover:border-blue-500/20 hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] hover:-translate-y-1 transition-all duration-300 cursor-pointer flex items-center gap-4"
           >
-            {/* Left Side: Colorful Icon Box */}
+            {/* Left Side */}
             <div className={`w-12 h-12 rounded-2xl ${sec.bg} ${sec.color} flex items-center justify-center transition-all duration-300 group-hover:scale-110`}>
               {sec.icon}
             </div>
@@ -183,17 +180,16 @@ const HomePageOverview = () => {
               </p>
             </div>
 
-            {/* Right Side: Arrow (Sleek) */}
+            {/* Right Side */}
             <div className="text-slate-200 group-hover:text-blue-500 group-hover:translate-x-1 transition-all duration-300">
               <ArrowRight size={16} />
             </div>
             
-            {/* Subtle Bottom Accent */}
             <div className={`absolute inset-x-6 bottom-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-transparent via-blue-500/20 to-transparent`}></div>
           </div>
         ))}
 
-        {/* Add New Module (Small Version) */}
+        {/* Add New Module Card */}
         <div className="group p-4 rounded-[1.5rem] border border-dashed border-slate-200 flex items-center justify-center gap-3 text-slate-300 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50/50 transition-all cursor-pointer">
           <Plus size={18} />
           <span className="text-[11px] font-black uppercase tracking-widest">Add Module</span>

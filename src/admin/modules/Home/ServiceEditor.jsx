@@ -1,41 +1,66 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Plus, Trash2, Image as ImageIcon, Sparkles, 
   Settings2, Droplets, Snowflake, Wrench, Zap, Home, 
-  Shield, ChevronDown, Monitor, Upload, X
+  Shield, ChevronDown, Upload, ArrowRight, Type, 
+  Eye, Edit3, Columns
 } from 'lucide-react';
 
 const ServiceEditor = () => {
   const navigate = useNavigate();
-  const [activeCard, setActiveCard] = useState(1); 
+  const [activeCard, setActiveCard] = useState(null); 
+  const [viewMode, setViewMode] = useState('split'); // 'edit', 'split', or 'preview'
 
-  const [services, setServices] = useState([
-    { id: 1, title: 'Deep Cleaning', desc: 'Complete deep cleaning for homes and offices with eco-friendly products.', icon: 'droplets', color: 'blue', img: null },
-    { id: 2, title: 'AC Maintenance', desc: 'Expert AC repair, cleaning and installation services at your doorstep.', icon: 'snowflake', color: 'cyan', img: null },
-    { id: 3, title: 'Plumbing Solutions', desc: 'Quick fixes for leaks, pipe bursts and bathroom installations.', icon: 'wrench', color: 'orange', img: null },
-  ]);
+  // --- Dynamic Section Header State ---
+  const [headerSettings, setHeaderSettings] = useState({
+    badgeText: "What We Offer",
+    headingNormal: "Explore Our",
+    headingHighlight: "Premium Services",
+    description: "We provide a wide range of professional services to keep your home and office in perfect condition. Quality and satisfaction guaranteed."
+  });
 
-  const colorThemes = {
-    blue: 'from-blue-600 to-indigo-600',
-    cyan: 'from-cyan-500 to-blue-500',
-    orange: 'from-orange-500 to-red-500',
-    yellow: 'from-amber-400 to-orange-500',
-    indigo: 'from-indigo-600 to-purple-600',
-    red: 'from-rose-500 to-pink-600',
+  const iconMap = {
+    droplets: Droplets,
+    snowflake: Snowflake,
+    wrench: Wrench,
+    zap: Zap,
+    home: Home,
+    shield: Shield,
+    sparkles: Sparkles
   };
 
-  const iconOptions = [
-    { name: 'droplets', lib: <Droplets size={18} /> },
-    { name: 'snowflake', lib: <Snowflake size={18} /> },
-    { name: 'wrench', lib: <Wrench size={18} /> },
-    { name: 'zap', lib: <Zap size={18} /> },
-    { name: 'home', lib: <Home size={18} /> },
-    { name: 'shield', lib: <Shield size={18} /> },
-  ];
+  const getColorStyle = (colorName) => {
+    const styles = {
+      blue: { gradient: 'from-emerald-500 to-emerald-600', light: 'bg-emerald-50', text: 'group-hover:text-emerald-600' }, // Green Theme
+      cyan: { gradient: 'from-cyan-400 to-cyan-500', light: 'bg-cyan-50', text: 'group-hover:text-cyan-500' },
+      orange: { gradient: 'from-orange-400 to-orange-500', light: 'bg-orange-50', text: 'group-hover:text-orange-500' },
+      yellow: { gradient: 'from-yellow-400 to-amber-500', light: 'bg-yellow-50', text: 'group-hover:text-amber-500' },
+      indigo: { gradient: 'from-indigo-500 to-indigo-600', light: 'bg-indigo-50', text: 'group-hover:text-indigo-600' },
+      red: { gradient: 'from-rose-400 to-rose-500', light: 'bg-rose-50', text: 'group-hover:text-rose-500' },
+    };
+    return styles[colorName?.toLowerCase()] || styles.blue; 
+  };
+
+  const [services, setServices] = useState([
+    { id: 1, title: 'Deep Cleaning', desc: 'Complete deep cleaning for homes and offices to ensure a spotless environment.', icon: 'droplets', color: 'blue', img: null },
+    { id: 2, title: 'AC Maintenance', desc: 'Expert AC repair, servicing, duct cleaning, and installation by certified pros.', icon: 'snowflake', color: 'cyan', img: null },
+    { id: 3, title: 'Plumbing Solutions', desc: 'Quick fixes for leaks, pipe bursts, blockages, and new bathroom fittings.', icon: 'wrench', color: 'orange', img: null },
+  ]);
+
+  // --- Handlers ---
+  const handleAddService = () => {
+    const newId = Date.now();
+    setServices([...services, { id: newId, title: 'New Service', desc: '', icon: 'sparkles', color: 'blue', img: null }]);
+    setActiveCard(newId); // Auto-open the newly added service
+  };
 
   const updateService = (id, field, value) => {
     setServices(services.map(s => s.id === id ? { ...s, [field]: value } : s));
+  };
+
+  const updateHeader = (field, value) => {
+    setHeaderSettings(prev => ({ ...prev, [field]: value }));
   };
 
   const handleImageUpload = (e, id) => {
@@ -46,206 +71,303 @@ const ServiceEditor = () => {
     }
   };
 
+  const RenderIcon = ({ name, size = 24, className = "" }) => {
+    const IconComponent = iconMap[name] || Sparkles;
+    return <IconComponent size={size} className={className} />;
+  };
+
   return (
-    <div className="min-h-screen bg-[#F1F5F9] font-sans text-slate-800 pb-10">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 pb-20">
       
-      {/* Sleek Header */}
-      <nav className="sticky top-0 z-[100] bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-3 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-3">
+      {/* --- NAVBAR --- */}
+      <nav className="sticky top-0 z-[100] bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 py-3 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-2 sm:gap-3 w-1/4 sm:w-1/3">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-xl transition-all">
             <ArrowLeft size={18} />
           </button>
-          <h1 className="text-lg font-black tracking-tight flex items-center gap-2 italic">
-            <Settings2 size={18} className="text-blue-600" /> SERVICE <span className="text-blue-500">LAB</span>
+          <h1 className="hidden lg:flex text-lg font-black tracking-tight items-center gap-2 italic leading-tight">
+            <Settings2 size={20} className="text-emerald-600" /> SERVICE <span className="text-emerald-500 leading-tight">LAB</span>
           </h1>
         </div>
-        <button className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-xl font-bold text-xs shadow-lg shadow-blue-200 hover:scale-105 transition-all">
-          Deploy Changes
-        </button>
+
+        {/* 3-Way Toggle Switch */}
+        <div className="flex bg-slate-100 p-1 sm:p-1.5 rounded-full shadow-inner w-auto justify-center">
+          <button 
+            onClick={() => setViewMode('edit')} 
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'edit' ? 'bg-white shadow-md text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            <Edit3 size={14} className="hidden sm:block" /> Edit
+          </button>
+          <button 
+            onClick={() => setViewMode('split')} 
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'split' ? 'bg-white shadow-md text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            <Columns size={14} className="hidden sm:block" /> Split
+          </button>
+          <button 
+            onClick={() => setViewMode('preview')} 
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'preview' ? 'bg-white shadow-md text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            <Eye size={14} className="hidden sm:block" /> Preview
+          </button>
+        </div>
+
+        <div className="w-1/4 sm:w-1/3 flex justify-end">
+          <button className="bg-slate-900 text-white px-4 sm:px-8 py-2.5 rounded-full font-extrabold text-[10px] sm:text-xs shadow-lg hover:bg-emerald-600 transition-all hover:-translate-y-0.5">
+            Deploy
+          </button>
+        </div>
       </nav>
 
-      <div className="max-w-[1600px] mx-auto p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div className={`mx-auto transition-all duration-500 ${
+        viewMode === 'split' 
+          ? 'max-w-[1800px] p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mt-4' 
+          : viewMode === 'edit' 
+            ? 'max-w-5xl p-4 lg:p-10 mt-4' 
+            : 'max-w-[1700px] p-4 lg:p-10 mt-4'
+      }`}>
         
-        {/* LEFT: Editor Area */}
-        <div className="lg:col-span-6 space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-black tracking-tight">Catalog <span className="text-blue-600">Manager</span></h2>
-              <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em]">Update service cards live</p>
-            </div>
-            <button 
-              onClick={() => setServices([...services, { id: Date.now(), title: 'New Service', desc: '', icon: 'sparkles', color: 'indigo', img: null }])}
-              className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-5 py-2.5 rounded-xl font-black text-xs hover:bg-slate-50 transition-all shadow-sm"
-            >
-              <Plus size={16} /> ADD SERVICE
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            {services.map((s) => (
-              <div key={s.id} className={`bg-white rounded-[2rem] border transition-all duration-300 ${activeCard === s.id ? 'border-blue-400 ring-4 ring-blue-50' : 'border-slate-200 hover:border-slate-300'}`}>
-                {/* Accordion Header */}
-                <div onClick={() => setActiveCard(s.id)} className="p-5 flex items-center justify-between cursor-pointer">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg bg-gradient-to-br ${colorThemes[s.color]}`}>
-                      {iconOptions.find(i => i.name === s.icon)?.lib || <Sparkles size={20}/>}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-base text-slate-800">{s.title || "Untitled Service"}</h3>
-                      <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest">Active Card</span>
-                    </div>
-                  </div>
-                  <ChevronDown size={20} className={`transition-transform duration-300 ${activeCard === s.id ? 'rotate-180 text-blue-500' : 'text-slate-300'}`} />
-                </div>
-
-                {/* Edit Fields */}
-                {activeCard === s.id && (
-                  <div className="px-6 pb-6 pt-2 border-t border-slate-50 grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-top-2 duration-300">
-                    <div className="space-y-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Title</label>
-                        <input value={s.title} onChange={(e) => updateService(s.id, 'title', e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm focus:bg-white focus:border-blue-400 outline-none transition-all" placeholder="e.g. Home Cleaning" />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Description</label>
-                        <textarea value={s.desc} onChange={(e) => updateService(s.id, 'desc', e.target.value)} className="w-full p-3.5 bg-slate-50 border border-slate-100 rounded-xl text-xs h-24 outline-none focus:bg-white focus:border-blue-400 resize-none font-medium leading-relaxed" placeholder="Describe the service..." />
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Upload Cover</label>
-                        <div 
-                          onClick={() => document.getElementById(`file-${s.id}`).click()}
-                          className="w-full h-28 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center relative overflow-hidden group cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all"
-                        >
-                          <input type="file" id={`file-${s.id}`} hidden onChange={(e) => handleImageUpload(e, s.id)} accept="image/*" />
-                          {s.img ? (
-                            <>
-                              <img src={s.img} className="w-full h-full object-cover" alt="preview" />
-                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-black transition-all backdrop-blur-[2px]">CHANGE IMAGE</div>
-                            </>
-                          ) : (
-                            <div className="flex flex-col items-center gap-1 text-slate-400 group-hover:text-blue-500 transition-colors">
-                              <Upload size={24} />
-                              <span className="text-[9px] font-black">DROP IMAGE HERE</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between items-end">
-                        <div className="space-y-2">
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Theme Color</label>
-                           <div className="flex gap-2.5">
-                              {Object.keys(colorThemes).map(color => (
-                                <button key={color} onClick={() => updateService(s.id, 'color', color)} className={`w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${s.color === color ? 'border-slate-800 scale-110 shadow-md' : 'border-white shadow-sm'}`} style={{ backgroundColor: color === 'cyan' ? '#22d3ee' : color === 'indigo' ? '#4f46e5' : color }} />
-                              ))}
-                           </div>
-                        </div>
-                        <button onClick={() => setServices(services.filter(x => x.id !== s.id))} className="bg-red-50 text-red-500 p-2.5 rounded-xl hover:bg-red-100 transition-all"><Trash2 size={18}/></button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* RIGHT: Laptop Preview (ENHANCED SIZE) */}
-        <div className="lg:col-span-6 h-fit lg:sticky lg:top-24">
-          <div className="flex items-center justify-between px-6 mb-4">
-             <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
-               <Monitor size={16} className="text-blue-500"/> Live Component Preview
-             </span>
-             <div className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[9px] font-black tracking-tighter">DESKTOP v1.2</div>
-          </div>
-
-          {/* Screen Body */}
-          <div className="w-full aspect-[16/10] bg-white rounded-t-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] border-x-[12px] border-t-[12px] border-slate-900 overflow-hidden flex flex-col relative">
+    
+        {(viewMode === 'edit' || viewMode === 'split') && (
+          <div className={`${viewMode === 'split' ? 'lg:col-span-5' : ''} space-y-8 animate-in fade-in zoom-in-95 duration-300`}>
             
-            {/* Webcam Hole */}
-            <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-slate-800 z-50"></div>
+            {viewMode === 'edit' && (
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-black text-slate-900 tracking-tight">Manage Services</h2>
+                <p className="text-slate-500 text-sm mt-2">Update texts, icons, images, and colors for your services section.</p>
+              </div>
+            )}
 
-            {/* Browser Nav */}
-            <div className="h-10 bg-slate-100 border-b border-slate-200 flex items-center px-5 gap-2">
-               <div className="flex gap-1.5 mr-4">
-                  <div className="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
-                  <div className="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
-                  <div className="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
-               </div>
-               <div className="flex-1 max-w-md h-6 bg-white rounded-lg border border-slate-200 flex items-center px-3">
-                 <div className="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></div>
-                 <div className="text-[10px] text-slate-400 font-bold font-mono">localhost:3000/services</div>
-               </div>
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
+              <h3 className="font-black text-slate-900 mb-6 flex items-center gap-2 text-sm uppercase tracking-tight border-b border-slate-100 pb-4">
+                 <Type size={18} className="text-emerald-500" /> Section Header Content
+              </h3>
+              <div className="space-y-5">
+                <div className={`grid grid-cols-1 ${viewMode === 'split' ? 'xl:grid-cols-2' : 'sm:grid-cols-2'} gap-5`}>
+                  <div>
+                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Normal Heading</label>
+                    <input value={headerSettings.headingNormal} onChange={(e) => updateHeader('headingNormal', e.target.value)} placeholder="Explore Our" className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none focus:border-emerald-400 focus:bg-white transition-all" />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Green Highlight</label>
+                    <input value={headerSettings.headingHighlight} onChange={(e) => updateHeader('headingHighlight', e.target.value)} placeholder="Premium Services" className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none focus:border-emerald-400 focus:bg-white transition-all" />
+                  </div>
+                </div>
+                <div className={`grid grid-cols-1 ${viewMode === 'split' ? 'xl:grid-cols-2' : 'sm:grid-cols-2'} gap-5`}>
+                  <div>
+                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Badge Text (Small Tag)</label>
+                    <input value={headerSettings.badgeText} onChange={(e) => updateHeader('badgeText', e.target.value)} placeholder="What We Offer" className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none focus:border-emerald-400 focus:bg-white transition-all" />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Main Description</label>
+                    <textarea value={headerSettings.description} onChange={(e) => updateHeader('description', e.target.value)} placeholder="Enter description..." className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl text-xs h-20 outline-none focus:border-emerald-400 focus:bg-white resize-none leading-relaxed" />
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Laptop UI Content Area (The actual Service Section) */}
-            <div className="flex-1 bg-white overflow-y-auto custom-scrollbar p-8">
-               <div className="text-center mb-10">
-                 <h4 className="text-3xl font-black text-slate-900 tracking-tight italic">Our Premium Services</h4>
-                 <p className="text-slate-400 text-xs mt-2 font-medium">Professional solutions for every need</p>
-                 <div className="w-16 h-1.5 bg-blue-600 mx-auto mt-4 rounded-full"></div>
-               </div>
+            <div className="flex items-center justify-between pt-6 border-t border-slate-200">
+              <h2 className="text-xl font-black uppercase tracking-tight text-slate-900 leading-tight">Service <span className="text-emerald-600 leading-tight">Cards</span></h2>
+              <button 
+                onClick={handleAddService}
+                className="flex items-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-xl font-black text-xs hover:bg-emerald-600 shadow-md transition-all active:scale-95 hover:-translate-y-1"
+              >
+                <Plus size={16} strokeWidth={3} /> ADD NEW SERVICE
+              </button>
+            </div>
 
-               {/* Services Grid Inside Laptop */}
-               <div className="grid grid-cols-2 gap-6">
-                 {services.map(s => (
-                   <div key={s.id} className={`group bg-white rounded-3xl overflow-hidden border-2 transition-all duration-500 ${activeCard === s.id ? 'border-blue-500 shadow-[0_20px_40px_-15px_rgba(59,130,246,0.2)] scale-105 z-10' : 'border-slate-100 opacity-60'}`}>
-                      {/* Card Image */}
-                      <div className="h-32 bg-slate-50 relative overflow-hidden">
-                        {s.img ? (
-                          <img src={s.img} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-300">
-                             <ImageIcon size={32} strokeWidth={1}/>
-                          </div>
-                        )}
-                        {/* Floating Icon */}
-                        <div className={`absolute -bottom-4 right-4 w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-xl bg-gradient-to-br ${colorThemes[s.color]} z-20`}>
-                           {iconOptions.find(i => i.name === s.icon)?.lib || <Sparkles size={20} />}
-                        </div>
+            <div className="space-y-4">
+              {services.map((s) => (
+                <div key={s.id} className={`bg-white rounded-[2rem] border transition-all duration-300 ${activeCard === s.id ? 'border-emerald-300 ring-4 ring-emerald-50 shadow-xl' : 'border-slate-200 shadow-sm hover:border-slate-300'}`}>
+                  
+                  <div onClick={() => setActiveCard(activeCard === s.id ? null : s.id)} className="p-5 sm:p-6 flex items-center justify-between cursor-pointer group">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white shadow bg-gradient-to-br ${getColorStyle(s.color).gradient}`}>
+                        <RenderIcon name={s.icon} size={20} />
                       </div>
+                      <div>
+                        <h3 className="font-bold text-base lg:text-lg text-slate-900 line-clamp-1 leading-snug">{s.title || "Untitled Service"}</h3>
+                        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Click to {activeCard === s.id ? 'Close' : 'Configure'}</span>
+                      </div>
+                    </div>
+                    <ChevronDown size={20} className={`transition-transform duration-300 ${activeCard === s.id ? 'rotate-180 text-emerald-500' : 'text-slate-300 group-hover:text-slate-600'}`} />
+                  </div>
+
+                  {activeCard === s.id && (
+                    <div className="px-6 sm:px-8 pb-8 pt-2 space-y-6 animate-in slide-in-from-top-4 duration-300 border-t border-slate-50 mt-1">
                       
-                      {/* Card Content */}
-                      <div className="p-5 pt-6">
-                        <h6 className="text-sm font-black text-slate-900 mb-1.5 line-clamp-1">{s.title || 'Untitled Service'}</h6>
-                        <p className="text-[10px] text-slate-500 font-medium line-clamp-2 leading-relaxed h-8">{s.desc || 'Waiting for description input...'}</p>
-                        <div className="mt-4 flex items-center text-[9px] font-black text-blue-600 gap-1 uppercase tracking-widest">
-                          Learn More <Plus size={10} />
+                      <div className={`grid grid-cols-1 ${viewMode === 'split' ? '' : 'sm:grid-cols-12'} gap-6`}>
+                        <div className={viewMode === 'split' ? '' : 'sm:col-span-4'}>
+                          <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Cover Photo</label>
+                          <div 
+                            onClick={() => document.getElementById(`file-${s.id}`).click()}
+                            className="w-full h-32 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center relative overflow-hidden cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/50 transition-all group"
+                          >
+                            <input type="file" id={`file-${s.id}`} hidden onChange={(e) => handleImageUpload(e, s.id)} accept="image/*" />
+                            {s.img ? (
+                                <>
+                                    <img src={s.img} className="w-full h-full object-cover" alt="service" />
+                                    <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-bold transition-opacity">Change Image</div>
+                                </>
+                            ) : (
+                                <div className="flex flex-col items-center gap-2 text-slate-400 group-hover:text-emerald-600">
+                                    <Upload size={24} />
+                                    <span className="text-xs font-bold">Upload Image</span>
+                                </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className={`${viewMode === 'split' ? '' : 'sm:col-span-8'} space-y-4`}>
+                          <div>
+                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Service Name</label>
+                            <input value={s.title} onChange={(e) => updateService(s.id, 'title', e.target.value)} placeholder="e.g. Deep Cleaning" className="w-full p-3.5 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none focus:border-emerald-400 focus:bg-white transition-all" />
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Description</label>
+                            <textarea value={s.desc} onChange={(e) => updateService(s.id, 'desc', e.target.value)} placeholder="Service description..." className="w-full p-3.5 bg-slate-50 border border-slate-100 rounded-xl text-xs h-20 outline-none focus:border-emerald-400 focus:bg-white resize-none leading-relaxed transition-all" />
+                          </div>
                         </div>
                       </div>
-                   </div>
-                 ))}
-               </div>
-            </div>
-          </div>
 
-          {/* Laptop Bottom Part (The base) */}
-          <div className="relative">
-            <div className="h-4 w-full bg-slate-800 rounded-b-[2rem] shadow-2xl relative z-10">
-              {/* Indent for opening laptop */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1.5 bg-slate-900 rounded-b-xl opacity-40"></div>
+                      <div className={`flex ${viewMode === 'split' ? 'flex-col' : 'flex-col sm:flex-row'} gap-6 p-5 bg-slate-50 rounded-2xl border border-slate-100`}>
+                        
+                        <div className={`w-full ${viewMode === 'split' ? '' : 'sm:w-1/2'}`}>
+                          <label className="text-[11px] font-black text-slate-400 uppercase mb-3 block text-center sm:text-left">1. Theme Color</label>
+                          <div className="flex flex-wrap justify-center sm:justify-start gap-3">
+                            {['blue', 'cyan', 'orange', 'yellow', 'indigo', 'red'].map(c => (
+                              <button key={c} onClick={() => updateService(s.id, 'color', c)} className={`w-8 h-8 rounded-full border-[3px] transition-all hover:scale-110 ${s.color === c ? 'border-slate-900 shadow-lg scale-110' : 'border-white shadow-sm'}`} style={{ backgroundColor: c }} />
+                            ))}
+                          </div>
+                        </div>
+
+                        {viewMode === 'split' && <div className="w-full h-px bg-slate-200"></div>}
+
+                        <div className={`w-full ${viewMode === 'split' ? '' : 'sm:w-1/2'}`}>
+                          <label className="text-[11px] font-black text-slate-400 uppercase mb-3 block text-center sm:text-left">2. Select Icon</label>
+                          <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+                            {Object.keys(iconMap).map(i => (
+                              <button key={i} onClick={() => updateService(s.id, 'icon', i)} className={`p-2.5 w-11 h-11 rounded-xl border flex items-center justify-center transition-all ${s.icon === i ? 'bg-emerald-600 text-white border-emerald-600 shadow-md scale-110' : 'bg-white border-slate-200 text-slate-400 hover:border-slate-300'}`}>
+                                <RenderIcon name={i} size={18} />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                      </div>
+
+                      <button onClick={() => setServices(services.filter(x => x.id !== s.id))} className="w-full bg-rose-50 text-rose-600 py-4 rounded-xl font-black text-xs flex items-center justify-center gap-2 hover:bg-rose-100 transition-colors">
+                        <Trash2 size={16}/> REMOVE SERVICE FROM CATALOG
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-            {/* Table Shadow */}
-            <div className="h-6 w-[90%] bg-slate-400/20 blur-xl mx-auto rounded-full -mt-2"></div>
           </div>
-        </div>
+        )}
+
+        {(viewMode === 'preview' || viewMode === 'split') && (
+          <div className={`${viewMode === 'split' ? 'lg:col-span-7 lg:sticky lg:top-24 h-fit' : ''} animate-in fade-in zoom-in-95 duration-500`}>
+            <div className="w-full bg-white rounded-3xl sm:rounded-[3rem] border-4 sm:border-[12px] border-slate-900 shadow-2xl overflow-hidden relative">
+              
+              <div className="h-8 sm:h-12 bg-slate-100 border-b border-slate-200 flex items-center px-4 sm:px-6 gap-2 relative z-50">
+                  <div className="flex gap-1.5 sm:gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#28C840]"></div>
+                  </div>
+                  <div className="flex-1 max-w-md h-6 sm:h-7 bg-white rounded-lg mx-auto border border-slate-200/70 flex items-center justify-center px-3 text-[10px] sm:text-[11px] text-slate-400 font-bold tracking-tight">
+                    {viewMode === 'split' ? 'Live Split View' : 'Live Full Preview'}
+                  </div>
+              </div>
+
+              <div className="relative overflow-y-auto h-[85vh] custom-scrollbar bg-slate-50 pb-10">
+                  
+                  <div className="absolute top-0 left-0 w-[40rem] h-[40rem] bg-emerald-400/10 rounded-full blur-[100px] pointer-events-none -translate-x-1/2 -translate-y-1/2"></div>
+                  <div className="absolute bottom-0 right-0 w-[40rem] h-[40rem] bg-emerald-400/10 rounded-full blur-[100px] pointer-events-none translate-x-1/3 translate-y-1/3"></div>
+
+                  <div className={`py-10 sm:py-12 relative z-10 w-full max-w-[1600px] mx-auto px-5 lg:px-8`}>
+                      
+                      <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full bg-white text-emerald-600 font-bold text-xs sm:text-sm mb-4 shadow-md border border-slate-100">
+                          <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" />
+                          {headerSettings.badgeText}
+                        </div>
+                        <h2 className={`text-3xl sm:text-5xl ${viewMode === 'split' ? 'lg:text-4xl xl:text-5xl' : 'lg:text-5xl xl:text-6xl'} font-extrabold text-slate-900 mb-4 sm:mb-5 tracking-tight leading-tight`}>
+                          {headerSettings.headingNormal} <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-500">{headerSettings.headingHighlight}</span>
+                        </h2>
+                        <p className="text-sm sm:text-lg text-slate-600 font-light max-w-2xl mx-auto leading-relaxed">
+                          {headerSettings.description}
+                        </p>
+                      </div>
+
+                      <div className={`grid grid-cols-1 md:grid-cols-2 ${viewMode === 'split' ? 'xl:grid-cols-2' : 'xl:grid-cols-3'} gap-6 sm:gap-8 xl:gap-8`}>
+                        {services.map((service, index) => {
+                          const style = getColorStyle(service.color);
+                          const isActive = activeCard === service.id;
+                          
+                          return (
+                            <div 
+                              key={service.id || `service-${index}`} 
+                              className={`group bg-white rounded-[1.5rem] sm:rounded-[2rem] shadow-lg hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 relative flex flex-col h-full border overflow-hidden hover:-translate-y-2 ${isActive ? 'border-emerald-300 ring-4 ring-emerald-50 scale-[1.02]' : 'border-slate-100'}`}
+                            >
+                              <div className={`relative w-full ${viewMode === 'split' ? 'h-40 sm:h-44' : 'h-44 sm:h-52'} overflow-hidden bg-slate-100`}>
+                                  {service.img ? (
+                                      <img 
+                                        src={service.img} 
+                                        alt={service.title} 
+                                        loading="lazy" 
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                      />
+                                  ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                        <ImageIcon size={64} className="sm:w-16 sm:h-16 w-12 h-12" strokeWidth={1} />
+                                      </div>
+                                  )}
+                                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-60"></div>
+                              </div>
+
+                              <div className={`absolute ${viewMode === 'split' ? 'top-[140px] sm:top-[155px]' : 'top-[155px] sm:top-[185px]'} right-6 sm:right-8 z-20`}>
+                                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br ${style.gradient} flex items-center justify-center shadow-lg shadow-${service.color || 'blue'}-500/30 border-4 border-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12`}>
+                                      <RenderIcon name={service.icon} size={20} className="sm:w-6 sm:h-6 w-5 h-5 text-white" />
+                                  </div>
+                              </div>
+
+                              <div className="relative z-10 p-5 sm:p-6 pt-8 sm:pt-8 flex flex-col flex-grow">
+                                <h3 className={`text-xl sm:text-2xl font-bold text-slate-900 mb-2 sm:mb-3 transition-colors duration-300 ${style.text} leading-snug`}>
+                                  {service.title || "Premium Service"}
+                                </h3>
+                                <p className="text-slate-600 leading-relaxed font-light text-[13px] sm:text-[15px] mb-2 whitespace-pre-line line-clamp-3">
+                                  {service.desc || "Description is not available at the moment."}
+                                </p>
+                                
+                                <div className="mt-auto pt-4 sm:pt-5">
+                                  <div className="flex items-center gap-2 text-[13px] sm:text-[14px] font-bold text-slate-700 transition-colors cursor-pointer leading-tight">
+                                    <span className={`${style.text} transition-colors duration-300 leading-tight`}>View Service Details</span>
+                                    <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 group-hover:text-current transition-colors duration-300 group-hover:translate-x-1" />
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className={`absolute bottom-0 left-0 h-1 sm:h-1.5 w-full bg-gradient-to-r ${style.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                  </div>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
 
       <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f8fafc;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
-          border-radius: 10px;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
       `}</style>
     </div>
   );

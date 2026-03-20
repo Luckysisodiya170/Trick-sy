@@ -26,6 +26,10 @@ import AboutEditor from './admin/modules/Home/AboutEditor';
 import ServiceEditor from './admin/modules/Home/ServiceEditor';
 import PopularEditor from './admin/modules/Home/PopularEditor';
 import WhyChooseEditor from './admin/modules/Home/WhyChooseEditor';
+import FAQEditor from './admin/modules/Home/FAQEditor';
+import TestimonialsEditor from './admin/modules/Home/TestimonialsEditor';
+import GoogleReviewsEditor from './admin/modules/Home/GoogleReviewsEditor';
+import CtaEditor from './admin/modules/Home/CtaEditor';
 // Dummy Pages
 const Login = () => <div className="flex h-screen items-center justify-center bg-gray-100">Login Page (No Header/Footer)</div>;
 
@@ -80,6 +84,10 @@ function App() {
               <Route path="pages/home/services" element={<ServiceEditor />} />
               <Route path="pages/home/popular" element={<PopularEditor />} />
               <Route path="pages/home/why-us" element={<WhyChooseEditor />} />
+              <Route path="pages/home/faq" element={<FAQEditor />} />
+              <Route path="pages/home/testimonials" element={<TestimonialsEditor />} />
+              <Route path="pages/home/cta" element={<CtaEditor />} />
+              <Route path="pages/home/reviews" element={<GoogleReviewsEditor />} />
 
             </Route>
           </Route>

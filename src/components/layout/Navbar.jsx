@@ -31,8 +31,7 @@ const Header = ({ navData, dropdownServices, contactInfo }) => {
     { name: 'About', path: '/about' },
     { name: 'Technical', path: '/technical' },
     { name: 'Blog', path: '/blog' },
-    { name: 'Contact', path: '/contact' },
-        { name: 'admin', path: '/admin' }
+    { name: 'Contact', path: '/contact' }
 
   ];
 
