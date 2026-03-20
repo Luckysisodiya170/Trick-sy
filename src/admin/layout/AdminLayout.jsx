@@ -9,27 +9,27 @@ const AdminLayout = () => {
   return (
     <div className="flex h-screen bg-slate-50 font-sans overflow-hidden relative">
       
-      {/* 1. Sidebar Wrapper */}
-      <div className={`transition-all duration-300 ease-in-out ${isSidebarOpen ? 'w-80' : 'w-0'} shrink-0 relative z-50 overflow-hidden lg:overflow-visible`}>
+      {/* Sidebar Wrapper: This controls the physical space on Desktop */}
+      <div className={`transition-all duration-300 ease-in-out shrink-0 z-[100] 
+        ${isSidebarOpen ? 'w-80' : 'w-0'}`}>
          <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
       </div>
 
-      {/* 2. Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 h-full">
+      <div className="flex-1 flex flex-col min-w-0 h-full relative z-10">
         <Topbar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
-
         <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar-main">
           <Outlet />
         </main>
       </div>
 
-      {/* 3. Mobile  Overlay */}
+      {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[45] lg:hidden"
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[90] lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
+
       <style jsx>{`
         .custom-scrollbar-main::-webkit-scrollbar { width: 5px; }
         .custom-scrollbar-main::-webkit-scrollbar-track { background: transparent; }

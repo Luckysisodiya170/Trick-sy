@@ -28,7 +28,7 @@ const CtaEditor = () => {
     <div className="h-screen flex flex-col bg-[#F1F5F9] overflow-hidden font-sans">
       
       {/* NAVBAR */}
-      <nav className="sticky top-0 z-[100] bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 py-3 flex items-center justify-between shadow-sm">
+      <nav className="sticky top-0 z-[20] bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 py-3 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-2 sm:gap-3 w-1/4 sm:w-1/3">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-xl transition-all">
             <ArrowLeft size={18} />

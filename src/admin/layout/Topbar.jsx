@@ -18,9 +18,7 @@ const Topbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   }, []);
 
   return (
-    // 🔥 Header ko absolute top level par rakhne ke liye z-[999]
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 relative z-[999]">
-      
+    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 relative z-[50]">
       <div className="flex items-center gap-4">
         {!isSidebarOpen && (
           <button 
@@ -46,8 +44,7 @@ const Topbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         </button>
 
         {isProfileOpen && (
-          /* 🔥 Fixed position use ki hai taaki ye poori screen ke context mein sabse upar rahe */
-          <div className="fixed top-14 right-6 w-48 bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-slate-100 overflow-hidden z-[1000] animate-in fade-in zoom-in-95 duration-150">
+          <div className="fixed top-14 right-6 w-48 bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-slate-100 overflow-hidden z-[500] animate-in fade-in zoom-in-95 duration-150">
             <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
               <p className="text-xs font-black text-slate-900">Admin User</p>
               <p className="text-[10px] text-slate-500 font-medium truncate">admin@tricksy.com</p>

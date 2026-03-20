@@ -1,9 +1,9 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
-  LayoutDashboard, Wrench, MessageSquare, LogOut, 
-  MonitorPlay, Layout, Layers, Settings, ShieldCheck,
-  UserCircle, FileText, Briefcase, Inbox, Mail, ChevronLeft
+  LayoutDashboard, ShieldCheck, MonitorPlay, UserCircle, 
+  Briefcase, FileText, Layout, Layers, MessageSquare, 
+  Inbox, Mail, Settings, LogOut, ChevronLeft 
 } from 'lucide-react';
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
@@ -15,33 +15,33 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     }`;
 
   return (
-    <aside className={`bg-[#0a0a0a] border-r border-white/5 w-80 flex-shrink-0 transition-all duration-300 flex flex-col fixed lg:relative z-50 h-full ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:hidden'}`}>
+    <aside className={`bg-[#0a0a0a] border-r border-white/5 w-80 h-full transition-all duration-300 flex flex-col z-[100]
+      ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
+      fixed inset-y-0 left-0 lg:static`}>
       
-      {/* Sidebar Header */}
       <div className="h-16 flex items-center justify-between px-6 border-b border-white/5 shrink-0">
-        <div className="flex items-center">
-          <ShieldCheck className="w-5 h-5 text-emerald-500 mr-2" />
-          <h1 className="text-lg font-black text-white tracking-tighter uppercase">
+        <div className="flex items-center overflow-hidden">
+          <ShieldCheck className="w-5 h-5 text-emerald-500 mr-2 shrink-0" />
+          <h1 className="text-lg font-black text-white tracking-tighter uppercase whitespace-nowrap">
             Tricksy<span className="text-emerald-500">_Admin</span>
           </h1>
         </div>
         
-        {/* Drawer Close Button */}
         <button 
           onClick={() => setIsSidebarOpen(false)}
           className="p-1.5 rounded-lg bg-white text-slate-900 hover:bg-emerald-500 hover:text-white transition-all shadow-lg active:scale-95"
-          title="Close Sidebar"
         >
           <ChevronLeft size={18} strokeWidth={3} />
         </button>
       </div>
       
-      <div className="flex-1 py-4 overflow-y-auto custom-scrollbar space-y-5">
+      <div className="flex-1 py-4 overflow-y-auto space-y-5 custom-scrollbar overflow-x-hidden">
+        {/* Navigation items stay same */}
         <div className="px-4">
           <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-700 mb-2 px-2">Core</p>
           <NavLink to="/admin" end className={linkClass}><LayoutDashboard size={16} /> Dashboard</NavLink>
         </div>
-
+        {/* ... rest of the nav links ... */}
         <div className="px-4">
           <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-700 mb-2 px-2">Site Layout</p>
           <div className="grid grid-cols-1 gap-0.5">
@@ -64,9 +64,9 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         </div>
       </div>
 
-      <div className="p-3 border-t border-white/5 shrink-0 space-y-0.5">
+      <div className="p-3 border-t border-white/5 shrink-0">
         <NavLink to="/admin/settings" className={linkClass}><Settings size={16} /> Settings</NavLink>
-        <button className="flex items-center gap-2.5 px-3 py-2 w-full rounded-lg text-[13px] font-semibold text-rose-500 hover:bg-rose-500/10 transition-colors">
+        <button className="flex items-center gap-2.5 px-3 py-2 w-full rounded-lg text-[13px] font-semibold text-rose-500 hover:bg-rose-500/10 transition-colors mt-1">
           <LogOut size={16} /> Logout
         </button>
       </div>
