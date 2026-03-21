@@ -1,176 +1,241 @@
-import React, { useState } from 'react';
-import { 
-  Save, ArrowLeft, Image as ImageIcon, 
-  Sparkles, Type, Globe, ShieldCheck, Star, Users 
-} from 'lucide-react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  ArrowLeft, Save, Image as ImageIcon, Sparkles, 
+  Type, Eye, ShieldCheck, Star, 
+  Upload, Settings2, Edit3, Columns, Users 
+} from 'lucide-react';
 
 const AboutHeroEditor = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+  const [viewMode, setViewMode] = useState('split'); 
+  const [activeField, setActiveField] = useState(null);
   
-  // Initial State (In real app, fetch this from your DB/API)
-  const [formData, setFormData] = useState({
+  const [heroData, setHeroData] = useState({
     badgeText: "Established 2014",
     mainTitle: "The Team That",
     highlightTitle: "Perfects Your Space.",
     subtext: "We’re not just a service company; we’re your partners in maintaining a lifestyle of comfort and uncompromising hygiene.",
-    yearsOfLegacy: "10+",
+    certifiedTitle: "Certified Experts",
+    certifiedSub: "Vetted Professionals",
+    topRatedTitle: "Top Rated",
+    topRatedSub: "4.9/5 User Rating",
+    legacyYears: "10+",
     trustedCount: "+5k",
-    certifiedLabel: "Certified Experts",
-    ratingLabel: "4.9/5 User Rating"
+    bgImage: null 
   });
 
-  const handleSave = (e) => {
-    e.preventDefault();
-    console.log("Saving About Hero Data:", formData);
-    // Add your API call here to update the database
-    alert("About Hero updated successfully!");
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setHeroData({ ...heroData, bgImage: imageUrl });
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] p-6 lg:p-12 font-sans">
-      {/* Header */}
-      <div className="max-w-5xl mx-auto mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b pb-8">
-        <div className="space-y-1">
-          <button 
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 transition-colors text-xs font-bold uppercase tracking-widest mb-4"
-          >
-            <ArrowLeft size={14} /> Back to Overview
-          </button>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Edit About Hero</h1>
-          <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest italic">Update main banner and statistics</p>
-        </div>
-        
-        <button 
-          onClick={handleSave}
-          className="px-8 py-3 bg-indigo-600 text-white rounded-2xl font-black text-xs tracking-widest hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95 flex items-center gap-2"
-        >
-          <Save size={18} /> SAVE CHANGES
-        </button>
+    <div className="min-h-screen bg-[#F8FAFC] font-sans pb-20">
+      
+     {/* --- ULTRA-RESPONSIVE NAVBAR (NO LAB) --- */}
+<nav className="sticky top-0 z-[50] bg-white border-b border-slate-200 px-3 lg:px-6 py-3 flex items-center justify-between shadow-sm gap-2">
+  
+  {/* Left: Simplified Logo & Back */}
+  <div className="flex items-center gap-1.5 lg:gap-3 flex-shrink-0">
+    <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-xl transition-all">
+      <ArrowLeft size={18} />
+    </button>
+    <h1 className="text-sm lg:text-lg font-black tracking-tighter italic flex items-center gap-1.5">
+      <Settings2 size={18} className="text-indigo-600 lg:w-5 lg:h-5" /> 
+      <span className="tracking-tight">ABOUT</span> 
+    </h1>
+  </div>
+
+  {/* Middle: View Modes (Mobile Optimized) */}
+  <div className="flex bg-slate-100 p-1 rounded-full flex-shrink-1 mx-2">
+    {[{ id: 'edit', icon: Edit3, label: 'Edit' }, 
+       { id: 'split', icon: Columns, label: 'Split' }, 
+       { id: 'preview', icon: Eye, label: 'Preview' }
+    ].map((mode) => (
+      <button 
+        key={mode.id} 
+        onClick={() => setViewMode(mode.id)} 
+        className={`flex items-center gap-1.5 px-3 lg:px-5 py-1.5 lg:py-2 rounded-full text-[10px] lg:text-xs font-bold transition-all whitespace-nowrap ${
+          viewMode === mode.id ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500'
+        }`}
+      >
+        <mode.icon size={12} className="lg:w-[14px] lg:h-[14px]" /> 
+        <span className={`${viewMode === mode.id ? 'inline' : 'hidden sm:inline'}`}>{mode.label}</span>
+      </button>
+    ))}
+  </div>
+
+  {/* Right: Action Button (Icon only on mobile) */}
+  <button className="bg-slate-900 text-white p-2.5 lg:px-6 lg:py-2.5 rounded-full font-extrabold text-[10px] lg:text-xs flex items-center gap-2 shadow-lg hover:bg-indigo-600 transition-all flex-shrink-0">
+    <Save size={16} className="lg:w-[14px] lg:h-[14px]" /> 
+    <span className="hidden md:inline">Save Changes</span>
+  </button>
+</nav>
+      <div className={`mx-auto transition-all duration-500 ${viewMode === 'split' ? 'max-w-[1800px] p-6 grid grid-cols-1 lg:grid-cols-12 gap-10' : 'max-w-4xl p-6'}`}>
+
+        {/* --- EDITOR SIDE --- */}
+        {(viewMode === 'edit' || viewMode === 'split') && (
+          <div className={`${viewMode === 'split' ? 'lg:col-span-5' : ''} space-y-6`}>
+            
+            {/* Main Content Card */}
+            <section className="bg-white rounded-[2rem] border border-slate-200 p-8 shadow-sm space-y-6">
+              <h3 className="font-black text-slate-900 flex items-center gap-2 text-sm uppercase tracking-tight border-b pb-4">
+                <Type size={16} className="text-indigo-500" /> Header & Text
+              </h3>
+              <div className="space-y-4">
+                <input value={heroData.badgeText} onChange={(e) => setHeroData({...heroData, badgeText: e.target.value})} placeholder="Badge Text" className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none focus:border-indigo-400" />
+                <input value={heroData.mainTitle} onChange={(e) => setHeroData({...heroData, mainTitle: e.target.value})} placeholder="Main Title" className="w-full p-4 bg-slate-50 border border-slate-100 rounded-t-xl font-bold text-sm outline-none" />
+                <input value={heroData.highlightTitle} onChange={(e) => setHeroData({...heroData, highlightTitle: e.target.value})} placeholder="Highlight Title" className="w-full p-4 bg-emerald-50/50 border border-emerald-100 rounded-b-xl font-black text-emerald-700 outline-none" />
+                <textarea rows="3" value={heroData.subtext} onChange={(e) => setHeroData({...heroData, subtext: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium outline-none resize-none" />
+              </div>
+            </section>
+
+            {/* Feature Badges Editor (Certified & Top Rated) */}
+            <section className="bg-white rounded-[2rem] border border-slate-200 p-8 shadow-sm space-y-6">
+              <h3 className="font-black text-slate-900 flex items-center gap-2 text-sm uppercase tracking-tight border-b pb-4">
+                <ShieldCheck size={16} className="text-emerald-500" /> Feature Badges
+              </h3>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
+                   <p className="text-[10px] font-black text-emerald-600 uppercase">Expert Badge</p>
+                   <input value={heroData.certifiedTitle} onChange={(e) => setHeroData({...heroData, certifiedTitle: e.target.value})} className="w-full bg-transparent font-bold text-sm outline-none" />
+                   <input value={heroData.certifiedSub} onChange={(e) => setHeroData({...heroData, certifiedSub: e.target.value})} className="w-full bg-transparent text-xs text-slate-500 outline-none" />
+                </div>
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
+                   <p className="text-[10px] font-black text-amber-600 uppercase">Rating Badge</p>
+                   <input value={heroData.topRatedTitle} onChange={(e) => setHeroData({...heroData, topRatedTitle: e.target.value})} className="w-full bg-transparent font-bold text-sm outline-none" />
+                   <input value={heroData.topRatedSub} onChange={(e) => setHeroData({...heroData, topRatedSub: e.target.value})} className="w-full bg-transparent text-xs text-slate-500 outline-none" />
+                </div>
+              </div>
+            </section>
+
+            {/* Background Image Upload */}
+            <section className="bg-white rounded-[2rem] border border-slate-200 p-8 shadow-sm space-y-4">
+              <h3 className="font-black text-slate-900 text-sm uppercase tracking-tight">Banner Background</h3>
+              <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
+              <div onClick={() => fileInputRef.current.click()} className="w-full h-40 border-2 border-dashed border-slate-200 bg-slate-50 rounded-2xl flex flex-col items-center justify-center group hover:bg-indigo-50 transition-all cursor-pointer overflow-hidden relative">
+                {heroData.bgImage ? (
+                  <>
+                    <img src={heroData.bgImage} className="w-full h-full object-cover opacity-50" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 text-white font-bold text-xs opacity-0 group-hover:opacity-100 transition-opacity">Change Image</div>
+                  </>
+                ) : (
+                  <div className="text-center">
+                    <Upload className="mx-auto text-slate-300 mb-2" />
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Upload Banner Image</p>
+                  </div>
+                )}
+              </div>
+            </section>
+          </div>
+        )}
+
+     {/* --- LIVE PREVIEW --- */}
+{(viewMode === 'preview' || viewMode === 'split') && (
+  <div className={`${viewMode === 'split' ? 'lg:col-span-7' : 'w-full'} h-fit animate-in fade-in max-w-full overflow-hidden`}>
+    <div className="w-full bg-slate-900 rounded-[2rem] border-[6px] border-slate-950 shadow-2xl overflow-hidden relative">
+      
+      {/* Browser Header */}
+      <div className="flex h-6 bg-slate-800/50 items-center px-4 gap-1.5">
+        <div className="w-1.5 h-1.5 rounded-full bg-red-500/40" />
+        <div className="w-1.5 h-1.5 rounded-full bg-amber-500/40" />
+        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/40" />
       </div>
 
-      <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* --- HERO SECTION --- */}
+      <section className="relative min-h-[500px] lg:min-h-[600px] bg-black overflow-hidden flex items-center py-10 lg:py-16 px-5 lg:px-8">
         
-        {/* LEFT COLUMN: Main Text Content */}
-        <div className="lg:col-span-2 space-y-8">
-          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
-            <div className="flex items-center gap-3 border-b border-slate-50 pb-4">
-              <Type className="text-indigo-500" size={20} />
-              <h2 className="font-black text-slate-800 uppercase tracking-wider text-sm">Text Content</h2>
+        {heroData.bgImage && (
+          <img src={heroData.bgImage} className="absolute inset-0 w-full h-full object-cover opacity-60" alt="Background" />
+        )}
+        <div className="absolute inset-0 bg-black/60"></div>
+
+        {/* Responsive Grid - Stacks on Mobile/Small Split View */}
+        <div className="relative z-10 w-full flex flex-col lg:flex-row gap-8 lg:gap-6 items-center">
+          
+          {/* LEFT CONTENT: Flexible sizing */}
+          <div className="w-full lg:w-[60%] space-y-4 lg:space-y-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span className="text-emerald-500 font-bold text-[8px] lg:text-[10px] uppercase tracking-widest">{heroData.badgeText}</span>
             </div>
 
-            <div className="grid grid-cols-1 gap-6">
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Badge Text (Green Label)</label>
-                <input 
-                  value={formData.badgeText}
-                  onChange={(e) => setFormData({...formData, badgeText: e.target.value})}
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 ring-indigo-100 outline-none" 
-                />
-              </div>
+            {/* Title: Fluid text sizing to prevent overflow */}
+            <h1 className="text-2xl sm:text-3xl lg:text-5xl font-black text-white leading-[1.1] tracking-tighter break-words">
+              {heroData.mainTitle} <br />
+              <span className="text-emerald-500">{heroData.highlightTitle}</span>
+            </h1>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Main Title (White)</label>
-                  <input 
-                    value={formData.mainTitle}
-                    onChange={(e) => setFormData({...formData, mainTitle: e.target.value})}
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 ring-indigo-100 outline-none" 
-                  />
+            <p className="text-zinc-400 text-[10px] lg:text-sm max-w-md font-medium leading-relaxed">
+              {heroData.subtext}
+            </p>
+
+            {/* 🟢 FIXED BADGES: Dynamic Sizing to stay inside 🟢 */}
+            <div className="flex flex-row items-center gap-2 lg:gap-4 pt-2 w-full">
+              
+              {/* Badge 1 */}
+              <div className="flex flex-1 items-center gap-2 bg-white p-2 lg:p-3 rounded-xl shadow-lg border border-zinc-100 min-w-0">
+                <div className="flex-shrink-0 w-7 h-7 lg:w-9 lg:h-9 rounded-lg bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                  <ShieldCheck size={14} className="text-emerald-500 lg:w-5 lg:h-5" />
                 </div>
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Highlight Title (Green)</label>
-                  <input 
-                    value={formData.highlightTitle}
-                    onChange={(e) => setFormData({...formData, highlightTitle: e.target.value})}
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-2 ring-indigo-100 outline-none text-emerald-600" 
-                  />
+                <div className="min-w-0 overflow-hidden">
+                  <p className="text-zinc-950 font-black text-[8px] lg:text-[10px] uppercase truncate leading-none">{heroData.certifiedTitle}</p>
+                  <p className="text-zinc-500 text-[7px] lg:text-[9px] font-medium mt-1 truncate">{heroData.certifiedSub}</p>
                 </div>
               </div>
 
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Subtext / Description</label>
-                <textarea 
-                  rows={4}
-                  value={formData.subtext}
-                  onChange={(e) => setFormData({...formData, subtext: e.target.value})}
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium leading-relaxed focus:ring-2 ring-indigo-100 outline-none resize-none"
-                />
+              {/* Badge 2 */}
+              <div className="flex flex-1 items-center gap-2 bg-white p-2 lg:p-3 rounded-xl shadow-lg border border-zinc-100 min-w-0">
+                <div className="flex-shrink-0 w-7 h-7 lg:w-9 lg:h-9 rounded-lg bg-amber-50 flex items-center justify-center border border-amber-100">
+                  <Star size={14} className="text-amber-500 lg:w-5 lg:h-5" />
+                </div>
+                <div className="min-w-0 overflow-hidden">
+                  <p className="text-zinc-950 font-black text-[8px] lg:text-[10px] uppercase truncate leading-none">{heroData.topRatedTitle}</p>
+                  <p className="text-zinc-500 text-[7px] lg:text-[9px] font-medium mt-1 truncate">{heroData.topRatedSub}</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* RIGHT SIDE CARD: Responsive Scale */}
+          <div className="w-full lg:w-[40%] flex justify-center lg:justify-end mt-4 lg:mt-0">
+            <div className="relative w-full max-w-[240px] lg:max-w-[280px] group">
+              <div className="absolute top-2 left-2 w-full h-full bg-emerald-500 rounded-[2rem]"></div>
+              <div className="relative bg-white p-6 lg:p-8 rounded-[2rem] text-center shadow-xl border border-zinc-50">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-emerald-50 flex items-center justify-center mx-auto mb-3 border border-emerald-100">
+                  <Users size={20} className="text-emerald-500 lg:w-6 lg:h-6" />
+                </div>
+                <h3 className="text-3xl lg:text-5xl font-black text-zinc-950 mb-1">{heroData.legacyYears}</h3>
+                <p className="text-zinc-400 font-bold uppercase tracking-widest text-[7px] lg:text-[9px] mb-4">Years Legacy</p>
+                
+                <div className="flex justify-center items-center -space-x-2 mb-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="w-8 h-8 lg:w-10 lg:h-10 rounded-full border-2 border-white bg-slate-200" />
+                  ))}
+                  <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full border-2 border-white bg-zinc-950 flex items-center justify-center text-[8px] lg:text-[10px] font-black text-white relative z-10">
+                    {heroData.trustedCount}
+                  </div>
+                </div>
+
+                <div className="inline-block px-3 py-1 bg-emerald-50 rounded-lg border border-emerald-100">
+                  <p className="text-emerald-600 font-black text-[7px] lg:text-[9px] uppercase tracking-widest">Trusted by Families</p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Media Section */}
-          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
-            <div className="flex items-center gap-3 border-b border-slate-50 pb-4">
-              <ImageIcon className="text-indigo-500" size={20} />
-              <h2 className="font-black text-slate-800 uppercase tracking-wider text-sm">Media & Background</h2>
-            </div>
-            
-            <div className="flex items-center justify-center border-2 border-dashed border-slate-200 rounded-[2rem] p-12 bg-slate-50 hover:bg-slate-100/50 transition-colors cursor-pointer group">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm group-hover:scale-110 transition-transform">
-                  <ImageIcon className="text-slate-300" />
-                </div>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Change Background Image</p>
-                <p className="text-[10px] text-slate-400 mt-2 font-medium">Recommended: 1920x1080 (JPG/PNG)</p>
-              </div>
-            </div>
-          </div>
         </div>
-
-        {/* RIGHT COLUMN: Stats & Cards */}
-        <div className="space-y-8">
-          <div className="bg-slate-900 p-8 rounded-[2.5rem] shadow-xl text-white space-y-6">
-            <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-              <Sparkles className="text-emerald-400" size={20} />
-              <h2 className="font-black uppercase tracking-wider text-sm text-white">Floating Stats</h2>
-            </div>
-
-            <div className="space-y-6">
-              <div>
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Legacy Years</label>
-                <div className="relative">
-                  <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500" size={18} />
-                  <input 
-                    value={formData.yearsOfLegacy}
-                    onChange={(e) => setFormData({...formData, yearsOfLegacy: e.target.value})}
-                    className="w-full pl-12 pr-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-black outline-none focus:bg-white/10 transition-all" 
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Trusted Counter</label>
-                <input 
-                  value={formData.trustedCount}
-                  onChange={(e) => setFormData({...formData, trustedCount: e.target.value})}
-                  className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-black outline-none focus:bg-white/10 transition-all" 
-                />
-              </div>
-
-              <div className="pt-4 space-y-4">
-                 <div className="p-4 bg-white/5 rounded-2xl border border-white/10 flex items-center gap-3">
-                    <ShieldCheck className="text-emerald-400" size={18} />
-                    <span className="text-[11px] font-bold uppercase tracking-widest">Certified Labels Active</span>
-                 </div>
-                 <div className="p-4 bg-white/5 rounded-2xl border border-white/10 flex items-center gap-3">
-                    <Star className="text-amber-400" size={18} />
-                    <span className="text-[11px] font-bold uppercase tracking-widest">Live Rating Sync</span>
-                 </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-indigo-50 p-8 rounded-[2.5rem] border border-indigo-100">
-             <h3 className="font-black text-indigo-900 text-xs uppercase tracking-widest mb-4">Pro Tip</h3>
-             <p className="text-indigo-700/70 text-[11px] font-medium leading-relaxed">
-               Title aur Subtext ko short rakhein taaki mobile devices par layout clean dikhe. Banner image hamesha "Dark" tone ki use karein taaki white text easily read ho sake.
-             </p>
-          </div>
-        </div>
-
+      </section>
+    </div>
+  </div>
+)}
+   
       </div>
     </div>
   );
