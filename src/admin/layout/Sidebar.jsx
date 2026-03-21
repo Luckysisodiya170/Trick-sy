@@ -3,73 +3,145 @@ import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, ShieldCheck, MonitorPlay, UserCircle, 
   Briefcase, FileText, Layout, Layers, MessageSquare, 
-  Inbox, Mail, Settings, LogOut, ChevronLeft 
+  Inbox, Mail, Settings, LogOut, ChevronLeft, ChevronRight 
 } from 'lucide-react';
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
+  
   const linkClass = ({ isActive }) => 
-    `flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-semibold transition-all ${
+    `flex items-center ${isSidebarOpen ? 'justify-start px-3' : 'justify-center px-0'} py-2.5 rounded-lg text-[13px] font-semibold transition-all duration-300 relative group ${
       isActive 
         ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
         : 'text-slate-500 hover:text-white hover:bg-white/5'
     }`;
 
   return (
-    <aside className={`bg-[#0a0a0a] border-r border-white/5 w-80 h-full transition-all duration-300 flex flex-col z-[100]
-      ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
-      fixed inset-y-0 left-0 lg:static`}>
+    <aside 
+      className={`bg-[#0a0a0a] border-r border-white/5 h-full transition-all duration-300 flex flex-col z-[100] fixed inset-y-0 left-0 lg:static shrink-0
+        ${isSidebarOpen ? 'w-64 lg:w-72 translate-x-0' : 'w-20 -translate-x-full lg:translate-x-0'}
+      `}
+    >
       
-      <div className="h-16 flex items-center justify-between px-6 border-b border-white/5 shrink-0">
-        <div className="flex items-center overflow-hidden">
-          <ShieldCheck className="w-5 h-5 text-emerald-500 mr-2 shrink-0" />
-          <h1 className="text-lg font-black text-white tracking-tighter uppercase whitespace-nowrap">
+      {/* Header */}
+      <div className={`h-16 flex items-center border-b border-white/5 shrink-0 transition-all duration-300 ${isSidebarOpen ? 'justify-between px-6' : 'justify-center px-0'}`}>
+        
+        {/* Logo Area */}
+        <div className="flex items-center overflow-hidden h-full">
+          <ShieldCheck className="w-6 h-6 text-emerald-500 shrink-0" />
+          <h1 className={`text-lg font-black text-white tracking-tighter uppercase whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'ml-2 opacity-100 max-w-[200px]' : 'ml-0 opacity-0 max-w-0'}`}>
             Tricksy<span className="text-emerald-500">_Admin</span>
           </h1>
         </div>
         
-        <button 
-          onClick={() => setIsSidebarOpen(false)}
-          className="p-1.5 rounded-lg bg-white text-slate-900 hover:bg-emerald-500 hover:text-white transition-all shadow-lg active:scale-95"
-        >
-          <ChevronLeft size={18} strokeWidth={3} />
+        {/* Close Button - ONLY shows when sidebar is OPEN */}
+        {isSidebarOpen && (
+          <button 
+            onClick={() => setIsSidebarOpen(false)}
+            className="p-1.5 rounded-lg bg-white/10 text-slate-300 hover:bg-emerald-500 hover:text-white transition-all shadow-lg active:scale-95 flex items-center justify-center shrink-0"
+          >
+            <ChevronLeft size={18} strokeWidth={2.5} />
+          </button>
+        )}
+      </div>
+      
+      {/* Navigation Links */}
+      {/* FIX: Removed 'custom-scrollbar' and added Tailwind classes to completely hide the scrollbar track and thumb */}
+      <div className="flex-1 py-6 overflow-y-auto space-y-6 overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        
+        {/* Core Section */}
+        <div className="px-3">
+          <p className={`text-[9px] font-bold uppercase tracking-[0.2em] text-slate-700 whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'px-3 mb-2 opacity-100 max-h-10' : 'px-0 mb-0 opacity-0 max-h-0'}`}>Core</p>
+          <NavLink to="/admin" end className={linkClass}>
+            <LayoutDashboard size={18} className="shrink-0" /> 
+            <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'ml-2.5 opacity-100 max-w-[200px]' : 'ml-0 opacity-0 max-w-0'}`}>Dashboard</span>
+            
+            {/* Tooltip - Pushed to left-16 so it sits neatly outside the bar */}
+            {!isSidebarOpen && <span className="absolute left-16 bg-slate-800 text-white text-[10px] px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[200]">Dashboard</span>}
+          </NavLink>
+        </div>
+
+        {/* Site Layout Section */}
+        <div className="px-3">
+          <p className={`text-[9px] font-bold uppercase tracking-[0.2em] text-slate-700 whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'px-3 mb-2 opacity-100 max-h-10' : 'px-0 mb-0 opacity-0 max-h-0'}`}>Site Layout</p>
+          <div className="grid grid-cols-1 gap-1">
+            <NavLink to="/admin/pages/home" className={linkClass}>
+              <MonitorPlay size={18} className="shrink-0" /> 
+              <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'ml-2.5 opacity-100 max-w-[200px]' : 'ml-0 opacity-0 max-w-0'}`}>Home Page</span>
+              {!isSidebarOpen && <span className="absolute left-16 bg-slate-800 text-white text-[10px] px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[200]">Home Page</span>}
+            </NavLink>
+            
+            <NavLink to="/admin/pages/about" className={linkClass}>
+              <UserCircle size={18} className="shrink-0" /> 
+              <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'ml-2.5 opacity-100 max-w-[200px]' : 'ml-0 opacity-0 max-w-0'}`}>About Us</span>
+              {!isSidebarOpen && <span className="absolute left-16 bg-slate-800 text-white text-[10px] px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[200]">About Us</span>}
+            </NavLink>
+            
+            <NavLink to="/admin/pages/services" className={linkClass}>
+              <Briefcase size={18} className="shrink-0" /> 
+              <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'ml-2.5 opacity-100 max-w-[200px]' : 'ml-0 opacity-0 max-w-0'}`}>Services Page</span>
+              {!isSidebarOpen && <span className="absolute left-16 bg-slate-800 text-white text-[10px] px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[200]">Services Page</span>}
+            </NavLink>
+            
+            <NavLink to="/admin/pages/blog" className={linkClass}>
+              <FileText size={18} className="shrink-0" /> 
+              <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'ml-2.5 opacity-100 max-w-[200px]' : 'ml-0 opacity-0 max-w-0'}`}>Blog Page</span>
+              {!isSidebarOpen && <span className="absolute left-16 bg-slate-800 text-white text-[10px] px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[200]">Blog Page</span>}
+            </NavLink>
+            
+            <NavLink to="/admin/pages/technical" className={linkClass}>
+              <Layout size={18} className="shrink-0" /> 
+              <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'ml-2.5 opacity-100 max-w-[200px]' : 'ml-0 opacity-0 max-w-0'}`}>Technical Detail</span>
+              {!isSidebarOpen && <span className="absolute left-16 bg-slate-800 text-white text-[10px] px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[200]">Technical Detail</span>}
+            </NavLink>
+            
+            <NavLink to="/admin/pages/contact" className={linkClass}>
+              <Layers size={18} className="shrink-0" /> 
+              <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'ml-2.5 opacity-100 max-w-[200px]' : 'ml-0 opacity-0 max-w-0'}`}>Contact Page</span>
+              {!isSidebarOpen && <span className="absolute left-16 bg-slate-800 text-white text-[10px] px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[200]">Contact Page</span>}
+            </NavLink>
+          </div>
+        </div>
+
+        {/* Interactions Section */}
+        <div className="px-3">
+          <p className={`text-[9px] font-bold uppercase tracking-[0.2em] text-slate-700 whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'px-3 mb-2 opacity-100 max-h-10' : 'px-0 mb-0 opacity-0 max-h-0'}`}>Interactions</p>
+          <div className="grid grid-cols-1 gap-1">
+            <NavLink to="/admin/leads" className={linkClass}>
+              <MessageSquare size={18} className="shrink-0" /> 
+              <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'ml-2.5 opacity-100 max-w-[200px]' : 'ml-0 opacity-0 max-w-0'}`}>Service Bookings</span>
+              {!isSidebarOpen && <span className="absolute left-16 bg-slate-800 text-white text-[10px] px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[200]">Service Bookings</span>}
+            </NavLink>
+            
+            <NavLink to="/admin/enquiries" className={linkClass}>
+              <Inbox size={18} className="shrink-0" /> 
+              <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'ml-2.5 opacity-100 max-w-[200px]' : 'ml-0 opacity-0 max-w-0'}`}>Contact Enquiries</span>
+              {!isSidebarOpen && <span className="absolute left-16 bg-slate-800 text-white text-[10px] px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[200]">Contact Enquiries</span>}
+            </NavLink>
+            
+            <NavLink to="/admin/newsletter" className={linkClass}>
+              <Mail size={18} className="shrink-0" /> 
+              <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'ml-2.5 opacity-100 max-w-[200px]' : 'ml-0 opacity-0 max-w-0'}`}>Newsletter Subs</span>
+              {!isSidebarOpen && <span className="absolute left-16 bg-slate-800 text-white text-[10px] px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[200]">Newsletter Subs</span>}
+            </NavLink>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Area */}
+      <div className="p-3 border-t border-white/5 shrink-0 flex flex-col gap-1">
+        <NavLink to="/admin/settings" className={linkClass}>
+          <Settings size={18} className="shrink-0" /> 
+          <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'ml-2.5 opacity-100 max-w-[200px]' : 'ml-0 opacity-0 max-w-0'}`}>Settings</span>
+          {!isSidebarOpen && <span className="absolute left-16 bg-slate-800 text-white text-[10px] px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[200]">Settings</span>}
+        </NavLink>
+        
+        <button className={`flex items-center ${isSidebarOpen ? 'justify-start px-3' : 'justify-center px-0'} py-2.5 w-full rounded-lg text-[13px] font-semibold text-rose-500 hover:bg-rose-500/10 transition-colors relative group`}>
+          <LogOut size={18} className="shrink-0" /> 
+          <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'ml-2.5 opacity-100 max-w-[200px]' : 'ml-0 opacity-0 max-w-0'}`}>Logout</span>
+          {!isSidebarOpen && <span className="absolute left-16 bg-rose-500 text-white text-[10px] px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[200]">Logout</span>}
         </button>
       </div>
       
-      <div className="flex-1 py-4 overflow-y-auto space-y-5 custom-scrollbar overflow-x-hidden">
-        {/* Navigation items stay same */}
-        <div className="px-4">
-          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-700 mb-2 px-2">Core</p>
-          <NavLink to="/admin" end className={linkClass}><LayoutDashboard size={16} /> Dashboard</NavLink>
-        </div>
-        {/* ... rest of the nav links ... */}
-        <div className="px-4">
-          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-700 mb-2 px-2">Site Layout</p>
-          <div className="grid grid-cols-1 gap-0.5">
-            <NavLink to="/admin/pages/home" className={linkClass}><MonitorPlay size={16} /> Home Page</NavLink>
-            <NavLink to="/admin/pages/about" className={linkClass}><UserCircle size={16} /> About Us</NavLink>
-            <NavLink to="/admin/pages/services" className={linkClass}><Briefcase size={16} /> Services Page</NavLink>
-            <NavLink to="/admin/pages/blog" className={linkClass}><FileText size={16} /> Blog Page</NavLink>
-            <NavLink to="/admin/pages/technical" className={linkClass}><Layout size={16} /> Technical Detail</NavLink>
-            <NavLink to="/admin/pages/contact" className={linkClass}><Layers size={16} /> Contact Page</NavLink>
-          </div>
-        </div>
-
-        <div className="px-4">
-          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-700 mb-2 px-2">Interactions</p>
-          <div className="space-y-0.5">
-            <NavLink to="/admin/leads" className={linkClass}><MessageSquare size={16} /> Service Bookings</NavLink>
-            <NavLink to="/admin/enquiries" className={linkClass}><Inbox size={16} /> Contact Enquiries</NavLink>
-            <NavLink to="/admin/newsletter" className={linkClass}><Mail size={16} /> Newsletter Subs</NavLink>
-          </div>
-        </div>
-      </div>
-
-      <div className="p-3 border-t border-white/5 shrink-0">
-        <NavLink to="/admin/settings" className={linkClass}><Settings size={16} /> Settings</NavLink>
-        <button className="flex items-center gap-2.5 px-3 py-2 w-full rounded-lg text-[13px] font-semibold text-rose-500 hover:bg-rose-500/10 transition-colors mt-1">
-          <LogOut size={16} /> Logout
-        </button>
-      </div>
     </aside>
   );
 };

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Sparkles, Calendar, Phone, ArrowRight, Shield, 
-  Edit3, Columns, Eye, Type, MousePointer2, Settings2,Save,
+  Edit3, Columns, Eye, Type, MousePointer2, Settings2, Save,
   Monitor, Smartphone
 } from 'lucide-react';
 
@@ -25,10 +25,10 @@ const CtaEditor = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-[#F1F5F9] overflow-hidden font-sans">
+    <div className="h-screen flex flex-col bg-[#F1F5F9] font-sans">
       
       {/* NAVBAR */}
-      <nav className="sticky top-0 z-[20] bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 py-3 flex items-center justify-between shadow-sm">
+      <nav className="sticky top-0 z-[50] bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 py-3 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-2 sm:gap-3 w-1/4 sm:w-1/3">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-xl transition-all">
             <ArrowLeft size={18} />
@@ -67,12 +67,13 @@ const CtaEditor = () => {
         </div>
       </nav>
 
-      <div className="flex flex-1 overflow-hidden">
+      {/* MAIN CONTENT AREA  */}
+      <div className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row">
         
         {/* LEFT: EDITOR */}
         {(viewMode === 'edit' || viewMode === 'split') && (
-          <div className={`${viewMode === 'split' ? 'w-[420px]' : 'w-full'} overflow-y-auto p-6 lg:p-10 bg-[#F8FAFC] custom-scrollbar border-r border-slate-200`}>
-            <div className="max-w-3xl mx-auto space-y-8">
+          <div className={`${viewMode === 'split' ? 'w-full lg:w-[420px] lg:border-r border-slate-200 lg:h-full lg:overflow-y-auto' : 'w-full h-full lg:overflow-y-auto'} p-4 md:p-6 lg:p-10 bg-[#F8FAFC] custom-scrollbar`}>
+            <div className="max-w-3xl mx-auto space-y-6 md:space-y-8 pb-10">
               
               <div className="flex flex-col gap-1">
                 <h2 className="text-xl font-black text-slate-900">CTA Settings</h2>
@@ -80,7 +81,7 @@ const CtaEditor = () => {
               </div>
 
               {/* Main Content Card */}
-              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+              <div className="bg-white p-5 md:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
                 <div className="flex items-center gap-2 text-[10px] font-black text-emerald-600 uppercase tracking-widest border-b border-slate-50 pb-4">
                   <Type size={14} /> Typography
                 </div>
@@ -108,13 +109,13 @@ const CtaEditor = () => {
               </div>
 
               {/* Buttons Card */}
-              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+              <div className="bg-white p-5 md:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
                 <div className="flex items-center gap-2 text-[10px] font-black text-emerald-600 uppercase tracking-widest border-b border-slate-50 pb-4">
                   <MousePointer2 size={14} /> Actions
                 </div>
                 
                 <div className="grid grid-cols-1 gap-4">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1.5 block">Primary Btn</label>
                       <input value={content.primaryButtonText} onChange={(e) => handleUpdate('primaryButtonText', e.target.value)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-black outline-none" />
@@ -137,52 +138,54 @@ const CtaEditor = () => {
 
         {/* RIGHT: PREVIEW  */}
         {(viewMode === 'preview' || viewMode === 'split') && (
-          <div className="flex-1 bg-[#CBD5E1] p-4 lg:p-8 flex flex-col items-center justify-center relative overflow-hidden">
+          <div className={`${viewMode === 'split' ? 'w-full lg:flex-1 min-h-[700px] lg:min-h-0' : 'w-full h-full'} bg-[#CBD5E1] p-3 sm:p-4 lg:p-8 flex flex-col items-center justify-center relative`}>
             
-            <div className="absolute top-4 flex bg-white/50 backdrop-blur-md p-1 rounded-xl border border-white/50 z-20">
+            <div className="absolute top-4 flex bg-white/50 backdrop-blur-md p-1 rounded-xl border border-white/50 z-20 hidden sm:flex">
               <button className="p-1.5 bg-white shadow-sm rounded-lg text-slate-900"><Monitor size={14}/></button>
               <button className="p-1.5 text-slate-500 hover:text-slate-900 transition-all"><Smartphone size={14}/></button>
             </div>
 
-            <div className={`w-full h-full max-w-[1200px] bg-white rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden border-[8px] border-slate-900 transition-all duration-500 ${viewMode === 'split' ? 'scale-[0.8] lg:scale-[0.85]' : 'scale-100'}`}>
+            <div className={`w-full h-full max-w-[1200px] bg-white rounded-3xl md:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden border-[4px] md:border-[8px] border-slate-900 transition-all duration-500 ${viewMode === 'split' ? 'lg:scale-[0.95]' : 'scale-100'}`}>
               
-              <div className="h-8 bg-slate-900 flex items-center px-6 gap-1.5 shrink-0">
-                  <div className="w-2 h-2 rounded-full bg-rose-500" />
-                  <div className="w-2 h-2 rounded-full bg-amber-500" />
-                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
+              <div className="h-8 md:h-10 bg-slate-900 flex items-center px-4 md:px-6 gap-1.5 md:gap-2 shrink-0">
+                  <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-rose-500" />
+                  <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-amber-500" />
+                  <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-emerald-500" />
               </div>
 
-              <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50 p-6 flex items-center justify-center">
-                   <div className="w-full max-w-5xl scale-[0.9] lg:scale-100 transition-transform">
-                      <div className="relative bg-white rounded-[3rem] overflow-hidden shadow-xl border border-slate-200 flex flex-col lg:flex-row">
+              <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50 p-4 md:p-6 flex items-center justify-center">
+                   <div className="w-full max-w-5xl transition-transform">
+                      <div className="relative bg-white rounded-3xl md:rounded-[3rem] overflow-hidden shadow-xl border border-slate-200 flex flex-col lg:flex-row">
                         
                         {/* Left Side */}
-                        <div className="w-full lg:w-[58%] px-10 py-12 flex flex-col justify-center text-center lg:text-left">
-                           <div className="mx-auto lg:mx-0 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-50 border border-slate-100 text-slate-800 font-black text-[9px] uppercase tracking-widest mb-4 w-fit">
+                        <div className="w-full lg:w-[58%] px-6 py-8 md:px-10 md:py-12 flex flex-col justify-center text-center lg:text-left">
+                           <div className="mx-auto lg:mx-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-100 text-slate-800 font-black text-[9px] md:text-[10px] uppercase tracking-widest mb-4 w-fit">
                              <Sparkles size={12} className="text-emerald-500" /> {content.badge}
                            </div>
-                           <h2 className="text-3xl lg:text-4xl font-black text-slate-900 leading-tight tracking-tighter mb-4">
-                              {content.titleLine1} <br />
-                              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-primary-500">
+                           <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 leading-tight tracking-tighter mb-4">
+                              {content.titleLine1} <br className="hidden sm:block" />
+                              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-emerald-400">
                                  {content.titleHighlight}
                               </span>
                            </h2>
-                           <p className="text-slate-500 text-sm font-medium leading-relaxed max-w-sm mx-auto lg:mx-0">{content.description}</p>
+                           <p className="text-slate-500 text-xs md:text-sm font-medium leading-relaxed max-w-sm mx-auto lg:mx-0">
+                              {content.description}
+                           </p>
                         </div>
 
                         {/* Right Side */}
-                        <div className="w-full lg:w-[42%] bg-slate-900 p-10 flex flex-col items-center justify-center relative overflow-hidden text-center">
+                        <div className="w-full lg:w-[42%] bg-slate-900 p-8 md:p-10 flex flex-col items-center justify-center relative overflow-hidden text-center">
                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-emerald-500/20 rounded-full blur-[60px]" />
                            <div className="relative z-10 w-full space-y-3">
-                              <div className="bg-emerald-600 text-white px-6 py-4 rounded-xl font-black text-xs flex items-center justify-between shadow-lg">
+                              <div className="bg-emerald-600 text-white px-5 md:px-6 py-3 md:py-4 rounded-xl font-black text-xs flex items-center justify-between shadow-lg cursor-pointer hover:bg-emerald-500 transition-colors">
                                  <span className="flex items-center gap-2"><Calendar size={16}/> {content.primaryButtonText}</span>
                                  <ArrowRight size={16} />
                               </div>
-                              <div className="bg-white text-slate-900 px-6 py-4 rounded-xl font-black text-xs flex items-center justify-center gap-2 shadow-lg">
+                              <div className="bg-white text-slate-900 px-5 md:px-6 py-3 md:py-4 rounded-xl font-black text-xs flex items-center justify-center gap-2 shadow-lg cursor-pointer hover:bg-slate-50 transition-colors">
                                  <Phone size={16} className="text-emerald-600"/> {content.secondaryButtonText}
                               </div>
                            </div>
-                           <div className="relative z-10 mt-6 text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                           <div className="relative z-10 mt-6 text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2">
                               <Shield size={12} className="text-emerald-500"/> Verified Quality
                            </div>
                         </div>
@@ -195,8 +198,11 @@ const CtaEditor = () => {
       </div>
 
       <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        @media (min-width: 768px) { .custom-scrollbar::-webkit-scrollbar { width: 5px; } }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
       `}</style>
     </div>
   );

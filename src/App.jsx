@@ -30,6 +30,9 @@ import FAQEditor from './admin/modules/Home/FAQEditor';
 import TestimonialsEditor from './admin/modules/Home/TestimonialsEditor';
 import GoogleReviewsEditor from './admin/modules/Home/GoogleReviewsEditor';
 import CtaEditor from './admin/modules/Home/CtaEditor';
+import DynamicEditor from './admin/components/DynamicEditor';
+import AboutPageOverview from './admin/modules/About/AboutPageOverview';
+import AboutHeroEditor from './admin/modules/About/AboutHeroEditor';
 // Dummy Pages
 const Login = () => <div className="flex h-screen items-center justify-center bg-gray-100">Login Page (No Header/Footer)</div>;
 
@@ -77,7 +80,7 @@ function App() {
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
 
-              {/* CMS ROUTES */}
+              {/* CMS ROUTES of homepage */}
               <Route path="pages/home" element={<HomePageOverview />} />
               <Route path="pages/home/hero" element={<HeroEditor />} />
               <Route path="pages/home/about" element={<AboutEditor />} />
@@ -88,6 +91,14 @@ function App() {
               <Route path="pages/home/testimonials" element={<TestimonialsEditor />} />
               <Route path="pages/home/cta" element={<CtaEditor />} />
               <Route path="pages/home/reviews" element={<GoogleReviewsEditor />} />
+              <Route path="/admin/pages/home/:moduleName" element={<DynamicEditor />} />
+
+
+                            {/* CMS ROUTES of aboutpage */}
+
+                            
+              <Route path="pages/about" element={<AboutPageOverview />} />
+              <Route path="pages/about/hero" element={<AboutHeroEditor />} />
 
             </Route>
           </Route>

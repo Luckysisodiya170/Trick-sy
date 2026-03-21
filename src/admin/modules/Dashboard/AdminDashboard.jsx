@@ -16,9 +16,7 @@ const AdminDashboard = () => {
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Overview</h1>
           <p className="text-slate-500 font-medium">Welcome back, Admin. Here's what's happening today.</p>
         </div>
-        <button className="bg-slate-950 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-emerald-500 transition-colors shadow-lg">
-          Download Report
-        </button>
+        
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

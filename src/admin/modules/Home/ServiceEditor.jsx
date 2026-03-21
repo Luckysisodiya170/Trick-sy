@@ -32,7 +32,7 @@ const ServiceEditor = () => {
 
   const getColorStyle = (colorName) => {
     const styles = {
-      blue: { gradient: 'from-emerald-500 to-emerald-600', light: 'bg-emerald-50', text: 'group-hover:text-emerald-600' }, // Green Theme
+      green: { gradient: 'from-emerald-500 to-emerald-600', light: 'bg-emerald-50', text: 'group-hover:text-emerald-600' }, // Green Theme
       cyan: { gradient: 'from-cyan-400 to-cyan-500', light: 'bg-cyan-50', text: 'group-hover:text-cyan-500' },
       orange: { gradient: 'from-orange-400 to-orange-500', light: 'bg-orange-50', text: 'group-hover:text-orange-500' },
       yellow: { gradient: 'from-yellow-400 to-amber-500', light: 'bg-yellow-50', text: 'group-hover:text-amber-500' },
@@ -52,7 +52,7 @@ const ServiceEditor = () => {
   const handleAddService = () => {
     const newId = Date.now();
     setServices([...services, { id: newId, title: 'New Service', desc: '', icon: 'sparkles', color: 'blue', img: null }]);
-    setActiveCard(newId); // Auto-open the newly added service
+    setActiveCard(newId);  
   };
 
   const updateService = (id, field, value) => {
