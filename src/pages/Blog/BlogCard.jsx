@@ -3,7 +3,6 @@ import { Clock, Calendar, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const BlogCard = ({ post }) => {
-  // Defensive check to prevent crashes if data is missing
   if (!post) return null;
 
   return (

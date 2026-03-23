@@ -66,8 +66,8 @@ const AboutHero = ({
                                     <ShieldCheck className="w-4 h-4 lg:w-5 lg:h-5 text-emerald-500" />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-zinc-950 font-black text-[9px] lg:text-[11px] uppercase tracking-wide truncate">Experts</p>
-                                    <p className="text-zinc-500 text-[8px] lg:text-[9px] font-medium mt-0.5 truncate">Vetted Pro</p>
+                                    <p className="text-zinc-950 font-black text-[9px] lg:text-[11px] uppercase tracking-wide truncate">Certified Experts</p>
+                                    <p className="text-zinc-500 text-[8px] lg:text-[9px] font-medium mt-0.5 truncate">Vetted Professionals</p>
                                 </div>
                             </div>
 
@@ -78,7 +78,7 @@ const AboutHero = ({
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-zinc-950 font-black text-[9px] lg:text-[11px] uppercase tracking-wide truncate">Top Rated</p>
-                                    <p className="text-zinc-500 text-[8px] lg:text-[9px] font-medium mt-0.5 truncate">4.9/5 Star</p>
+                                    <p className="text-zinc-500 text-[8px] lg:text-[9px] font-medium mt-0.5 truncate">4.9/5 User Rating</p>
                                 </div>
                             </div>
 

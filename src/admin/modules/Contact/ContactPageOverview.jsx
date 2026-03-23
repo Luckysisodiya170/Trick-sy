@@ -1,27 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  LayoutTemplate, Target, Heart, Milestone, Users, 
-  ShieldCheck, Sparkles, Plus, X, Box, Trash2, Edit3,
-  ArrowRight, Globe, Image as ImageIcon, FileText, 
-  Zap, PlayCircle, Code, Save, RotateCcw, Palette, Link 
+  LayoutTemplate, Phone, MessageSquare, MapPin, Box, 
+  Mail, Smartphone, Send, Globe, Image as ImageIcon,
+  ShieldCheck, Sparkles, Plus, X, Trash2, Edit3,
+  ArrowRight, Save, RotateCcw
 } from 'lucide-react';
 
-// About Page ke liye specific icons
+// Contact Page specific icons
 const iconLibrary = {
-  hero: LayoutTemplate, mission: Target, values: Heart,
-  timeline: Milestone, team: Users, whyus: ShieldCheck, 
-  box: Box, globe: Globe, image: ImageIcon, file: FileText, 
-  zap: Zap, play: PlayCircle, code: Code
+  hero: LayoutTemplate, info: Phone, form: MessageSquare,
+  map: MapPin, mail: Mail, mobile: Smartphone, send: Send,
+  whyus: ShieldCheck, box: Box, globe: Globe, image: ImageIcon
 };
 
 const defaultSections = [
-  { id: 'about-hero', name: 'About Hero', status: 'Live', iconKey: 'hero', path: '/admin/pages/about/hero', color: 'text-blue-500', bg: 'bg-blue-50', theme: 'blue' },
-  { id: 'about-mission', name: 'Our Mission', status: 'Live', iconKey: 'mission', path: '/admin/pages/about/mission', color: 'text-indigo-500', bg: 'bg-indigo-50', theme: 'indigo' },
-  { id: 'about-values', name: 'Core Values', status: 'Live', iconKey: 'values', path: '/admin/pages/about/values', color: 'text-rose-500', bg: 'bg-rose-50', theme: 'rose' },
-  { id: 'about-timeline', name: 'History Timeline', status: 'Live', iconKey: 'timeline', path: '/admin/pages/about/timeline', color: 'text-amber-500', bg: 'bg-amber-50', theme: 'amber' },
-  { id: 'about-team', name: 'Our Team', status: 'Live', iconKey: 'team', path: '/admin/pages/about/team', color: 'text-emerald-500', bg: 'bg-emerald-50', theme: 'emerald' },
-  { id: 'about-why-us', name: 'Why Choose Us', status: 'Live', iconKey: 'whyus', path: '/admin/pages/about/why-us', color: 'text-sky-500', bg: 'bg-sky-50', theme: 'sky' },
+  { id: 'contact-hero', name: 'Contact Hero', status: 'Live', iconKey: 'hero', path: '/admin/pages/contact/hero', color: 'text-blue-500', bg: 'bg-blue-50', theme: 'blue' },
+  { id: 'contact-info', name: 'Contact Information', status: 'Live', iconKey: 'info', path: '/admin/pages/contact/info', color: 'text-emerald-500', bg: 'bg-emerald-50', theme: 'emerald' },
+  { id: 'contact-form', name: 'Contact Form', status: 'Live', iconKey: 'form', path: '/admin/pages/contact/form', color: 'text-indigo-500', bg: 'bg-indigo-50', theme: 'indigo' },
+  { id: 'contact-map', name: 'Location Map', status: 'Live', iconKey: 'map', path: '/admin/pages/contact/map', color: 'text-rose-500', bg: 'bg-rose-50', theme: 'rose' },
 ];
 
 const themeOptions = {
@@ -38,17 +35,18 @@ const themeOptions = {
   fuchsia: { color: 'text-fuchsia-500', bg: 'bg-fuchsia-50', hex: 'bg-fuchsia-500' },
 };
 
-const AboutPageOverview = () => {
+const ContactPageOverview = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null); 
   const [sections, setSections] = useState(() => {
-    const saved = localStorage.getItem('tricksy_about_modules');
+    // Changed localStorage key to be specific to the contact page
+    const saved = localStorage.getItem('tricksy_contact_modules');
     return saved ? JSON.parse(saved) : defaultSections;
   });
 
   useEffect(() => {
-    localStorage.setItem('tricksy_about_modules', JSON.stringify(sections));
+    localStorage.setItem('tricksy_contact_modules', JSON.stringify(sections));
   }, [sections]);
 
   const [formData, setFormData] = useState({ name: '', path: '', status: 'Draft', theme: 'indigo', iconKey: 'box' });
@@ -61,7 +59,7 @@ const AboutPageOverview = () => {
   };
 
   const handleRestoreDefaults = () => {
-    if(window.confirm("Restore default About sections?")) {
+    if(window.confirm("Restore default Contact sections?")) {
       setSections(defaultSections);
     }
   };
@@ -89,7 +87,8 @@ const AboutPageOverview = () => {
     e.preventDefault();
     if (!formData.name.trim()) return;
     
-    const finalPath = formData.path.trim() || `/admin/pages/about/${formData.name.toLowerCase().replace(/\s+/g, '-')}`;
+    // Adjusted default path generation to route to contact pages
+    const finalPath = formData.path.trim() || `/admin/pages/contact/${formData.name.toLowerCase().replace(/\s+/g, '-')}`;
     const moduleData = {
       name: formData.name, 
       status: formData.status, 
@@ -103,7 +102,7 @@ const AboutPageOverview = () => {
     if (editingId) {
       setSections(sections.map(sec => sec.id === editingId ? { ...sec, ...moduleData } : sec));
     } else {
-      setSections([...sections, { id: `about-custom-${Date.now()}`, ...moduleData }]);
+      setSections([...sections, { id: `contact-custom-${Date.now()}`, ...moduleData }]);
     }
     setIsModalOpen(false);
   };
@@ -117,7 +116,7 @@ const AboutPageOverview = () => {
             <Sparkles size={14} className="fill-indigo-600" />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Live Editor</span>
           </div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">About Sections</h1>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Contact Sections</h1>
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest italic">{sections.length} Active Blocks</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
@@ -169,7 +168,7 @@ const AboutPageOverview = () => {
         </div>
       </div>
 
-      {/* --- PREMIUM MODAL (Exactly like Home) --- */}
+      {/* --- PREMIUM MODAL --- */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
@@ -178,7 +177,7 @@ const AboutPageOverview = () => {
             <div className="px-8 pt-8 pb-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
               <div>
                 <h2 className="text-2xl font-black text-slate-900">{editingId ? 'Edit Section' : 'Create Custom Module'}</h2>
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">Configure your about block</p>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">Configure your contact block</p>
               </div>
               <button onClick={() => setIsModalOpen(false)} className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all border border-slate-100"><X size={18} /></button>
             </div>
@@ -188,7 +187,7 @@ const AboutPageOverview = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="md:col-span-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Section Name</label>
-                    <input required autoFocus value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:ring-2 ring-indigo-100 transition-all" placeholder="e.g. Our History" />
+                    <input required autoFocus value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:ring-2 ring-indigo-100 transition-all" placeholder="e.g. FAQ Section" />
                   </div>
                   <div className="md:col-span-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Status</label>
@@ -238,4 +237,4 @@ const AboutPageOverview = () => {
   );
 };
 
-export default AboutPageOverview;
+export default ContactPageOverview;

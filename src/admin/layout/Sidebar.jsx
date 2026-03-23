@@ -33,7 +33,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
           </h1>
         </div>
         
-        {/* Close Button - ONLY shows when sidebar is OPEN */}
         {isSidebarOpen && (
           <button 
             onClick={() => setIsSidebarOpen(false)}
@@ -45,7 +44,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       </div>
       
       {/* Navigation Links */}
-      {/* FIX: Removed 'custom-scrollbar' and added Tailwind classes to completely hide the scrollbar track and thumb */}
       <div className="flex-1 py-6 overflow-y-auto space-y-6 overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         
         {/* Core Section */}
@@ -55,7 +53,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             <LayoutDashboard size={18} className="shrink-0" /> 
             <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'ml-2.5 opacity-100 max-w-[200px]' : 'ml-0 opacity-0 max-w-0'}`}>Dashboard</span>
             
-            {/* Tooltip - Pushed to left-16 so it sits neatly outside the bar */}
             {!isSidebarOpen && <span className="absolute left-16 bg-slate-800 text-white text-[10px] px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[200]">Dashboard</span>}
           </NavLink>
         </div>

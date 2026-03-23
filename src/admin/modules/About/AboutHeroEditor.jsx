@@ -43,7 +43,7 @@ const AboutHeroEditor = () => {
           </button>
           <h1 className="text-sm lg:text-lg font-black tracking-tighter italic flex items-center gap-1.5">
             <Settings2 size={18} className="text-indigo-600 lg:w-5 lg:h-5" /> 
-            <span className="tracking-tight uppercase">ABOUT</span> 
+            <span className="tracking-tight uppercase">ABOUT EDITOR</span> 
           </h1>
         </div>
 
@@ -129,79 +129,116 @@ const AboutHeroEditor = () => {
           </div>
         )}
 
-        {/* --- LIVE PREVIEW --- */}
-        {(viewMode === 'preview' || viewMode === 'split') && (
-          <div className={`${viewMode === 'split' ? 'lg:col-span-7' : 'w-full'} h-fit animate-in fade-in max-w-full overflow-hidden`}>
-            <div className="w-full bg-slate-900 rounded-[2rem] border-[6px] border-slate-950 shadow-2xl overflow-hidden relative">
-              <div className="flex h-6 bg-slate-800/50 items-center px-4 gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-red-500/40" />
-                <div className="w-1.5 h-1.5 rounded-full bg-amber-500/40" />
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/40" />
+      {/* --- LIVE PREVIEW --- */}
+{(viewMode === 'preview' || viewMode === 'split') && (
+  <div className={`${viewMode === 'split' ? 'lg:col-span-7' : 'w-full'} h-fit animate-in fade-in max-w-full overflow-hidden`}>
+    <div className="w-full bg-slate-900 rounded-[2rem] border-[6px] border-slate-950 shadow-2xl overflow-hidden relative">
+      
+      {/* Browser Header */}
+      <div className="flex h-6 bg-slate-800/50 items-center px-4 gap-1.5">
+        <div className="w-1.5 h-1.5 rounded-full bg-red-500/40" />
+        <div className="w-1.5 h-1.5 rounded-full bg-amber-500/40" />
+        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/40" />
+      </div>
+
+      {/* --- HERO SECTION (MATCHED WITH ABOUTHERO) --- */}
+      <section className="relative min-h-[500px] lg:min-h-[650px] bg-black overflow-hidden flex items-center py-12 lg:py-20">
+        
+        {/* Background Layer */}
+        {heroData.bgImage && (
+          <img src={heroData.bgImage} className="absolute inset-0 w-full h-full object-cover opacity-100" alt="Background" />
+        )}
+        <div className="absolute inset-0 bg-black/70"></div>
+
+        <div className="w-full px-6 lg:px-10 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+            
+            {/* LEFT CONTENT */}
+            <div className="lg:col-span-7 space-y-5 lg:space-y-6 text-left">
+              
+              {/* Status Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-sm">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                </span>
+                <span className="text-emerald-500 font-black text-[9px] lg:text-[10px] uppercase tracking-[0.2em]">
+                  {heroData.badgeText}
+                </span>
               </div>
 
-              {/* LIVE HERO SECTION */}
-              <section className="relative min-h-[450px] lg:min-h-[550px] bg-black overflow-hidden flex items-center py-10 lg:py-14 px-5 lg:px-8">
-                {heroData.bgImage && <img src={heroData.bgImage} className="absolute inset-0 w-full h-full object-cover opacity-60" alt="hero-bg" />}
-                <div className="absolute inset-0 bg-black/60"></div>
-                <div className="relative z-10 w-full flex flex-col lg:flex-row gap-8 items-center">
+              {/* Responsive Title */}
+              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-black text-white leading-[1.1] tracking-tighter">
+                {heroData.mainTitle} <br />
+                <span className="text-emerald-500 relative inline-block mt-1">
+                  {heroData.highlightTitle}
+                  <svg className="absolute -bottom-1.5 left-0 w-full h-2 text-emerald-500/30" viewBox="0 0 100 10" preserveAspectRatio="none">
+                    <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="transparent" />
+                  </svg>
+                </span>
+              </h1>
+
+              <p className="text-zinc-300 text-[10px] lg:text-sm max-w-lg font-medium leading-relaxed opacity-90">
+                {heroData.subtext}
+              </p>
+
+              {/* 🟢 SMALLER BADGES ROW (Exactly as requested) 🟢 */}
+              <div className="flex flex-row items-center gap-3 lg:gap-4 pt-2 w-full max-w-md overflow-hidden">
+                <div className="flex flex-1 items-center gap-2 bg-white p-2 lg:p-2.5 rounded-xl shadow-lg border border-zinc-100 min-w-0">
+                  <div className="flex-shrink-0 w-7 h-7 lg:w-9 lg:h-9 rounded-lg bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                    <ShieldCheck size={14} className="text-emerald-500 lg:w-4 lg:h-4" />
+                  </div>
+                  <div className="min-w-0 overflow-hidden">
+                    <p className="text-zinc-950 font-black text-[8px] lg:text-[10px] uppercase truncate leading-none">{heroData.certifiedTitle}</p>
+                    <p className="text-zinc-500 text-[7px] lg:text-[8px] font-medium mt-1 truncate">{heroData.certifiedSub}</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-1 items-center gap-2 bg-white p-2 lg:p-2.5 rounded-xl shadow-lg border border-zinc-100 min-w-0">
+                  <div className="flex-shrink-0 w-7 h-7 lg:w-9 lg:h-9 rounded-lg bg-amber-50 flex items-center justify-center border border-amber-100">
+                    <Star size={14} className="text-amber-500 lg:w-4 lg:h-4" />
+                  </div>
+                  <div className="min-w-0 overflow-hidden">
+                    <p className="text-zinc-950 font-black text-[8px] lg:text-[10px] uppercase truncate leading-none">{heroData.topRatedTitle}</p>
+                    <p className="text-zinc-500 text-[7px] lg:text-[8px] font-medium mt-1 truncate">{heroData.topRatedSub}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT SIDE CARD */}
+            <div className="lg:col-span-5 flex justify-center lg:justify-end">
+              <div className="relative w-full max-w-[200px] lg:max-w-[260px]">
+                <div className="absolute top-2 left-2 w-full h-full bg-emerald-500 rounded-[2rem]"></div>
+                <div className="relative bg-white p-5 lg:p-7 rounded-[2rem] text-center shadow-xl border border-zinc-50">
+                  <div className="w-10 h-10 lg:w-14 lg:h-14 rounded-xl bg-emerald-50 flex items-center justify-center mx-auto mb-3 border border-emerald-100">
+                    <Users size={20} className="text-emerald-500 lg:w-6 lg:h-6" />
+                  </div>
+                  <h3 className="text-3xl lg:text-5xl font-black text-zinc-950 mb-1">{heroData.legacyYears}</h3>
+                  <p className="text-zinc-500 font-bold uppercase tracking-widest text-[7px] lg:text-[9px] mb-4">Years Legacy</p>
                   
-                  {/* Left Preview Content */}
-                  <div className="w-full lg:w-[60%] space-y-4 lg:space-y-6">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      <span className="text-emerald-500 font-bold text-[8px] lg:text-[10px] uppercase tracking-widest">{heroData.badgeText}</span>
-                    </div>
-                    <h1 className="text-2xl sm:text-3xl lg:text-5xl font-black text-white leading-[1.1] tracking-tighter">
-                      {heroData.mainTitle} <br />
-                      <span className="text-emerald-500">{heroData.highlightTitle}</span>
-                    </h1>
-                    <p className="text-zinc-400 text-[10px] lg:text-sm max-w-md font-medium leading-relaxed">{heroData.subtext}</p>
-                    
-                    {/* 🟢 SMALLER PREVIEW BADGES 🟢 */}
-                    <div className="flex flex-row items-center gap-2 lg:gap-3 pt-2 w-full">
-                      <div className="flex flex-1 items-center gap-2 bg-white p-2 lg:p-2.5 rounded-xl shadow-lg border border-zinc-100 min-w-0">
-                        <div className="flex-shrink-0 w-7 h-7 lg:w-8 lg:h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-                          <ShieldCheck size={14} className="text-emerald-500 lg:w-4 lg:h-4" />
-                        </div>
-                        <div className="min-w-0 overflow-hidden">
-                          <p className="text-zinc-950 font-black text-[8px] lg:text-[9.5px] uppercase truncate leading-none">{heroData.certifiedTitle}</p>
-                          <p className="text-zinc-500 text-[7px] lg:text-[8px] font-medium mt-1 truncate">{heroData.certifiedSub}</p>
-                        </div>
-                      </div>
-                      <div className="flex flex-1 items-center gap-2 bg-white p-2 lg:p-2.5 rounded-xl shadow-lg border border-zinc-100 min-w-0">
-                        <div className="flex-shrink-0 w-7 h-7 lg:w-8 lg:h-8 rounded-lg bg-amber-50 flex items-center justify-center">
-                          <Star size={14} className="text-amber-500 lg:w-4 lg:h-4" />
-                        </div>
-                        <div className="min-w-0 overflow-hidden">
-                          <p className="text-zinc-950 font-black text-[8px] lg:text-[9.5px] uppercase truncate leading-none">{heroData.topRatedTitle}</p>
-                          <p className="text-zinc-500 text-[7px] lg:text-[8px] font-medium mt-1 truncate">{heroData.topRatedSub}</p>
-                        </div>
-                      </div>
+                  <div className="flex justify-center items-center -space-x-2 mb-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="w-7 h-7 lg:w-10 lg:h-10 rounded-full border-2 border-white bg-slate-200" />
+                    ))}
+                    <div className="w-7 h-7 lg:w-10 lg:h-10 rounded-full border-2 border-white bg-zinc-950 flex items-center justify-center text-[8px] lg:text-[10px] font-black text-white relative z-10">
+                      {heroData.trustedCount}
                     </div>
                   </div>
 
-                  {/* Right Preview Card */}
-                  <div className="w-full lg:w-[40%] flex justify-center lg:justify-end">
-                    <div className="relative w-full max-w-[200px] lg:max-w-[240px]">
-                      <div className="absolute top-2 left-2 w-full h-full bg-emerald-500 rounded-[2rem]"></div>
-                      <div className="relative bg-white p-5 lg:p-6 rounded-[2rem] text-center shadow-xl">
-                        <div className="w-9 h-9 lg:w-11 lg:h-11 rounded-xl bg-emerald-50 flex items-center justify-center mx-auto mb-2 border border-emerald-100">
-                          <Users size={18} className="text-emerald-500 lg:w-5 lg:h-5" />
-                        </div>
-                        <h3 className="text-3xl lg:text-4xl font-black text-zinc-950 mb-1">{heroData.legacyYears}</h3>
-                        <p className="text-zinc-400 font-bold uppercase tracking-widest text-[7px] lg:text-[8px] mb-4">Years Legacy</p>
-                        <div className="flex justify-center items-center -space-x-2 mb-4">
-                          {[1, 2, 3].map(i => <div key={i} className="w-7 h-7 lg:w-9 lg:h-9 rounded-full border-2 border-white bg-slate-200" />)}
-                          <div className="w-7 h-7 lg:w-9 lg:h-9 rounded-full border-2 border-white bg-zinc-950 flex items-center justify-center text-[7px] lg:text-[9px] font-black text-white relative z-10">{heroData.trustedCount}</div>
-                        </div>
-                      </div>
-                    </div>
+                  <div className="inline-block px-3 py-1 bg-emerald-50 rounded-lg border border-emerald-100">
+                    <p className="text-emerald-600 font-black text-[7px] lg:text-[8px] uppercase tracking-widest">Trusted by Families</p>
                   </div>
                 </div>
-              </section>
+              </div>
             </div>
+
           </div>
-        )}
+        </div>
+      </section>
+    </div>
+  </div>
+)}
       </div>
     </div>
   );

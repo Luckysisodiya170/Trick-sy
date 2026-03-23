@@ -33,6 +33,22 @@ import CtaEditor from './admin/modules/Home/CtaEditor';
 import DynamicEditor from './admin/components/DynamicEditor';
 import AboutPageOverview from './admin/modules/About/AboutPageOverview';
 import AboutHeroEditor from './admin/modules/About/AboutHeroEditor';
+import AboutMissionEditor from './admin/modules/About/AboutMissionEditor';
+import AboutValuesEditor from './admin/modules/About/AboutValuesEditor';
+import AboutTimelineEditor from './admin/modules/About/AboutTimelineEditor';
+import AboutTeamEditor from './admin/modules/About/AboutTeamEditor';
+import ContactPageOverview from './admin/modules/Contact/ContactPageOverview';
+import ContactHeroEditor from './admin/modules/Contact/ContactHeroEditor';
+import ContactFormEditor from './admin/modules/Contact/ContactFormEditor';
+import ContactInfoEditor from './admin/modules/Contact/ContactInfoEditor';
+import ContactMapEditor from './admin/modules/Contact/ContactMapEditor';
+import BlogManagerEditor from './admin/modules/Blog/BlogManagerEditor';
+import BlogPageOverview from './admin/modules/Blog/BlogPageOverview';
+import BlogHeroEditor from './admin/modules/Blog/BlogHeroEditor';
+import BlogPostsEditor from './admin/modules/Blog/BlogPostsEditor';
+import BlogCategoriesEditor from './admin/modules/Blog/BlogCategoriesEditor';
+import BlogSEOEditor from './admin/modules/Blog/BlogSEOEditor';
+import BlogDetailEditor from './admin/modules/Blog/BlogDetailEditor';
 // Dummy Pages
 const Login = () => <div className="flex h-screen items-center justify-center bg-gray-100">Login Page (No Header/Footer)</div>;
 
@@ -94,12 +110,37 @@ function App() {
               <Route path="/admin/pages/home/:moduleName" element={<DynamicEditor />} />
 
 
-                            {/* CMS ROUTES of aboutpage */}
+              {/* CMS ROUTES of aboutpage */}
 
-                            
+
               <Route path="pages/about" element={<AboutPageOverview />} />
               <Route path="pages/about/hero" element={<AboutHeroEditor />} />
+              <Route path="pages/about/mission" element={<AboutMissionEditor />} />
+              <Route path="pages/about/values" element={<AboutValuesEditor />} />
+              <Route path="pages/about/timeline" element={<AboutTimelineEditor />} />
+              <Route path="pages/about/team" element={<AboutTeamEditor />} />
+              <Route path="pages/about/why-us" element={<WhyChooseEditor />} />
+              <Route path="/admin/pages/about/:moduleName" element={<DynamicEditor />} />
 
+              {/* CMS ROUTES of aboutpage */}
+
+              <Route path="pages/contact" element={<ContactPageOverview />} />
+              <Route path="pages/contact/hero" element={<ContactHeroEditor />} />
+              <Route path="pages/contact/info" element={<ContactInfoEditor />} />
+              <Route path="pages/contact/form" element={<ContactFormEditor />} />
+              <Route path="pages/contact/map" element={<ContactMapEditor />} />
+              <Route path="/admin/pages/contact/:moduleName" element={<DynamicEditor />} />
+
+
+              {/* CMS ROUTES of aboutpage */}
+
+              <Route path="pages/blog" element={<BlogPageOverview />} />
+              <Route path="pages/blog/hero" element={<BlogHeroEditor />} />
+              <Route path="pages/blog/posts" element={<BlogPostsEditor />} />
+              <Route path="pages/blog/categories" element={<BlogCategoriesEditor />} />
+              <Route path="pages/blog/seo" element={<BlogSEOEditor />} />
+              <Route path="pages/blog/detail" element={<BlogDetailEditor />} />
+              <Route path="/admin/pages/blog/:moduleName" element={<DynamicEditor />} />
             </Route>
           </Route>
 

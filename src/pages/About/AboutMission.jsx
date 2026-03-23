@@ -25,7 +25,7 @@ const AboutMission = ({
         <div className="flex flex-col lg:flex-row gap-16 lg:gap-24 items-center">
           
           <div className="w-full lg:w-1/2 relative">
-            <div className="absolute top-6 -left-6 w-full h-full bg-emerald-500 rounded-[2rem] hidden sm:block"></div>
+            <div className="absolute top-6 -left-6 w-full h-full0 rounded-[2rem] hidden sm:block"></div>
                         <div className="relative rounded-[2rem] overflow-hidden border-4 border-zinc-950 bg-zinc-100 z-10 h-[400px] sm:h-[500px]">
               <img 
                 src={aboutMain} 
