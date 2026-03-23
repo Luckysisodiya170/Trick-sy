@@ -8,29 +8,25 @@ import {
 } from 'lucide-react';
 import BlogDetail from '../../../pages/Blog/BlogDetail';
 
-// Dummy data for initial state
 import { blogPosts as initialData } from '../../../data/blogData';
 
 const BlogDetailEditor = () => {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState('split');
-  const [isSelecting, setIsSelecting] = useState(true); // Dashboard toggle
+  const [isSelecting, setIsSelecting] = useState(true); 
   const [searchQuery, setSearchQuery] = useState('');
   
-  // State for all blogs (taaki hum add/delete kar sakein)
   const [allBlogs, setAllBlogs] = useState(() => {
     const saved = localStorage.getItem('tricksy_all_blogs');
     return saved ? JSON.parse(saved) : initialData;
   });
 
-  // State for the blog currently being edited
   const [postData, setPostData] = useState(null);
 
   useEffect(() => {
     localStorage.setItem('tricksy_all_blogs', JSON.stringify(allBlogs));
   }, [allBlogs]);
 
-  // --- ACTIONS ---
 
   const handleCreateNew = () => {
     const newBlog = {
@@ -73,10 +69,9 @@ const BlogDetailEditor = () => {
     
     setAllBlogs(updatedBlogs);
     alert("Article Synced Successfully!");
-    setIsSelecting(true); // Go back to dashboard after save
+    setIsSelecting(true); 
   };
 
-  // Block Content Handlers
   const addBlock = (type) => setPostData({ ...postData, blocks: [...postData.blocks, { type, value: '' }] });
   const updateBlock = (index, val) => {
     const newBlocks = [...postData.blocks];
@@ -156,7 +151,6 @@ const BlogDetailEditor = () => {
     );
   }
 
-  // --- SCREEN 2: THE ACTUAL VISUAL EDITOR ---
   return (
     <div className="min-h-screen flex flex-col bg-[#F8F9FA] h-screen overflow-hidden font-sans">
       <nav className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shadow-sm z-50">
