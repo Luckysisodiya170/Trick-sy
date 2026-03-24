@@ -19,8 +19,7 @@ import TechnicalTrustFooter from './TechnicalTrustFooter';
 
 import TechnicalPricing from './TechnicalPricing'; 
 import TechnicalFAQ from './TechnicalFAQ';
-import TechnicalTestimonials from './TechnicalTestimonials';
-import TechnicalEstimator from './TechnicalEstimator';
+
 
 const TechnicalServices = () => {
   const [activeTab, setActiveTab] = useState(0);

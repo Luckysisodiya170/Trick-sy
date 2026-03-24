@@ -56,6 +56,16 @@ import ServiceHeroEditor from './admin/modules/Services/ServiceHeroEditor';
 import ServiceIncludesEditor from './admin/modules/Services/ServiceIncludesEditor';
 import ServiceFaqEditor from './admin/modules/Services/ServiceFaqEditor';
 import ServiceProcessEditor from './admin/modules/Services/ServiceProcessEditor';
+import TechnicalPageOverview from './admin/modules/Technical_Services/TechnicalPageOverview';
+import TechnicalDomainsEditor from './admin/modules/Technical_Services/TechnicalDomainsEditor';
+import TechnicalHeroEditor from './admin/modules/Technical_Services/TechnicalHeroEditor';
+import TechnicalDisplayEditor from './admin/modules/Technical_Services/TechnicalDisplayEditor';
+import HardwareSpecsEditor from './admin/modules/Technical_Services/HardwareSpecsEditor';
+import TechnicalProcessEditor from './admin/modules/Technical_Services/TechnicalProcessEditor';
+import TechnicalFAQEditor from './admin/modules/Technical_Services/TechnicalFAQEditor';
+import TechnicalPricingEditor from './admin/modules/Technical_Services/TechnicalPricingEditor';
+import TechnicalTrustFooter from './pages/Technicalservice/TechnicalTrustFooter';
+import TechnicalTrustEditor from './admin/modules/Technical_Services/TechnicalTrustEditor';
 // Dummy Pages
 const Login = () => <div className="flex h-screen items-center justify-center bg-gray-100">Login Page (No Header/Footer)</div>;
 
@@ -160,6 +170,24 @@ function App() {
               <Route path="pages/services/:serviceId/process" element={<ServiceProcessEditor />} />
               <Route path="pages/services/:serviceId/pricing" element={<ServicePricingEditor />} />
               <Route path="/admin/pages/services/:moduleName" element={<DynamicEditor />} />
+
+              {/* CMS ROUTES of technicalpage */}
+
+              <Route path="pages/technical" element={<TechnicalPageOverview />} />
+              <Route path="pages/technical/hero" element={<TechnicalHeroEditor />} />
+               <Route path="pages/technical/domains" element={<TechnicalDomainsEditor />} />
+                              <Route path="pages/technical/specs" element={<HardwareSpecsEditor />} />
+                              <Route path="pages/technical/process" element={<TechnicalProcessEditor />} />
+<Route path="pages/technical/pricing" element={< TechnicalPricingEditor/>} />
+              <Route path="pages/technical/faq" element={<TechnicalFAQEditor />} />
+              <Route path="pages/technical/footer" element={<TechnicalTrustEditor />} />
+              {/* Separate Routes for each section */}
+              {/* <Route path="pages/services/:serviceId/hero" element={<ServiceHeroEditor />} />
+              <Route path="pages/services/:serviceId/includes" element={<ServiceIncludesEditor />} />
+              <Route path="pages/services/:serviceId/faq" element={<ServiceFaqEditor />} />
+              <Route path="pages/services/:serviceId/process" element={<ServiceProcessEditor />} />
+              <Route path="pages/services/:serviceId/pricing" element={<ServicePricingEditor />} />
+              <Route path="/admin/pages/services/:moduleName" element={<DynamicEditor />} /> */} 
 
             </Route>
           </Route>
