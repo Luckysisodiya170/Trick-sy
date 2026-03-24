@@ -49,6 +49,13 @@ import BlogPostsEditor from './admin/modules/Blog/BlogPostsEditor';
 import BlogCategoriesEditor from './admin/modules/Blog/BlogCategoriesEditor';
 import BlogSEOEditor from './admin/modules/Blog/BlogSEOEditor';
 import BlogDetailEditor from './admin/modules/Blog/BlogDetailEditor';
+import ServicesPageOverview from './admin/modules/Services/ServicesPageOverview';
+import ServiceModulePicker from './admin/modules/Services/ServiceModulePicker';
+import ServicePricingEditor from './admin/modules/Services/ServicePricingEditor';
+import ServiceHeroEditor from './admin/modules/Services/ServiceHeroEditor';
+import ServiceIncludesEditor from './admin/modules/Services/ServiceIncludesEditor';
+import ServiceFaqEditor from './admin/modules/Services/ServiceFaqEditor';
+import ServiceProcessEditor from './admin/modules/Services/ServiceProcessEditor';
 // Dummy Pages
 const Login = () => <div className="flex h-screen items-center justify-center bg-gray-100">Login Page (No Header/Footer)</div>;
 
@@ -122,7 +129,7 @@ function App() {
               <Route path="pages/about/why-us" element={<WhyChooseEditor />} />
               <Route path="/admin/pages/about/:moduleName" element={<DynamicEditor />} />
 
-              {/* CMS ROUTES of aboutpage */}
+              {/* CMS ROUTES of contact page */}
 
               <Route path="pages/contact" element={<ContactPageOverview />} />
               <Route path="pages/contact/hero" element={<ContactHeroEditor />} />
@@ -132,7 +139,7 @@ function App() {
               <Route path="/admin/pages/contact/:moduleName" element={<DynamicEditor />} />
 
 
-              {/* CMS ROUTES of aboutpage */}
+              {/* CMS ROUTES of blogpage */}
 
               <Route path="pages/blog" element={<BlogPageOverview />} />
               <Route path="pages/blog/hero" element={<BlogHeroEditor />} />
@@ -141,6 +148,19 @@ function App() {
               <Route path="pages/blog/seo" element={<BlogSEOEditor />} />
               <Route path="pages/blog/detail" element={<BlogDetailEditor />} />
               <Route path="/admin/pages/blog/:moduleName" element={<DynamicEditor />} />
+
+              {/* CMS ROUTES of servicepage */}
+
+              <Route path="pages/services" element={<ServicesPageOverview />} />
+              <Route path="pages/services/:serviceId" element={<ServiceModulePicker />} />
+              {/* Separate Routes for each section */}
+              <Route path="pages/services/:serviceId/hero" element={<ServiceHeroEditor />} />
+              <Route path="pages/services/:serviceId/includes" element={<ServiceIncludesEditor />} />
+              <Route path="pages/services/:serviceId/faq" element={<ServiceFaqEditor />} />
+              <Route path="pages/services/:serviceId/process" element={<ServiceProcessEditor />} />
+              <Route path="pages/services/:serviceId/pricing" element={<ServicePricingEditor />} />
+              <Route path="/admin/pages/services/:moduleName" element={<DynamicEditor />} />
+
             </Route>
           </Route>
 

@@ -1,23 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Save, Settings2, Edit3, Columns, Eye,
-  Type, AlignLeft, Monitor, Undo 
+  Type, AlignLeft, Monitor, Undo, Upload 
 } from 'lucide-react';
 
 import ContactHero from '../../../pages/Contact/ContactHero'; 
 
 const ContactHeroEditor = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null); // Ref for hidden file input
   const [isSaving, setIsSaving] = useState(false);
-  
-  const [viewMode, setViewMode] = useState('split'); // 'edit', 'split', 'preview'
+  const [viewMode, setViewMode] = useState('split'); 
 
   const defaultData = {
     badgeText: 'Contact tricksy',
     titlePart1: 'Premium Care',
     titleAccent: 'Your Space.',
-    paragraphText: 'Need a personalized quote or have a query? We are here to provide 5-star maintenance support. Reach us within minutes.'
+    paragraphText: 'Need a personalized quote or have a query? We are here to provide 5-star maintenance support. Reach us within minutes.',
+    bgImage: null // Added bgImage state
   };
 
   const [formData, setFormData] = useState(defaultData);
@@ -25,6 +26,15 @@ const ContactHeroEditor = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Handle Image Upload
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setFormData(prev => ({ ...prev, bgImage: imageUrl }));
+    }
   };
 
   const handleReset = () => {
@@ -44,7 +54,7 @@ const ContactHeroEditor = () => {
   return (
     <div className="min-h-screen flex flex-col bg-[#FDFDFD] font-sans h-screen overflow-hidden">
       
-{/* navbar */}
+      {/* NAVBAR */}
       <nav className="sticky top-0 z-[50] bg-white border-b border-slate-200 px-3 lg:px-6 py-3 flex items-center justify-between shadow-sm gap-2 shrink-0">
         <div className="flex items-center gap-1.5 lg:gap-3 flex-shrink-0">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-xl transition-all">
@@ -76,25 +86,16 @@ const ContactHeroEditor = () => {
         </div>
 
         <button 
-          onClick={handleSave}
-          disabled={isSaving}
+          onClick={handleSave} disabled={isSaving}
           className="bg-slate-900 text-white p-2.5 lg:px-6 lg:py-2.5 rounded-full font-extrabold text-[10px] lg:text-xs flex items-center gap-2 shadow-lg hover:bg-indigo-600 transition-all flex-shrink-0 disabled:opacity-70 disabled:hover:bg-slate-900"
         >
-          {isSaving ? (
-            <span className="animate-pulse">Saving...</span>
-          ) : (
-            <>
-              <Save size={16} className="lg:w-[14px] lg:h-[14px]" /> 
-              <span className="hidden md:inline">Save Changes</span>
-            </>
-          )}
+          {isSaving ? <span className="animate-pulse">Saving...</span> : <><Save size={16} className="lg:w-[14px] lg:h-[14px]" /> <span className="hidden md:inline">Save Changes</span></>}
         </button>
       </nav>
 
-  
       <div className="flex-1 flex overflow-hidden relative">
         
-        {/* LEFT side */}
+        {/* LEFT SIDE: FORM */}
         {(viewMode === 'edit' || viewMode === 'split') && (
           <div className={`${viewMode === 'edit' ? 'w-full max-w-3xl mx-auto border-x' : 'w-full lg:w-[420px] border-r'} bg-white border-slate-200 flex flex-col h-full relative z-20 shadow-2xl shadow-slate-200/50 transition-all duration-300`}>
             
@@ -109,41 +110,51 @@ const ContactHeroEditor = () => {
                   <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
                     <Type size={12} /> Badge Text
                   </label>
-                  <input 
-                    type="text" name="badgeText" value={formData.badgeText} onChange={handleChange}
-                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-indigo-100 focus:bg-white transition-all shadow-inner" 
-                  />
+                  <input type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-indigo-100 focus:bg-white transition-all shadow-inner" />
                 </div>
 
                 <div>
                   <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
                     <Type size={12} /> Main Title (White Text)
                   </label>
-                  <input 
-                    type="text" name="titlePart1" value={formData.titlePart1} onChange={handleChange}
-                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-indigo-100 focus:bg-white transition-all shadow-inner" 
-                  />
+                  <input type="text" name="titlePart1" value={formData.titlePart1} onChange={handleChange} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-indigo-100 focus:bg-white transition-all shadow-inner" />
                 </div>
 
                 <div>
                   <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
                     <Type size={12} /> Highlighted Title (Emerald)
                   </label>
-                  <input 
-                    type="text" name="titleAccent" value={formData.titleAccent} onChange={handleChange}
-                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-emerald-100 focus:bg-white transition-all shadow-inner" 
-                  />
+                  <input type="text" name="titleAccent" value={formData.titleAccent} onChange={handleChange} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-emerald-100 focus:bg-white transition-all shadow-inner" />
                 </div>
 
                 <div>
                   <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
                     <AlignLeft size={12} /> Subtitle Paragraph
                   </label>
-                  <textarea 
-                    name="paragraphText" value={formData.paragraphText} onChange={handleChange} rows="4"
-                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-indigo-100 focus:bg-white transition-all shadow-inner resize-none leading-relaxed" 
-                  ></textarea>
+                  <textarea name="paragraphText" value={formData.paragraphText} onChange={handleChange} rows="4" className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-indigo-100 focus:bg-white transition-all shadow-inner resize-none leading-relaxed"></textarea>
                 </div>
+
+                {/* --- IMAGE UPLOAD SECTION --- */}
+                <div className="pt-2">
+                   <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
+                    <Upload size={12} /> Background Image
+                  </label>
+                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
+                  <div onClick={() => fileInputRef.current.click()} className="w-full h-32 border-2 border-dashed border-slate-200 bg-slate-50 rounded-2xl flex flex-col items-center justify-center group hover:bg-indigo-50 hover:border-indigo-200 transition-all cursor-pointer overflow-hidden relative">
+                    {formData.bgImage ? (
+                      <>
+                        <img src={formData.bgImage} className="w-full h-full object-cover opacity-60" alt="bg" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-xs opacity-0 group-hover:opacity-100 transition-opacity">Change Image</div>
+                      </>
+                    ) : (
+                      <div className="text-center">
+                        <Upload className="mx-auto text-slate-300 mb-2 group-hover:text-indigo-400 transition-colors" />
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-indigo-600 transition-colors">Upload Custom Cover</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
               </div>
             </div>
 
@@ -155,7 +166,7 @@ const ContactHeroEditor = () => {
           </div>
         )}
 
-        {/*PREVIEW */}
+        {/* RIGHT SIDE: PREVIEW */}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'preview' ? 'w-full' : 'hidden lg:flex flex-1'} flex-col h-full bg-slate-100/50 relative transition-all duration-300`}>
             
@@ -166,6 +177,7 @@ const ContactHeroEditor = () => {
 
             <div className="flex-1 overflow-y-auto w-full flex items-start justify-center p-4 lg:p-8">
               <div className="w-full max-w-[1400px] rounded-[2rem] overflow-hidden shadow-2xl shadow-slate-300/50 border-4 border-white/50 bg-zinc-950">
+                {/* PREVIEW COMPONENT */}
                 <ContactHero {...formData} />
               </div>
             </div>
