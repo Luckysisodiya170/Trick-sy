@@ -1,181 +1,200 @@
 import React, { useState, useMemo } from 'react';
 import { 
-  Mail, MailOpen, Trash2, Reply, 
-  Star, Search, Filter, CheckCircle, 
-  AlertCircle, MoreVertical, Archive
+  Send, Sparkles, Clock, X,
+  ChevronRight, Search, Plus, 
+  Zap, Star, Filter, MessageSquare, AlertCircle
 } from 'lucide-react';
 
 const ContactEnquiries = () => {
-  const [selectedMail, setSelectedMail] = useState(null);
+  // 1. STATES
+  const [activeFilter, setActiveFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedEnquiry, setSelectedEnquiry] = useState(null); // For Modal
 
-  // Production-grade Mock Data
-  const [enquiries, setEnquiries] = useState([
+  // 2. DATA
+  const [enquiries] = useState([
     { 
       id: 1, 
       sender: "Arjun Mehta", 
-      email: "arjun.m@example.com", 
-      subject: "Bulk AC Servicing for Office", 
+      subject: "Bulk AC Servicing", 
       message: "Hi Tricksy Team, we have 15 split ACs in our office in JLT. Can you provide a quotation for a seasonal maintenance contract?", 
-      date: "10:45 AM", 
-      read: false, 
-      priority: "high",
-      category: "Commercial"
+      tag: "Partner",
+      time: "10:45 AM",
+      priority: "High",
+      email: "arjun@office.com"
     },
     { 
       id: 2, 
       sender: "Sarah Jenkins", 
-      email: "sarah.j@outlook.com", 
-      subject: "Emergency Plumbing Issue", 
+      subject: "Emergency Leak", 
       message: "There is a major leak in my kitchen. Need someone urgently within the next 2 hours. Please confirm if available.", 
-      date: "Yesterday", 
-      read: true, 
-      priority: "urgent",
-      category: "Residential"
+      tag: "Urgent",
+      time: "Just Now",
+      priority: "Urgent",
+      email: "sarah.j@web.com"
     },
     { 
       id: 3, 
       sender: "Vikram Singh", 
-      email: "vikram.v@gmail.com", 
       subject: "Partnership Query", 
-      message: "I am interested in joining your platform as a service provider for painting works. What is the onboarding process?", 
-      date: "24 Mar", 
-      read: true, 
-      priority: "medium",
-      category: "Partnership"
+      message: "I am interested in joining your platform as a service provider for painting works.", 
+      tag: "Partner",
+      time: "24 Mar",
+      priority: "Normal",
+      email: "vikram@paint.pro"
     }
   ]);
 
-  // Filtering Logic (Future Ready: Easily extendable)
-  const filteredEnquiries = useMemo(() => {
-    return enquiries.filter(item => 
-      item.sender.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      item.subject.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm, enquiries]);
-
-  const toggleReadStatus = (id) => {
-    setEnquiries(prev => prev.map(e => e.id === id ? { ...e, read: !e.read } : e));
-  };
+  // 3. FUNCTIONALITY: Filtering Logic
+  const filteredData = useMemo(() => {
+    return enquiries.filter(item => {
+      const matchesSearch = item.sender.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            item.subject.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesFilter = activeFilter === "All" || item.tag === activeFilter;
+      return matchesSearch && matchesFilter;
+    });
+  }, [searchTerm, activeFilter, enquiries]);
 
   return (
-    <div className="flex flex-col h-[calc(100-20px)] bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden m-4 lg:m-8">
+    <div className="min-h-screen bg-[#F8FAFF] text-slate-900 p-4 lg:p-10 font-sans relative overflow-x-hidden">
       
-      {/* --- TOP TOOLBAR --- */}
-      <div className="p-6 border-b border-slate-50 flex flex-wrap items-center justify-between gap-4 bg-slate-50/30">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="relative w-full max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input 
-              type="text"
-              placeholder="Search enquiries..."
-              className="w-full pl-12 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all font-medium"
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+      {/* Background Decor */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-100/50 blur-[120px] rounded-full -z-10" />
+      
+      <div className="max-w-7xl mx-auto">
+        
+        {/* --- HEADER & SEARCH --- */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
+          <div>
+            <h1 className="text-5xl font-black tracking-tighter text-slate-900 leading-none mb-2">
+              Contact <span className="text-indigo-600">Queries.</span>
+            </h1>
+            <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em]">Operational Intelligence Panel</p>
           </div>
-          <button className="p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all shadow-sm text-slate-600">
-            <Filter size={18} />
-          </button>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mr-2">Quick Actions</span>
-          <button className="p-2.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all">
-            <Trash2 size={18} />
-          </button>
-          <button className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
-            <Archive size={18} />
-          </button>
-        </div>
-      </div>
 
-      <div className="flex flex-1 overflow-hidden min-h-[600px]">
-        
-        {/* --- LEFT: ENQUIRY LIST --- */}
-        <div className="w-full lg:w-[400px] border-r border-slate-50 overflow-y-auto bg-white">
-          {filteredEnquiries.map((mail) => (
-            <div 
-              key={mail.id}
-              onClick={() => { setSelectedMail(mail); toggleReadStatus(mail.id); }}
-              className={`p-6 border-b border-slate-50 cursor-pointer transition-all relative group
-                ${selectedMail?.id === mail.id ? 'bg-indigo-50/50' : 'hover:bg-slate-50/80'}
-                ${!mail.read ? 'border-l-4 border-l-indigo-600' : 'border-l-4 border-l-transparent'}
-              `}
+          <div className="flex items-center gap-4 w-full lg:w-auto">
+            <div className="relative flex-1 lg:w-80 group">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-600 transition-colors" size={18} />
+              <input 
+                type="text" 
+                placeholder="Search signals..." 
+                className="w-full pl-14 pr-6 py-4 bg-white border border-slate-100 rounded-3xl shadow-sm outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all font-bold text-sm"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <button className="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm text-slate-400 hover:text-indigo-600 hover:shadow-md transition-all">
+              <Filter size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* --- FILTER CHIPS (FUNCTIONAL BOXES) --- */}
+        <div className="flex flex-wrap gap-4 mb-10">
+          {['All', 'Urgent', 'Partner'].map((f) => (
+            <button 
+              key={f}
+              onClick={() => setActiveFilter(f)}
+              className={`px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all border ${
+                activeFilter === f 
+                ? 'bg-indigo-600 text-white border-indigo-600 shadow-xl shadow-indigo-200 -translate-y-1' 
+                : 'bg-white text-slate-400 border-slate-100 hover:border-indigo-200'
+              }`}
             >
-              <div className="flex justify-between items-start mb-1">
-                <h4 className={`text-sm tracking-tight ${!mail.read ? 'font-black text-slate-900' : 'font-bold text-slate-600'}`}>
-                  {mail.sender}
-                </h4>
-                <span className="text-[10px] font-bold text-slate-400">{mail.date}</span>
+              {f} Signals
+            </button>
+          ))}
+        </div>
+
+        {/* --- GRID CARDS --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredData.map((item) => (
+            <div 
+              key={item.id}
+              onClick={() => setSelectedEnquiry(item)}
+              className="group bg-white p-8 rounded-[3rem] border border-white shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 cursor-pointer relative overflow-hidden"
+            >
+              <div className="flex justify-between items-start mb-8">
+                <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-xl group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                  {item.sender[0]}
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">{item.time}</p>
+                  <span className={`text-[8px] font-black px-2 py-1 rounded-md uppercase ${item.tag === 'Urgent' ? 'bg-rose-50 text-rose-500' : 'bg-slate-50 text-slate-500'}`}>
+                    {item.tag}
+                  </span>
+                </div>
               </div>
-              <p className={`text-xs mb-2 truncate ${!mail.read ? 'font-bold text-slate-800' : 'text-slate-500'}`}>
-                {mail.subject}
+
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-3 group-hover:text-indigo-600 transition-colors line-clamp-1">
+                {item.subject}
+              </h3>
+              <p className="text-slate-400 text-sm font-medium leading-relaxed line-clamp-2 mb-8">
+                {item.message}
               </p>
-              <div className="flex gap-2">
-                <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-full border 
-                  ${mail.priority === 'urgent' ? 'bg-rose-50 text-rose-500 border-rose-100' : 'bg-slate-50 text-slate-500 border-slate-100'}`}>
-                  {mail.priority}
-                </span>
-                <span className="text-[8px] font-black uppercase px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100">
-                  {mail.category}
-                </span>
+
+              <div className="flex items-center justify-between pt-6 border-t border-slate-50">
+                <span className="text-[10px] font-black text-slate-300 uppercase tracking-tighter italic">{item.sender}</span>
+                <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center group-hover:bg-indigo-600 transition-all shadow-lg shadow-slate-200">
+                  <ChevronRight size={18} />
+                </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* --- RIGHT: MESSAGE VIEW --- */}
-        <div className="hidden lg:flex flex-1 bg-slate-50/20 flex-col">
-          {selectedMail ? (
-            <div className="p-10 flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
+        {/* Empty State */}
+        {filteredData.length === 0 && (
+          <div className="text-center py-20">
+            <AlertCircle size={48} className="mx-auto text-slate-200 mb-4" />
+            <p className="text-slate-400 font-black uppercase tracking-widest text-xs">No signals found matching your filters</p>
+          </div>
+        )}
+      </div>
+
+      {/* --- DETAIL MODAL (FUNCTIONAL POPUP) --- */}
+      {selectedEnquiry && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setSelectedEnquiry(null)} />
+          <div className="relative bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
+            <div className="p-10 lg:p-14">
               <div className="flex justify-between items-start mb-10">
-                <div>
-                  <h2 className="text-2xl font-black text-slate-900 mb-2 italic uppercase tracking-tight leading-tight">
-                    {selectedMail.subject}
-                  </h2>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-indigo-100">
-                      {selectedMail.sender[0]}
-                    </div>
-                    <div>
-                      <p className="text-sm font-black text-slate-800">{selectedMail.sender}</p>
-                      <p className="text-xs text-slate-400 font-medium italic">From: {selectedMail.email}</p>
-                    </div>
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-[1.5rem] bg-indigo-600 text-white flex items-center justify-center text-2xl font-black shadow-xl shadow-indigo-100">
+                    {selectedEnquiry.sender[0]}
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-black text-slate-900 tracking-tight">{selectedEnquiry.sender}</h2>
+                    <p className="text-sm font-bold text-indigo-500">{selectedEnquiry.email}</p>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <button className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 hover:scale-105 transition-all">
-                    <Reply size={14} /> Reply Now
-                  </button>
-                  <button className="p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-rose-50 hover:text-rose-500 transition-all">
-                    <Trash2 size={18} />
-                  </button>
+                <button onClick={() => setSelectedEnquiry(null)} className="p-3 hover:bg-slate-50 rounded-2xl text-slate-300 hover:text-slate-900 transition-all">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2">Subject</p>
+                  <h4 className="text-xl font-bold text-slate-900 italic">"{selectedEnquiry.subject}"</h4>
+                </div>
+                <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100">
+                  <p className="text-slate-600 font-medium leading-relaxed">{selectedEnquiry.message}</p>
                 </div>
               </div>
 
-              <div className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm flex-1 mb-6">
-                <p className="text-slate-700 leading-relaxed font-medium">
-                  {selectedMail.message}
-                </p>
-              </div>
-
-              <div className="flex gap-4">
-                <div className="flex-1 bg-white border border-slate-100 p-4 rounded-3xl flex items-center justify-between shadow-sm">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 italic">Mark as resolved?</span>
-                  <button className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-2xl text-[9px] font-black uppercase tracking-widest shadow-md">
-                    <CheckCircle size={12} /> Resolve
-                  </button>
-                </div>
+              <div className="mt-10 flex gap-4">
+                <button className="flex-1 bg-slate-900 text-white py-5 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3">
+                  <Send size={16} fill="white" /> Reply Now
+                </button>
+                <button className="px-8 py-5 border border-slate-100 rounded-2xl text-xs font-black uppercase text-slate-400 hover:bg-slate-50 transition-all">
+                  Archive
+                </button>
               </div>
             </div>
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-slate-300">
-              <Mail size={80} strokeWidth={0.5} className="mb-4 opacity-20" />
-              <p className="font-black uppercase tracking-[0.3em] italic text-xs">Select an enquiry to read</p>
-            </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
