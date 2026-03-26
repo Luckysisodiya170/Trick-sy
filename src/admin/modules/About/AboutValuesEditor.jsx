@@ -88,7 +88,7 @@ const AboutValuesEditor = () => {
           </div>
         )}
 
-        {/* --- PREVIEW SIDE (MATCHED) --- */}
+        {/* --- PREVIEW SIDE --- */}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'split' ? 'lg:col-span-7' : 'w-full'} h-fit sticky top-24`}>
             <div className="w-full bg-white rounded-[3rem] border-[8px] border-slate-950 shadow-2xl overflow-hidden min-h-[600px] relative">

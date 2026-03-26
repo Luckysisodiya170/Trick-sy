@@ -9,7 +9,7 @@ import {
 const ServiceBookings = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
-  const [selectedBooking, setSelectedBooking] = useState(null); // Modal State
+  const [selectedBooking, setSelectedBooking] = useState(null); 
   const [bookings, setBookings] = useState([
     { id: 'TR-9921', customer: 'Aryan Khan', service: 'AC Maintenance', date: '26 Mar', time: '10:00 AM', status: 'Pending', amount: 1499, location: 'Bhopal', phone: '+91 98765 43210' },
     { id: 'TR-9922', customer: 'Sneha Patel', service: 'Deep Cleaning', date: '25 Mar', time: '02:30 PM', status: 'Confirmed', amount: 4200, location: 'Indore', phone: '+91 88888 12345' },
@@ -17,7 +17,6 @@ const ServiceBookings = () => {
     { id: 'TR-9924', customer: 'Meera Bai', service: 'Electrical Repair', date: '24 Mar', time: '11:15 AM', status: 'Cancelled', amount: 1200, location: 'Ujjain', phone: '+91 90000 11111' },
   ]);
 
-  // --- ACTIONS ---
   const updateStatus = (id, newStatus) => {
     setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus } : b));
     if(selectedBooking) setSelectedBooking(prev => ({...prev, status: newStatus}));
@@ -125,7 +124,7 @@ const ServiceBookings = () => {
             </div>
           </div>
 
-          {/* RIGHT SIDEBAR STATS */}
+          {/* RIGHT SIDEBAR  */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-slate-900 rounded-[3rem] p-10 text-white relative overflow-hidden shadow-2xl">
               <TrendingUp className="text-indigo-400 mb-6" size={32} />
@@ -151,7 +150,7 @@ const ServiceBookings = () => {
         </div>
       </div>
 
-      {/* --- CENTER MODAL WITH BLUR --- */}
+      {/* --- CENTER MODAL  --- */}
       {selectedBooking && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
           {/* Blur Overlay */}

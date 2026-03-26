@@ -77,7 +77,6 @@ const GoogleReviewsEditor = () => {
         </div>
       </nav>
 
-      {/* MAIN CONTENT AREA - Added flex-col for mobile stacking, lg:flex-row for desktop */}
       <div className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row">
         
         {/* EDITOR PANEL */}
@@ -177,7 +176,6 @@ const GoogleReviewsEditor = () => {
                 <div className="flex-1 overflow-y-auto bg-white py-8 md:py-12 px-4 md:px-6 lg:px-12 custom-scrollbar-preview">
                    <div className="max-w-5xl mx-auto space-y-8 md:space-y-12">
                       
-                      {/* Responsive Flex Col to Row inside the preview */}
                       <div className="bg-slate-50 rounded-[2rem] md:rounded-[3.5rem] p-6 md:p-8 lg:p-12 flex flex-col lg:flex-row items-center lg:items-start gap-8 md:gap-12 border border-slate-100 shadow-sm">
                          
                          {/* Left Sidebar */}

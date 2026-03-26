@@ -7,7 +7,6 @@ import {
   ShieldCheck, PenTool, Smartphone, Monitor
 } from 'lucide-react';
 
-// Icons List for Selection
 const availableIcons = [
   { id: 'wrench', component: <Wrench size={18} />, label: 'Repair' },
   { id: 'zap', component: <Zap size={18} />, label: 'Electric' },
@@ -73,7 +72,6 @@ const MasterTechnicalEditor = () => {
     }
   };
 
-  // Helper to get current icon component
   const getIcon = (id) => availableIcons.find(icon => icon.id === id)?.component || <LayoutGrid size={18} />;
 
   return (

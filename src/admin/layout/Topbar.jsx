@@ -59,11 +59,10 @@ const Topbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             </div>
             <div className="border-t border-slate-100 py-1">
               
-              {/* Updated onClick function here for Logout */}
               <button 
                 onClick={() => { 
-                  localStorage.removeItem('tricksyAdminToken'); // Delete the token
-                  navigate('/admin-login'); // Go back to login page
+                  localStorage.removeItem('tricksyAdminToken'); 
+                  navigate('/admin-login'); 
                 }} 
                 className="w-full flex items-center gap-2 px-4 py-2 text-[12px] font-bold text-rose-500 hover:bg-rose-50 transition-colors"
               >

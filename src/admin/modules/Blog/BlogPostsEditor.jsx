@@ -25,7 +25,6 @@ const BlogPostsEditor = () => {
 
   const activePost = posts.find(p => p.id.toString() === editingPostId?.toString());
 
-  // Handlers
   const handleAddNewPost = () => {
     const newPost = {
       id: Date.now(),
@@ -196,7 +195,7 @@ const BlogPostsEditor = () => {
           </div>
         )}
 
-        {/* RIGHT PANEL: LIVE PREVIEW GRID */}
+        {/* RIGHT PANEL */}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className="flex-1 bg-slate-50/50 flex flex-col h-full overflow-hidden relative">
             <div className="h-8 bg-white/80 backdrop-blur-sm border-b border-slate-200 flex items-center justify-between px-4 shrink-0 z-10">
@@ -205,14 +204,11 @@ const BlogPostsEditor = () => {
               </div>
             </div>
 
-            {/* SCROLLABLE GRID CONTAINER */}
             <div className="flex-1 overflow-y-auto p-4 lg:p-6 scroll-smooth">
               <div className="max-w-[1200px] mx-auto pb-20">
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {posts.filter(p => p.status === 'Published').map((post) => (
                     
-                    /* 🔥 YAHAN "DOUBLE BOX" FIX KIYA HAI 🔥 */
-                    /* Sirf transparent container rakha hai jo active hone par ring dikhayega */
                     <div key={post.id} className={`transition-all duration-300 ${editingPostId === post.id ? 'ring-2 ring-indigo-500 ring-offset-4 rounded-3xl scale-[1.02]' : ''}`}>
                       <div className="pointer-events-none">
                          <BlogCard post={post} />

@@ -25,7 +25,6 @@ const PageManager = ({ title, storageKey, defaultSections, iconLibrary, baseRout
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null); 
 
-  // load from local storage
   const [sections, setSections] = useState(() => {
     const saved = localStorage.getItem(storageKey);
     return saved ? JSON.parse(saved) : defaultSections;
@@ -73,7 +72,6 @@ const PageManager = ({ title, storageKey, defaultSections, iconLibrary, baseRout
     e.preventDefault();
     if (!formData.name.trim()) return;
     
-    // generate path if empty
     const finalPath = formData.path.trim() || `${baseRoute}/${formData.name.toLowerCase().replace(/\s+/g, '-')}`;
     
     const moduleData = {

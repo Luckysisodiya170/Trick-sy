@@ -4,10 +4,9 @@ import {
   MapPin, Globe, Link2 
 } from 'lucide-react';
 
-// 1. Backend se aane wali 'iconKey' string ko actual component me map karne ke liye object
 const iconMap = {
   Phone: Phone,
-  MessageSquare: MessageSquareQuote, // MessageSquareQuote ko MessageSquare map karna better h
+  MessageSquare: MessageSquareQuote, 
   Mail: Mail,
   Clock: Clock,
   MapPin: MapPin,
@@ -26,9 +25,7 @@ const ContactInfo = ({ infoData }) => {
   
   const displayData = infoData?.length ? infoData : defaultInfo;
 
-  // 2. Updated Link Generation Logic
   const getLinkProps = (item) => {
-    // Agar iconKey MapPin ya Globe hai, toh usko uske hisaab se link denge (Google maps, Website)
     const type = item.type || item.iconKey?.toLowerCase(); 
     const cleanInfo = item.info ? item.info.replace(/\s+/g, '') : '';
     
@@ -43,16 +40,13 @@ const ContactInfo = ({ infoData }) => {
       return { as: 'a', href: `mailto:${cleanInfo}` };
     }
     if (type === 'mappin') {
-       // Search address on google maps
        return { as: 'a', href: `https://maps.google.com/?q=${encodeURIComponent(item.info)}`, target: "_blank", rel: "noreferrer" };
     }
     if (type === 'globe' || type === 'link2') {
-       // Regular website link
        let url = cleanInfo.startsWith('http') ? cleanInfo : `https://${cleanInfo}`;
        return { as: 'a', href: url, target: "_blank", rel: "noreferrer" };
     }
     
-    // Default fallback (e.g., for Clock/Time)
     return { as: 'div' }; 
   };
 
@@ -61,13 +55,10 @@ const ContactInfo = ({ infoData }) => {
       <h2 className="text-2xl font-bold text-zinc-950 uppercase tracking-wide mb-2">Connect Directly</h2>
       
       {displayData.map((item) => {
-        // Use Link props dynamically
         const { as: Component, ...linkProps } = getLinkProps(item);
         
-        // Resolve Icon (Handles both new 'iconKey' string format and old direct 'icon' format)
         const IconComponent = item.iconKey ? iconMap[item.iconKey] : item.icon; 
         
-        // Fallback icon if something goes wrong
         const SafeIcon = IconComponent || Phone; 
         
         return (

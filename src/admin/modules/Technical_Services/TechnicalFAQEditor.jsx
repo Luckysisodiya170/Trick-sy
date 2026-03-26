@@ -11,7 +11,6 @@ const TechnicalFAQEditor = () => {
   const [viewMode, setViewMode] = useState('split'); 
   const [isSaving, setIsSaving] = useState(false);
 
-  // Editable Header State
   const [header, setHeader] = useState({
     main: "Common",
     highlight: "Queries_"

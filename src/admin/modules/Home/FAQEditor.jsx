@@ -83,7 +83,7 @@ const FAQEditor = () => {
         </div>
       </nav>
 
-      {/* Main Content Area - Responsive Flex Row/Col */}
+      {/* Main Content Area  */}
       <div className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row">
         
         {/* --- EDITOR PANEL --- */}
@@ -185,7 +185,6 @@ const FAQEditor = () => {
             
             <div className="w-full h-full bg-slate-50 shadow-2xl rounded-3xl md:rounded-[3rem] overflow-hidden flex flex-col border-[4px] md:border-[10px] border-slate-900 relative">
                 
-                {/* Device Frame Tabs */}
                 <div className="h-8 md:h-10 bg-slate-100 border-b border-slate-200 flex items-center px-4 gap-2 shrink-0 z-10">
                     <div className="flex gap-1.5 md:gap-2">
                       <div className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-rose-500"></div>
@@ -194,7 +193,6 @@ const FAQEditor = () => {
                     </div>
                 </div>
                 
-                {/* YOUR DESIGN EMBEDDED HERE */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50">
                   <section className="py-12 md:py-20 border-y border-slate-100">
                     <div className="max-w-[1280px] mx-auto px-6 md:px-10 lg:px-12 w-full">

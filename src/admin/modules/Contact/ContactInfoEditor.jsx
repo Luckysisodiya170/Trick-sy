@@ -60,7 +60,6 @@ const ContactInfoEditor = () => {
 
   const handleSave = async () => {
     setIsSaving(true);
-    // TODO: Replace this timeout with your actual Backend API call (e.g., axios.post('/api/contact', formData))
     await new Promise(resolve => setTimeout(resolve, 800));
     setIsSaving(false);
     alert('Contact information saved successfully!');

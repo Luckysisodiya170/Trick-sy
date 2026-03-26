@@ -105,10 +105,9 @@ const PopularEditor = () => {
       </nav>
 
       {/* MAIN CONTENT AREA */}
-      {/* Changed: overflow-y-auto on mobile to scroll the whole page, lg:overflow-hidden to lock desktop scroll */}
       <div className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row">
         
-        {/* EDITOR (Left Side on PC, Top on Mobile) */}
+        {/* EDITOR */}
         {(viewMode === 'edit' || viewMode === 'split') && (
           <div className={`${viewMode === 'split' ? 'w-full lg:w-[42%] lg:h-full lg:border-r border-slate-200 lg:shadow-2xl z-10 lg:overflow-y-auto' : 'w-full h-full lg:overflow-y-auto'} p-4 md:p-8 custom-scrollbar bg-[#F1F5F9]/40`}>
             <div className="max-w-4xl mx-auto space-y-8 pb-10">
@@ -210,11 +209,10 @@ const PopularEditor = () => {
           </div>
         )}
 
-        {/* LIVE PREVIEW (Right Side on PC, Bottom on Mobile) */}
+        {/* LIVE PREVIEW */}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'split' ? 'w-full lg:w-[58%] min-h-[800px] lg:min-h-0 lg:h-full' : 'w-full h-full'} bg-slate-100 p-2 sm:p-4 md:p-8 flex items-center justify-center relative`}>
             
-            {/* The "Device" Frame */}
             <div className="w-full h-full bg-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.12)] rounded-3xl md:rounded-[3rem] overflow-hidden flex flex-col border-[4px] md:border-[12px] border-slate-900 relative z-20">
               
               {/* Fake Browser Tab Bar */}

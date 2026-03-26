@@ -112,7 +112,6 @@ const ServiceHeroEditor = ({ fullServiceData, setFullServiceData }) => {
       {/* RIGHT SIDE: LIVE PREVIEW */}
       <div className="flex-1 bg-slate-100 rounded-3xl overflow-hidden relative border-4 border-slate-200 shadow-inner h-[450px]">
          
-         {/* Normal width aur bina kisi scale property ke perfect chota preview */}
          <div className="w-full h-full bg-slate-950 relative overflow-hidden pointer-events-none rounded-[1.2rem]">
             
             {/* Background Images & Overlay */}
@@ -176,7 +175,6 @@ const ServiceHeroEditor = ({ fullServiceData, setFullServiceData }) => {
                   </div>
                 </div>
 
-                {/* RIGHT SIDE FLOATING CARD PREVIEW (Scaled Down natively) */}
                 <div className="md:col-span-5 hidden md:flex justify-end">
                   <div className="relative w-full max-w-[200px]">
                     <div className="absolute top-2 left-2 w-full h-full bg-emerald-500 rounded-3xl"></div>

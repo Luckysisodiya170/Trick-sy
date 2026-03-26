@@ -232,19 +232,19 @@ const AboutEditor = () => {
                   </div>
               </div>
 
-              {/* Exact About Section Design Mockup */}
+              {/* Exact About Section Design  */}
               <div className="relative overflow-y-auto max-h-[80vh] custom-scrollbar bg-white pb-10">
                   
-                  {/* Background Accents */}
+                  {/* Background  */}
                   <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-emerald-50 rounded-full blur-[80px] pointer-events-none" />
 
                   <div className={`py-12 sm:py-20 relative z-10 w-full max-w-[1400px] mx-auto px-6 sm:px-10 ${viewMode === 'split' ? 'lg:px-8' : 'lg:px-16'}`}>
                       
                       <div className={`grid grid-cols-1 ${viewMode === 'split' ? 'xl:grid-cols-2' : 'lg:grid-cols-2'} gap-12 sm:gap-16 xl:gap-20 items-center`}>
                           
-                          {/* Left Column: Images Mockup */}
+                          {/* Left Column */}
                           <div className={`relative transition-all duration-700 ${activeField === 'media' ? 'scale-105 rotate-1' : ''}`}>
-                              {/* Main Background Blob */}
+                              {/* Main Background  */}
                               <div className="absolute -top-4 -left-4 w-full h-[280px] sm:h-[400px] bg-emerald-500 rounded-[3rem] opacity-20 blur-2xl" />
                               
                               {/* Main Image Container */}
@@ -259,7 +259,7 @@ const AboutEditor = () => {
                                  </div>
                               </div>
 
-                              {/* Floating Stats Badge Exp */}
+                              {/* Floating Stats Badge  */}
                               <div className={`absolute top-1/2 -left-6 sm:-left-12 bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl shadow-xl flex items-center gap-3 sm:gap-4 border border-slate-50 transition-all duration-500 ${activeField === 'stats' ? 'scale-110 -rotate-3 border-emerald-400' : ''}`}>
                                  <div className="w-10 h-10 sm:w-14 sm:h-14 bg-emerald-500 rounded-xl sm:rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-200">
                                     <Award size={20} className="sm:w-6 sm:h-6" />
@@ -271,7 +271,7 @@ const AboutEditor = () => {
                               </div>
                           </div>
 
-                          {/* Right Column: Text & Features Mockup */}
+                          {/* Right Column */}
                           <div className="space-y-6 sm:space-y-8 mt-8 lg:mt-0">
                               
                               <div className="space-y-4">

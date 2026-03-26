@@ -5,7 +5,6 @@ import {
   Plus, Trash2, Folder, Monitor, Info
 } from 'lucide-react';
 
-// USER-SIDE COMPONENT IMPORT
 import BlogCategories from '../../../pages/Blog/BlogCategories'; 
 
 const BlogCategoriesEditor = () => {
@@ -137,7 +136,7 @@ const BlogCategoriesEditor = () => {
           </div>
         )}
 
-        {/* RIGHT PANEL: LIVE PREVIEW W/ COMPONENT IMPORT */}
+        {/* RIGHT PANEL */}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'preview' ? 'w-full' : 'hidden lg:flex flex-1'} flex-col h-full bg-zinc-50 relative transition-all duration-300 min-w-0`}>
             
@@ -152,9 +151,7 @@ const BlogCategoriesEditor = () => {
               <div className="w-full max-w-[1000px] space-y-4">
                 <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest mb-4">How it looks on your website</h3>
                 
-                {/* Yahan pe ab original manual HTML ki jagah BlogCategories
-                  component import karke live data as props bheja gaya hai.
-                */}
+                
                 <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-zinc-100">
                    <BlogCategories 
                      categories={categories} 

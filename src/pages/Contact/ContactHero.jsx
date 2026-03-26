@@ -7,14 +7,13 @@ const ContactHero = ({
   titlePart1 = 'Premium Care',
   titleAccent = 'Your Space.',
   paragraphText = 'Need a personalized quote or have a query? We are here to provide 5-star maintenance support. Reach us within minutes.',
-  bgImage // 🔥 Naya prop yahan add kiya hai
+  bgImage 
 }) => {
   return (
     <section className="relative pt-24 pb-40 overflow-hidden bg-zinc-950">
       
       {/* Background Image */}
       <img
-        // 🔥 Yahan logic change kiya: Agar bgImage (uploaded) hai toh wo dikhao, warna default contactImage
         src={bgImage || contactImage} 
         alt="Tricksy Contact Page Hero Background"
         className="absolute inset-0 w-full h-full object-cover opacity-40" 

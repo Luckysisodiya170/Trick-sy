@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// Added useNavigate here for redirecting after logout
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ShieldCheck, MonitorPlay, UserCircle,
@@ -10,7 +9,6 @@ import {
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const location = useLocation();
   
-  // Added navigate tool
   const navigate = useNavigate(); 
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -151,7 +149,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
           {!isSidebarOpen && <span className="absolute left-16 bg-slate-800 text-white text-[10px] px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[200]">Settings</span>}
         </NavLink>
 
-        {/* Added onClick function here for Logout */}
+        {/* Logout */}
         <button 
           onClick={() => setShowLogoutModal(true)}
           className={`flex items-center ${isSidebarOpen ? 'justify-start px-3' : 'justify-center px-0'} py-2.5 w-full rounded-lg text-[13px] font-semibold text-rose-500 hover:bg-rose-500/10 transition-colors relative group`}
@@ -171,10 +169,9 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
       {showLogoutModal && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
-          {/* Blurred Background Overlay */}
           <div 
             className="absolute inset-0 bg-black/40 backdrop-blur-md animate-in fade-in duration-300"
-            onClick={() => setShowLogoutModal(false)} // Close on click outside
+            onClick={() => setShowLogoutModal(false)} 
           />
           
           {/* Modal Content */}

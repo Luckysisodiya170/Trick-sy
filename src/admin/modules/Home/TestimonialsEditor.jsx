@@ -10,7 +10,6 @@ const TestimonialsEditor = () => {
   const [viewMode, setViewMode] = useState('split'); 
   const [activeCard, setActiveCard] = useState(null);
 
-  // --- Header State ---
   const [headerSettings, setHeaderSettings] = useState({
     badgeText: "Verified Client Stories",
     headingNormal: "Real People.",
@@ -18,14 +17,12 @@ const TestimonialsEditor = () => {
     description: "Don't just take our word for it. See why 5,000+ property owners trust the TRICKSY standard."
   });
 
-  // --- Testimonials Data ---
   const [testimonials, setTestimonials] = useState([
     { id: 1, name: 'Ahmed Khan', role: 'Villa Owner', comment: 'Absolutely brilliant service. The team arrived on time and my villa looks spotless. Highly recommended!', rating: 5, image: null },
     { id: 2, name: 'Sarah W.', role: 'Office Manager', comment: 'TRICKSY transformed our workspace. We love that they use eco-friendly products. Will be booking monthly.', rating: 5, image: null },
     { id: 3, name: 'Rahul Sharma', role: 'Property Head', comment: 'Unmatched quality! I manage 10+ properties in Dubai and TRICKSY is my go-to for all maintenance.', rating: 5, image: null }
   ]);
 
-  // --- Handlers ---
   const handleAddReview = () => {
     const newId = Date.now();
     setTestimonials([...testimonials, { id: newId, name: 'New Client', role: 'Verified Client', comment: '', rating: 5, image: null }]);
@@ -37,7 +34,6 @@ const TestimonialsEditor = () => {
   };
 
   return (
-    // Changed: Removed fixed overflow-hidden so mobile can scroll the entire page
     <div className="h-screen flex flex-col bg-[#F8FAFC] font-sans text-slate-900">
       
       {/* NAVBAR */}
@@ -80,12 +76,10 @@ const TestimonialsEditor = () => {
         </div>
       </nav>
 
-      {/* MAIN CONTENT AREA - Added flex-col for mobile stacking, lg:flex-row for desktop side-by-side */}
       <div className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row">
         
         {/* EDITOR SECTION */}
         {(viewMode === 'edit' || viewMode === 'split') && (
-          // Fixed width logic: 100% on mobile, 38% on desktop
           <div className={`${viewMode === 'split' ? 'w-full lg:w-[38%] lg:border-r border-slate-200 lg:h-full lg:overflow-y-auto' : 'w-full h-full lg:overflow-y-auto'} p-4 md:p-6 bg-[#F8FAFC] custom-scrollbar`}>
             <div className="max-w-xl mx-auto space-y-6 pb-10">
               
@@ -164,7 +158,6 @@ const TestimonialsEditor = () => {
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'split' ? 'w-full lg:w-[62%] min-h-[800px] lg:min-h-0 lg:h-full' : 'w-full h-full'} bg-slate-200 p-3 sm:p-4 md:p-6 flex items-center justify-center relative`}>
             
-            {/* The "Device" Frame */}
             <div className="w-full h-full bg-white shadow-2xl rounded-3xl md:rounded-[2.5rem] overflow-hidden flex flex-col border-[4px] md:border-[8px] border-slate-900 relative">
               
               {/* Fake Browser Tab Bar */}

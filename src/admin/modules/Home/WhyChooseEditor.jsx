@@ -99,8 +99,8 @@ const WhyChooseEditor = () => {
         viewMode === 'split' 
           ? 'max-w-[1800px] p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mt-4' 
           : viewMode === 'edit' 
-            ? 'max-w-5xl p-4 lg:p-10 mt-4' // Wider Edit Mode to fill space
-            : 'max-w-6xl p-4 lg:p-10 mt-4' // Full Screen Preview
+            ? 'max-w-5xl p-4 lg:p-10 mt-4' 
+            : 'max-w-6xl p-4 lg:p-10 mt-4' 
       }`}>
     
         {(viewMode === 'edit' || viewMode === 'split') && (
@@ -238,7 +238,6 @@ const WhyChooseEditor = () => {
                         {sectionData.features.map((f, index) => {
                           const IconComp = iconOptions.find(o => o.name === f.iconName)?.icon || CheckCircle2;
                           
-                          // Make the first card stand out
                           const isFirst = index === 0;
                           
                           return (

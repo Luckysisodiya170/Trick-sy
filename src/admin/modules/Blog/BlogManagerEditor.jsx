@@ -6,7 +6,6 @@ import {
   Trash2, Globe, Lock, Info, Type
 } from 'lucide-react';
 
-// USER-SIDE COMPONENT IMPORTS
 import BlogHero from '../../../pages/Blog/BlogHero'; 
 import BlogCard from '../../../pages/Blog/BlogCard'; 
 
@@ -156,7 +155,7 @@ const BlogManagerEditor = () => {
           </div>
         )}
 
-        {/* RIGHT PANEL: LIVE PREVIEW WITH USER COMPONENT */}
+        {/* RIGHT PANEL*/}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'preview' ? 'w-full' : 'hidden lg:flex flex-1'} flex-col h-full bg-slate-100/50 relative transition-all duration-300`}>
             

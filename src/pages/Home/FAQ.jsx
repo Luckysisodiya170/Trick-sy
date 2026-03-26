@@ -36,7 +36,7 @@ const FAQ = ({ faqData }) => {
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Still unsure?</p>
               <a 
                 href="#contact" 
-                onClick={(e) => { e.preventDefault(); console.log("Open Contact Chat API"); }} // Prevents page jump
+                onClick={(e) => { e.preventDefault(); console.log("Open Contact Chat API"); }} 
                 className="text-sm font-black text-slate-900 flex items-center gap-1.5 hover:text-primary-600 transition-colors group"
               >
                 Chat with our team <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />

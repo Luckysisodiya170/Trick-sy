@@ -9,7 +9,6 @@ const ServiceFaqEditor = ({ fullServiceData, setFullServiceData }) => {
 
   if (!fullServiceData) return <div className="p-10 text-center animate-pulse text-slate-400">Loading...</div>;
 
-  // --- HANDLERS ---
   const handleFaqChange = (index, field, value) => {
     const newFaqs = [...fullServiceData.faqs];
     newFaqs[index][field] = value;

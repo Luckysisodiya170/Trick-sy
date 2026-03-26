@@ -6,7 +6,6 @@ import {
   Monitor, Undo, Hash
 } from 'lucide-react';
 
-// NAYA IMPORT: Component for live SEO visual testing
 import SEOPreview from '../../../pages/Blog/SEOPreview'; 
 
 const BlogSEOEditor = () => {
@@ -148,7 +147,7 @@ const BlogSEOEditor = () => {
           </div>
         )}
 
-        {/* RIGHT PANEL: LIVE COMPONENT PREVIEW */}
+        {/* RIGHT PANEL */}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'preview' ? 'w-full' : 'hidden lg:flex flex-1'} flex-col h-full bg-zinc-50 relative transition-all duration-300 min-w-0`}>
             
@@ -161,7 +160,6 @@ const BlogSEOEditor = () => {
 
             <div className="flex-1 overflow-y-auto w-full p-6 lg:p-12 flex flex-col items-center">
               
-              {/* HUMARA NAYA REUSABLE PREVIEW COMPONENT YAHAN CALL HUA HAI */}
               <SEOPreview 
                 title={formData.metaTitle} 
                 description={formData.metaDescription} 

@@ -34,7 +34,7 @@ const AboutValues = ({ title, highlight, subtitle, valuesData }) => {
 
   return (
     <section className="py-24 bg-white relative overflow-hidden">
-      {/* Decorative Blur Background */}
+      {/*  Blur Background */}
       <div className="absolute top-1/2 left-0 -translate-y-1/2 w-64 h-64 bg-primary-500/5 rounded-full blur-[100px] pointer-events-none"></div>
 
       <div className="w-full max-w-[1400px] mx-auto px-6 relative z-10">

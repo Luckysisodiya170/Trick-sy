@@ -8,16 +8,13 @@ import {
 
 import { servicesData as initialData } from '../../../data/servicesData';
 
-// ==========================================
-// IMPORTS FOR EDITORS
-// ==========================================
+
 import ServiceHeroEditor from './ServiceHeroEditor';
 import ServiceIncludesEditor from './ServiceIncludesEditor';
 import ServiceProcessEditor from './ServiceProcessEditor';
 import ServicePricingEditor from './ServicePricingEditor';
 import ServiceFaqEditor from './ServiceFaqEditor';
 
-// --- STEPS CONFIGURATION ---
 const steps = [
     { id: 'hero', name: 'Hero Banner', icon: Layout },
     { id: 'includes', name: 'What\'s Included', icon: ListChecks },
@@ -41,12 +38,10 @@ const ServiceWizard = () => {
 
     const ActiveModuleIcon = activeModule.icon;
 
-    // --- INITIAL DATA LOAD (FIXED) ---
     useEffect(() => {
         if (serviceId) {
             const data = initialData[serviceId] || {};
             
-            // SAFE COPY
             setFullServiceData({
                 ...data,
                 includes: data.includes ? data.includes.map(inc => ({ ...inc })) : [],
@@ -60,7 +55,6 @@ const ServiceWizard = () => {
         }
     }, [serviceId]);
 
-    // --- HANDLERS ---
     const handleNext = async () => {
         setIsSaving(true);
         await new Promise(resolve => setTimeout(resolve, 800)); 
@@ -84,7 +78,6 @@ const ServiceWizard = () => {
         }
     };
 
-    // --- DYNAMIC EDITOR RENDERER ---
     const renderActiveEditor = () => {
         if (!fullServiceData) {
             return (
@@ -111,10 +104,9 @@ const ServiceWizard = () => {
     };
 
     return (
-        // 🔥 FIX 1: Added overflow-x-hidden to prevent horizontal scrolling
         <div className="min-h-screen bg-[#F8FAFC] font-sans flex flex-col relative pb-24 overflow-x-hidden">
             
-            {/* TOP NAVBAR & PROGRESS BAR */}
+            {/* TOP NAVBAR  */}
             <div className="sticky top-0 z-[100] bg-white/95 backdrop-blur-md border-b border-slate-200 pt-4 pb-0 shadow-sm">
                 <div className="max-w-[1600px] mx-auto px-4 lg:px-8">
                     <div className="flex items-center justify-between mb-6">
@@ -127,7 +119,7 @@ const ServiceWizard = () => {
                         <div className="w-[100px]"></div>
                     </div>
 
-                    {/* Progress Stepper */}
+                    {/* Progress  */}
                     <div className="flex items-center justify-between relative pb-4 overflow-x-auto no-scrollbar">
                         <div className="absolute left-0 top-3 w-full h-[2px] bg-slate-100 -z-10"></div>
                         {steps.map((step, index) => {
@@ -159,7 +151,6 @@ const ServiceWizard = () => {
             {/* MAIN EDITOR CONTENT */}
             <div className="flex-1 w-full max-w-[1800px] mx-auto p-4 lg:p-6 mt-4 animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col">
                 
-                {/* 🔥 FIX 2: Added overflow-hidden and flex-col to this main white wrapper so it clips overflowing child previews 🔥 */}
                 <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 lg:p-8 min-h-[500px] overflow-hidden flex flex-col flex-1 relative">
                     
                     <div className="flex items-center gap-3 mb-8 pb-6 border-b border-slate-100 shrink-0">
@@ -181,7 +172,6 @@ const ServiceWizard = () => {
             </div>
 
             {/* BOTTOM FLOATING ACTION BAR */}
-            {/* 🔥 FIX 3: Increased z-[999] so it's always above everything, and ensured proper padding 🔥 */}
             <div className="fixed bottom-0 left-0 right-0 w-full bg-white border-t border-slate-200 p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-[999]">
                 <div className="max-w-[1800px] mx-auto flex items-center justify-between px-4 lg:px-8">
                     

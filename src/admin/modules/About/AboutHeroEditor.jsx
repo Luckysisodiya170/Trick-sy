@@ -35,7 +35,7 @@ const AboutHeroEditor = () => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans pb-20">
       
-      {/* --- ULTRA-RESPONSIVE NAVBAR --- */}
+      {/* ---  NAVBAR --- */}
       <nav className="sticky top-0 z-[50] bg-white border-b border-slate-200 px-3 lg:px-6 py-3 flex items-center justify-between shadow-sm gap-2">
         <div className="flex items-center gap-1.5 lg:gap-3 flex-shrink-0">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-xl transition-all">
@@ -141,7 +141,7 @@ const AboutHeroEditor = () => {
         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/40" />
       </div>
 
-      {/* --- HERO SECTION (MATCHED WITH ABOUTHERO) --- */}
+      {/* --- HERO SECTION  --- */}
       <section className="relative min-h-[500px] lg:min-h-[650px] bg-black overflow-hidden flex items-center py-12 lg:py-20">
         
         {/* Background Layer */}
@@ -182,7 +182,7 @@ const AboutHeroEditor = () => {
                 {heroData.subtext}
               </p>
 
-              {/* 🟢 SMALLER BADGES ROW (Exactly as requested) 🟢 */}
+              {/* BADGES  */}
               <div className="flex flex-row items-center gap-3 lg:gap-4 pt-2 w-full max-w-md overflow-hidden">
                 <div className="flex flex-1 items-center gap-2 bg-white p-2 lg:p-2.5 rounded-xl shadow-lg border border-zinc-100 min-w-0">
                   <div className="flex-shrink-0 w-7 h-7 lg:w-9 lg:h-9 rounded-lg bg-emerald-50 flex items-center justify-center border border-emerald-100">

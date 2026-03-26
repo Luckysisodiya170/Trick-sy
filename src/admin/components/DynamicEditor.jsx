@@ -10,7 +10,7 @@ const DynamicEditor = () => {
   const { moduleName } = useParams(); 
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState('split');
-  const [draggedIdx, setDraggedIdx] = useState(null); // DRAG & DROP STATE
+  const [draggedIdx, setDraggedIdx] = useState(null); 
   
   const formattedName = moduleName 
     ? moduleName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') 
@@ -27,7 +27,6 @@ const DynamicEditor = () => {
     localStorage.setItem(storageKey, JSON.stringify(moduleData));
   }, [moduleData, storageKey]);
 
-  // ADD NEW BLOCK
   const addField = (type) => {
     const newField = {
       id: `field_${Date.now()}`,
@@ -39,7 +38,6 @@ const DynamicEditor = () => {
     setModuleData(prev => ({ ...prev, fields: [...prev.fields, newField] }));
   };
 
-  // UPDATE TEXT/VALUE
   const updateFieldValue = (id, key, newValue) => {
     setModuleData(prev => ({
       ...prev,
@@ -47,12 +45,10 @@ const DynamicEditor = () => {
     }));
   };
 
-  // DELETE BLOCK
   const deleteField = (id) => {
     setModuleData(prev => ({ ...prev, fields: prev.fields.filter(f => f.id !== id) }));
   };
 
-  // MOVE BLOCK UP/DOWN (ARROW BUTTONS)
   const moveField = (index, direction) => {
     const newFields = [...moduleData.fields];
     if (direction === 'up' && index > 0) {
@@ -63,15 +59,13 @@ const DynamicEditor = () => {
     setModuleData({ ...moduleData, fields: newFields });
   };
 
-  // DRAG & DROP LOGIC
   const handleDragStart = (e, index) => {
     setDraggedIdx(index);
-    // Setup drag image transparency
     e.dataTransfer.effectAllowed = 'move';
   };
 
   const handleDragOver = (e) => {
-    e.preventDefault(); // Zaroori hai taaki drop ho sake
+    e.preventDefault(); 
   };
 
   const handleDrop = (e, dropIndex) => {
@@ -81,7 +75,6 @@ const DynamicEditor = () => {
     const newFields = [...moduleData.fields];
     const draggedItem = newFields[draggedIdx];
     
-    // Remove se purani position and insert at new position
     newFields.splice(draggedIdx, 1);
     newFields.splice(dropIndex, 0, draggedItem);
     

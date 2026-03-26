@@ -135,15 +135,11 @@ const AboutTimelineEditor = () => {
                 </div>
 
                 <div className="relative">
-                  {/* 🔥 FIXED LINE LOGIC 🔥 */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
                     {timelineData.steps.map((step, idx) => (
                       <div key={idx} className="relative lg:pt-14 group">
                         
-                        {/* Dynamic Line connecting to the next card horizontally */}
-                        {/* This line now lives INSIDE each card, so it repeats for every row */}
                         <div className="hidden lg:block absolute top-[28px] left-[20px] w-[calc(100%+2rem)] h-[3px] bg-slate-100 z-0">
-                           {/* Add gradient progress if it's not the very last item overall */}
                            {idx < timelineData.steps.length - 1 && (
                               <div className="absolute top-0 left-0 h-full w-full bg-gradient-to-r from-emerald-500 to-teal-400"></div>
                            )}

@@ -178,12 +178,12 @@ const AboutTeamEditor = () => {
                   </p>
                 </div>
 
-                {/* Team Grid: Compact Version */}
+                {/* Team Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   {teamData.members.map((member, i) => (
                     <div key={i} className="group bg-slate-50 rounded-[2.5rem] border border-slate-100 hover:bg-white hover:shadow-xl transition-all duration-500 overflow-hidden">
                       
-                      {/* REDUCED IMAGE SIZE: h-[150px] (Half of 280-300 range) */}
+                    
                       <div className="relative h-[150px] overflow-hidden">
                         {member.img ? (
                           <img src={member.img} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />

@@ -6,7 +6,7 @@ const TechnicalSpecs = () => {
     <section className="py-20 bg-white">
       <div className="w-full max-w-[1300px] mx-auto px-6">
         
-        {/* Compact Center Header */}
+        {/*  Center Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-black text-zinc-950 tracking-tighter uppercase mb-4">
             THE <span className="text-emerald-500">HARDWARE.</span>
@@ -14,10 +14,10 @@ const TechnicalSpecs = () => {
           <p className="text-zinc-500 font-medium text-sm uppercase tracking-[0.3em]">Industrial Standards • Precision Tools</p>
         </div>
 
-        {/* Sharp Bento Grid */}
+        {/*   Grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           
-          {/* Main Hero: Industrial Gear */}
+          {/* Main Hero*/}
           <div className="md:col-span-8 bg-zinc-950 rounded-[2rem] p-10 relative overflow-hidden group min-h-[350px] flex flex-col justify-between">
             <Drill size={320} strokeWidth={0.5} className="absolute -bottom-10 -right-10 text-white/5 transition-all duration-700 -rotate-12 group-hover:rotate-0 group-hover:text-emerald-500/10" />
             
@@ -39,7 +39,7 @@ const TechnicalSpecs = () => {
             </div>
           </div>
 
-          {/* Right Column: Mini Cards */}
+          {/* Right Column */}
           <div className="md:col-span-4 grid grid-cols-1 gap-4">
             {/* Tooling */}
             <div className="bg-zinc-50 rounded-[2rem] p-8 border border-zinc-100 flex items-center gap-6 group hover:bg-white hover:shadow-xl transition-all">
@@ -64,7 +64,7 @@ const TechnicalSpecs = () => {
             </div>
           </div>
 
-          {/* Bottom Wide Card: Custom Solutions */}
+          {/* Bottom  Cards */}
           <div className="md:col-span-12 bg-zinc-50 rounded-[2rem] p-8 flex flex-col md:flex-row items-center justify-between border border-zinc-100 group hover:border-emerald-500/20 transition-all">
             <div className="flex items-center gap-8">
               <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-emerald-500 shadow-sm group-hover:rotate-12 transition-transform">

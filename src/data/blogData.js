@@ -1,5 +1,3 @@
-// src/data/blogData.js
-
 // --- Service Images ---
 import deepclean from "../assets/serviceimage/Deep-cleaning.png";
 import acmaintain from "../assets/serviceimage/ac-maintainance.png";

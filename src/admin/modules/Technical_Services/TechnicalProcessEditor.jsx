@@ -12,7 +12,6 @@ const TechnicalProcessEditor = () => {
   const [viewMode, setViewMode] = useState('split'); 
   const [isSaving, setIsSaving] = useState(false);
 
-  // 1. Icon Mapping Fix: Preview ke liye object banaya
   const iconLibrary = {
     Zap: <Zap size={24} />,
     Settings: <Settings size={24} />,
@@ -25,7 +24,6 @@ const TechnicalProcessEditor = () => {
     ClipboardCheck: <ClipboardCheck size={24} />
   };
 
-  // 2. Data Fix: 4 Steps Initial Data
   const defaultSteps = [
     { id: 1, stepNum: '01', title: 'Site Inspection', desc: 'Advanced diagnostic analysis using premium sensors.', icon: 'Search' },
     { id: 2, stepNum: '02', title: 'Precision Repair', desc: 'Industrial-grade execution with certified parts.', icon: 'Settings' },
@@ -201,7 +199,6 @@ const TechnicalProcessEditor = () => {
                         </div>
                         <div className="relative z-10">
                           <div className="w-14 h-14 bg-white rounded-[1.25rem] flex items-center justify-center text-emerald-600 shadow-2xl mb-6 border border-zinc-50 group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                             {/* 3. Icon Preview Fix: Library se fetch kiya */}
                              {iconLibrary[step.icon] || <Zap size={24} />}
                           </div>
                           <h3 className="text-base font-black text-zinc-900 mb-2.5">{step.title}</h3>

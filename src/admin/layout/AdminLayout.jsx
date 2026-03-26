@@ -22,7 +22,6 @@ const AdminLayout = () => {
         </main>
       </div>
 
-      {/* Mobile Overlay - Only visible on small screens when sidebar is open */}
       {isSidebarOpen && (
         <div 
           className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[90] lg:hidden"

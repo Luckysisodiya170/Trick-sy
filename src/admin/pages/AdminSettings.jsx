@@ -21,7 +21,7 @@ const AdminSettings = () => {
   return (
     <div className="min-h-screen bg-[#FDFDFD] font-sans text-slate-800 antialiased flex flex-col">
       
-      {/* --- TOP FULL-WIDTH NAV --- */}
+      {/* ---NAV --- */}
       <nav className="w-full h-20 bg-white border-b border-slate-100 px-8 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-6">
           <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
@@ -53,7 +53,7 @@ const AdminSettings = () => {
 
       <div className="flex flex-1">
         
-        {/* --- LEFT SIDEBAR (FIXED WIDTH) --- */}
+        {/* --- LEFT SIDEBAR  --- */}
         <aside className="w-72 bg-white border-r border-slate-100 p-6 hidden md:block">
           <div className="space-y-1">
             <p className="px-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Main Configuration</p>
@@ -84,7 +84,7 @@ const AdminSettings = () => {
           </div>
         </aside>
 
-        {/* --- MAIN CONTENT (EXPANDED TO FULL WIDTH) --- */}
+        {/* --- MAIN CONTENT  --- */}
         <main className="flex-1 p-8 lg:p-12 overflow-y-auto">
           <div className="w-full max-w-none">
             
@@ -159,7 +159,7 @@ const AdminSettings = () => {
               </div>
             </div>
 
-            {/* --- FULL-WIDTH DANGER BAR --- */}
+            {/* -- DANGER BAR --- */}
             <div className="w-full bg-rose-50/50 border border-rose-100 p-8 rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between transition-all hover:bg-rose-50">
               <div className="flex items-center gap-6 mb-4 md:mb-0">
                 <div className="w-14 h-14 bg-white text-rose-500 rounded-2xl flex items-center justify-center shadow-sm">

@@ -7,7 +7,6 @@ import {
 } from 'lucide-react';
 
 const NewsletterSubscribers = () => {
-  // --- STATES ---
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSub, setSelectedSub] = useState(null);
   const [subs, setBookings] = useState([
@@ -17,13 +16,11 @@ const NewsletterSubscribers = () => {
     { id: 4, email: 'sneha_12@gmail.com', date: '18 Mar, 2026', status: 'Active', source: 'Direct Search' },
   ]);
 
-  // --- LOGIC: Delete ---
   const deleteSub = (id) => {
     setBookings(prev => prev.filter(s => s.id !== id));
     setSelectedSub(null);
   };
 
-  // --- LOGIC: Search ---
   const filteredData = useMemo(() => {
     return subs.filter(item => 
       item.email.toLowerCase().includes(searchTerm.toLowerCase())

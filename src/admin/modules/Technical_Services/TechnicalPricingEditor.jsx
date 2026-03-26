@@ -11,7 +11,7 @@ const TechnicalPricingEditor = () => {
   const [viewMode, setViewMode] = useState('split'); 
   const [isSaving, setIsSaving] = useState(false);
 
-  // Initial Data
+  // Data
   const defaultPlans = [
     { id: 1, name: "Basic Fix", price: "199", desc: "One-time technical visit for minor repairs.", features: ["1 Hour Service", "Basic Tools Required", "No Materials Included", "Standard Response (24h)"], popular: false },
     { id: 2, name: "Pro AMC", price: "899", desc: "Annual maintenance for complete peace of mind.", features: ["Unlimited Emergency Visits", "Priority Response (45m)", "Free Consumables", "Quarterly Deep Checks"], popular: true },
@@ -24,7 +24,7 @@ const TechnicalPricingEditor = () => {
     plans: defaultPlans
   });
 
-  // Handlers
+  // handlers
   const handleHeaderChange = (e) => {
     const { name, value } = e.target;
     setPageData(prev => ({ ...prev, [name]: value }));
@@ -180,7 +180,7 @@ const TechnicalPricingEditor = () => {
           </div>
         )}
 
-       {/* RIGHT SIDE: PREVIEW - Optimized for Split View */}
+       {/* RIGHT SIDE: PREVIEW */}
 {(viewMode === 'preview' || viewMode === 'split') && (
   <div className={`${viewMode === 'preview' ? 'w-full' : 'flex-1'} flex flex-col h-full bg-slate-100/50 transition-all duration-300`}>
     
@@ -190,7 +190,6 @@ const TechnicalPricingEditor = () => {
     </div>
 
     <div className="flex-1 overflow-y-auto w-full p-4 lg:p-6 custom-scrollbar">
-      {/* Container scaling: Split view mein 0.75 scale aur narrow gap use karega */}
       <div className={`w-full max-w-[1200px] mx-auto transition-all duration-500 transform 
         ${viewMode === 'preview' ? 'scale-100 mt-10' : 'scale-[0.72] origin-top -mt-4'}`}>
         
@@ -200,7 +199,6 @@ const TechnicalPricingEditor = () => {
           </h2>
         </div>
 
-        {/* Dynamic Grid: Split mode mein gap kam kar diya */}
         <div className={`grid grid-cols-1 md:grid-cols-3 ${viewMode === 'split' ? 'gap-4' : 'gap-8'} items-center`}>
           {pageData.plans.map((plan) => (
             <div key={plan.id} className={`relative rounded-[2.5rem] transition-all duration-500 

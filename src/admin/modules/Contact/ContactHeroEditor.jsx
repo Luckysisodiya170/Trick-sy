@@ -9,8 +9,8 @@ import ContactHero from '../../../pages/Contact/ContactHero';
 
 const ContactHeroEditor = () => {
   const navigate = useNavigate();
-  const fileInputRef = useRef(null); // Ref for hidden file input
-  const [isSaving, setIsSaving] = useState(false);
+  const fileInputRef = useRef(null);  
+    const [isSaving, setIsSaving] = useState(false);
   const [viewMode, setViewMode] = useState('split'); 
 
   const defaultData = {
@@ -18,7 +18,7 @@ const ContactHeroEditor = () => {
     titlePart1: 'Premium Care',
     titleAccent: 'Your Space.',
     paragraphText: 'Need a personalized quote or have a query? We are here to provide 5-star maintenance support. Reach us within minutes.',
-    bgImage: null // Added bgImage state
+    bgImage: null
   };
 
   const [formData, setFormData] = useState(defaultData);
@@ -28,7 +28,6 @@ const ContactHeroEditor = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Handle Image Upload
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {

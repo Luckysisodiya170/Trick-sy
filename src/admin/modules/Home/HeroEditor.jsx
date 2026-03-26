@@ -74,18 +74,15 @@ const HeroEditor = () => {
         </div>
       </nav>
 
-      {/* DYNAMIC LAYOUT CONTAINER */}
       <div className={`mx-auto transition-all duration-500 ${
         viewMode === 'split' 
           ? 'max-w-[1800px] p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mt-4' 
           : viewMode === 'edit' 
-            ? 'max-w-4xl p-4 lg:p-10 mt-4' // Slightly wider max-width for edit mode to reduce side spaces
+            ? 'max-w-4xl p-4 lg:p-10 mt-4' 
             : 'max-w-6xl p-4 lg:p-10 mt-4'
       }`}>
 
-        {/* ==================================================== */}
-        {/* EDITOR PANEL - Left Side                             */}
-        {/* ==================================================== */}
+
         {(viewMode === 'edit' || viewMode === 'split') && (
           <div className={`${viewMode === 'split' ? 'lg:col-span-5' : ''} space-y-8 animate-in fade-in zoom-in-95 duration-300`}>
             
@@ -199,14 +196,12 @@ const HeroEditor = () => {
           </div>
         )}
 
-        {/* ==================================================== */}
-        {/* PREVIEW PANEL - Right Side (WITH INDIGO THEME)       */}
-        {/* ==================================================== */}
+ 
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'split' ? 'lg:col-span-7 lg:sticky lg:top-24 h-fit' : ''} animate-in fade-in zoom-in-95 duration-500`}>
             <div className="w-full bg-white rounded-3xl sm:rounded-[3rem] border-4 sm:border-[12px] border-slate-900 shadow-2xl overflow-hidden relative">
               
-              {/* Browser Mockup Header */}
+              {/* Browser  Header */}
               <div className="h-8 sm:h-10 bg-slate-100 border-b border-slate-200 flex items-center px-4 sm:px-6 gap-2 relative z-50">
                   <div className="flex gap-1.5 sm:gap-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]"></div>

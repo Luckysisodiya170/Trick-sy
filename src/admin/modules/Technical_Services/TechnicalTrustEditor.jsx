@@ -4,7 +4,7 @@ import {
   ArrowLeft, Save, ShieldCheck, Users, Upload, 
   Plus, Trash2, Smartphone, Layout, CheckCircle,
   Edit3, Columns, Eye, Monitor, Settings2,
-  Award, Heart, Star, Wrench, PenTool, Type // 'Tool' ko 'Wrench' se replace kiya
+  Award, Heart, Star, Wrench, PenTool, Type 
 } from 'lucide-react';
 
 const TechnicalTrustEditor = () => {
@@ -13,13 +13,12 @@ const TechnicalTrustEditor = () => {
   const [viewMode, setViewMode] = useState('split'); 
   const [isSaving, setIsSaving] = useState(false);
 
-  // Available Icons for Selection
   const availableIcons = [
     { name: 'Shield', icon: ShieldCheck },
     { name: 'Award', icon: Award },
     { name: 'Star', icon: Star },
     { name: 'Heart', icon: Heart },
-    { name: 'Tool', icon: Wrench }, // Icon component updated
+    { name: 'Tool', icon: Wrench },
     { name: 'Pro', icon: PenTool }
   ];
 
@@ -181,13 +180,11 @@ const TechnicalTrustEditor = () => {
     </div>
 
     <div className="flex-1 overflow-y-auto flex items-center justify-center p-4 lg:p-8">
-      {/* Container width and scaling fixed */}
       <div className={`w-full transition-all duration-300 ${viewMode === 'split' ? 'max-w-[95%]' : 'max-w-[1200px]'}`}>
         
         <div className="relative group">
           <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-[2.5rem] lg:rounded-[4rem] blur-xl opacity-10 group-hover:opacity-20 transition-opacity"></div>
           
-          {/* Main Container: Split mode mein grid use kiya hai taaki spacing automate ho jaye */}
           <div className={`relative bg-[#09090b] border border-white/10 shadow-2xl transition-all duration-500
             ${viewMode === 'split' 
               ? 'rounded-[2rem] p-6 grid grid-cols-1 lg:grid-cols-3 items-center gap-6' 
@@ -239,7 +236,7 @@ const TechnicalTrustEditor = () => {
               </div>
             </div>
 
-            {/* 3. Right Section: CTA Button (Ensured to stay inside) */}
+            {/* 3. Right Section: CTA Button */}
             <div className={`flex items-center justify-center lg:justify-end ${viewMode === 'split' ? 'lg:col-span-1' : ''}`}>
               <button className={`bg-white text-zinc-950 font-black uppercase tracking-[0.15em] hover:bg-emerald-500 hover:text-white transition-all shadow-xl active:scale-95 whitespace-nowrap
                 ${viewMode === 'split' 

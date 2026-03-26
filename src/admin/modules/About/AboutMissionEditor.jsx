@@ -76,7 +76,6 @@ const AboutMissionEditor = () => {
               <div className="space-y-4">
                 <input value={missionData.title} onChange={(e) => setMissionData({...missionData, title: e.target.value})} placeholder="Title" className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none focus:border-indigo-300 transition-all" />
                 
-                {/* Text section stays clean now */}
                 <input value={missionData.highlight} onChange={(e) => setMissionData({...missionData, highlight: e.target.value})} placeholder="Highlight (Color Gradient)" className="w-full p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl font-black text-indigo-700 outline-none focus:border-emerald-300 transition-all" />
                 
                 <textarea rows="4" value={missionData.description} onChange={(e) => setMissionData({...missionData, description: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl text-xs font-medium outline-none resize-none leading-relaxed focus:bg-white transition-all" />
@@ -99,7 +98,6 @@ const AboutMissionEditor = () => {
               <h3 className="font-black text-slate-900 text-sm uppercase tracking-tight mb-4 border-b pb-4 flex items-center gap-2"><ImageIcon size={16} className="text-indigo-500"/> Mission Image</h3>
               <input type="file" ref={fileInputRef} className="hidden" onChange={handleImageChange} accept="image/*" />
               
-              {/* 🔥 FIXED CONTAINER: added relative and overflow-hidden 🔥 */}
               <div className="relative group w-full h-40 border-2 border-dashed border-slate-200 rounded-2xl overflow-hidden">
                 <div 
                   onClick={() => fileInputRef.current.click()} 
@@ -108,7 +106,6 @@ const AboutMissionEditor = () => {
                   {missionData.mainImage ? (
                     <>
                       <img src={missionData.mainImage} className="w-full h-full object-cover" alt="preview" />
-                      {/* 🔥 FIXED OVERLAY: absolute only to this div 🔥 */}
                       <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200">
                         <span className="text-white text-[10px] font-black uppercase tracking-widest bg-white/10 px-4 py-2 rounded-full backdrop-blur-md border border-white/20">Change Image</span>
                       </div>

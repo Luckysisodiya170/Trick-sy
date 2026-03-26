@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import BlogHero from './BlogHero';
 import BlogCard from './BlogCard';
-// NAYA IMPORT:
 import BlogCategories from './BlogCategories'; 
 import { Loader2 } from 'lucide-react';
 import { blogPosts as dummyPosts } from '../../data/blogData';
@@ -33,7 +32,6 @@ const Blog = () => {
     fetchBlogs();
   }, []);
 
-  // Categories nikalne ka logic same rahega
   const categories = ['All', ...new Set(posts.map(post => post.category).filter(Boolean))];
 
   const filteredPosts = selectedCategory === 'All' 
@@ -52,7 +50,6 @@ const Blog = () => {
 
       <div className="w-full max-w-[1400px] mx-auto px-6 relative z-20 -mt-10">
         
-        {/* REUSABLE CATEGORY COMPONENT CALL KIYA HAI */}
         {!loading && posts.length > 0 && (
           <div className="mb-10 flex justify-center">
             <BlogCategories 

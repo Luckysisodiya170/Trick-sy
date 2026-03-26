@@ -2,7 +2,6 @@ import React from 'react';
 import { MessageCircle, Headset } from 'lucide-react';
 
 const FloatingActions = () => {
-  // Apna real number yahan daal dena (Bina '+' sign ke)
   const whatsappNumber = "971501234567";
   const message = "Hi Tricksy! I need a quote for maintenance services.";
 

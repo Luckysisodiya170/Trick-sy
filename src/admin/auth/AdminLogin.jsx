@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
 
 const AdminLogin = () => {
-  // States to store input values
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -11,20 +10,15 @@ const AdminLogin = () => {
   const navigate = useNavigate();
 
   const handleLogin = (e) => {
-    // Prevent page reload on form submit
     e.preventDefault();
     
-    // Check if email and password are correct
     if (email === 'admin@tricksy.com' && password === 'admin123') {
       
-      // Save a login token in browser memory
       localStorage.setItem('tricksyAdminToken', 'logged-in-token');
       
-      // Go to admin dashboard
       navigate('/admin');
       
     } else {
-      // Show error message if details are wrong
       setError('Invalid admin credentials. Please try again.');
     }
   };
@@ -47,7 +41,6 @@ const AdminLogin = () => {
         <div className="bg-white/5 py-8 px-4 shadow-2xl shadow-black sm:rounded-[2.5rem] sm:px-10 border border-white/10 backdrop-blur-xl">
           <form className="space-y-6" onSubmit={handleLogin}>
             
-            {/* Show error box if there is an error */}
             {error && (
               <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold text-center uppercase tracking-widest">
                 {error}

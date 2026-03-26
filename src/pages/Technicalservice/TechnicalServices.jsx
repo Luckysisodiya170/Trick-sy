@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Wrench, Zap, Droplets, LayoutGrid, Scissors, Ruler, Loader2 } from 'lucide-react';
 import { technicalServices } from '../../data/technicalData';
 
-// Avatars
 import avatar1 from "../../assets/aboutsectionimg/profileabout.jpeg"; 
 import avatar2 from "../../assets/aboutsectionimg/profileabout2.jpeg"; 
 import avatar3 from "../../assets/aboutsectionimg/profileabout3.jpeg"; 

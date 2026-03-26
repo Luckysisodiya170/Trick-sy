@@ -7,10 +7,8 @@ import ServiceDetail from '../../../pages/Services/ServiceDetail';
 
 const ServiceIncludesEditor = ({ fullServiceData, setFullServiceData }) => {
 
-  // Load Indicator
   if (!fullServiceData) return <div className="p-10 text-center animate-pulse text-slate-400">Loading...</div>;
 
-  // --- HANDLERS ---
   const handleIncludeChange = (index, field, value) => {
     const newIncludes = [...fullServiceData.includes];
     newIncludes[index][field] = value;
@@ -76,7 +74,6 @@ const ServiceIncludesEditor = ({ fullServiceData, setFullServiceData }) => {
                     </label>
                     <input 
                       type="text" value={item.title} onChange={(e) => handleIncludeChange(idx, 'title', e.target.value)}
-                      // Changed text-sm to text-xs
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-lg text-xs font-bold text-slate-800 outline-none focus:ring-2 ring-emerald-100 focus:border-emerald-400 transition-all shadow-inner" 
                     />
                   </div>
@@ -88,7 +85,6 @@ const ServiceIncludesEditor = ({ fullServiceData, setFullServiceData }) => {
                   </label>
                   <textarea 
                     value={item.desc} onChange={(e) => handleIncludeChange(idx, 'desc', e.target.value)} rows="2"
-                    // Changed text-sm to text-xs
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-lg text-xs font-medium text-slate-600 outline-none focus:ring-2 ring-emerald-100 focus:border-emerald-400 transition-all shadow-inner resize-none leading-relaxed" 
                   ></textarea>
                 </div>
@@ -110,7 +106,6 @@ const ServiceIncludesEditor = ({ fullServiceData, setFullServiceData }) => {
       <div className="flex-1 bg-slate-100 rounded-[2rem] overflow-hidden relative border-4 border-slate-200 shadow-inner h-[600px] overflow-y-auto">
          {/* Live Preview Container */}
          <div className="w-full min-h-full bg-white relative">
-            {/* Added scale-[0.8] and w-[125%] to fit the preview properly inside the container without overflowing */}
             <div className="pointer-events-none transform scale-[0.8] origin-top-left w-[125%] h-[125%]">
                <ServiceDetail previewData={fullServiceData} previewSection="includes" />
             </div>

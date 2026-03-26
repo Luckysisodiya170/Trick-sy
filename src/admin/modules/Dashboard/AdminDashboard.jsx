@@ -28,7 +28,7 @@ const ColorfulDashboard = () => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-4 lg:p-8 font-sans text-slate-900">
       
-      {/* --- MINIMAL TOP BAR --- */}
+      {/* ---  TOP BAR --- */}
       <div className="flex justify-between items-center mb-10 px-2">
         <div className="flex flex-col">
           <div className="flex items-center gap-2 mb-1">

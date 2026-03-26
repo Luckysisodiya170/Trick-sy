@@ -19,7 +19,6 @@ const Hero = ({ heroData }) => {
   const content = heroData ? { ...defaultContent, ...heroData } : defaultContent;
 
   return (
-    // Fixed: Removed extra pt-24 lg:pt-28 to fix the top spacing issue
     <section className="relative bg-gradient-to-br from-indigo-50 via-white to-indigo-50/40 overflow-hidden min-h-[calc(100vh-80px)] flex items-center pb-16 lg:pb-20">
       
       <div className="absolute inset-0 w-full h-full pointer-events-none">

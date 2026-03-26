@@ -23,7 +23,7 @@ const Header = ({ navData, dropdownServices, contactInfo }) => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    setMobileMenuOpen(false); // Close menu on route change
+    setMobileMenuOpen(false);
   }, [location.pathname]);
 
   const defaultNavLinks = [

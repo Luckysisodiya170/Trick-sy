@@ -12,7 +12,6 @@ const ServiceEditor = () => {
   const [activeCard, setActiveCard] = useState(null); 
   const [viewMode, setViewMode] = useState('split'); 
 
-  // --- Dynamic Section Header State ---
   const [headerSettings, setHeaderSettings] = useState({
     badgeText: "What We Offer",
     headingNormal: "Explore Our",
@@ -49,7 +48,6 @@ const ServiceEditor = () => {
     { id: 3, title: 'Plumbing Solutions', desc: 'Quick fixes for leaks, pipe bursts, blockages, and new bathroom fittings.', icon: 'wrench', color: 'orange', img: null },
   ]);
 
-  // --- Handlers ---
   const handleAddService = () => {
     const newId = Date.now();
     setServices([...services, { id: newId, title: 'New Service', desc: '', icon: 'sparkles', color: 'indigo', img: null }]);
@@ -120,7 +118,7 @@ const ServiceEditor = () => {
         </div>
       </nav>
 
-      {/* --- DYNAMIC LAYOUT CONTAINER --- */}
+      {/* --- DYNAMIC  CONTAINER --- */}
       <div className={`mx-auto transition-all duration-500 ${
         viewMode === 'split' 
           ? 'max-w-[1800px] p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mt-4' 
@@ -129,7 +127,7 @@ const ServiceEditor = () => {
             : 'max-w-6xl p-4 lg:p-10 mt-4'
       }`}>
         
-        {/* --- EDITOR (Left Panel) --- */}
+        {/* --- EDITOr --- */}
         {(viewMode === 'edit' || viewMode === 'split') && (
           <div className={`${viewMode === 'split' ? 'lg:col-span-5' : ''} space-y-8 animate-in fade-in zoom-in-95 duration-300`}>
             
@@ -300,10 +298,8 @@ const ServiceEditor = () => {
                   </div>
               </div>
 
-              {/* Exact Service Section Preview Design (Responsive naturally) */}
               <div className="relative overflow-y-auto h-[85vh] custom-scrollbar bg-slate-50 pb-10">
                   
-                  {/* Subtle Background Elements */}
                   <div className="absolute top-0 left-0 w-[40rem] h-[40rem] bg-indigo-400/5 rounded-full blur-[100px] pointer-events-none -translate-x-1/2 -translate-y-1/2"></div>
                   <div className="absolute bottom-0 right-0 w-[40rem] h-[40rem] bg-emerald-400/5 rounded-full blur-[100px] pointer-events-none translate-x-1/3 translate-y-1/3"></div>
 

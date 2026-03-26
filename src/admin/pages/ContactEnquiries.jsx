@@ -6,12 +6,10 @@ import {
 } from 'lucide-react';
 
 const ContactEnquiries = () => {
-  // 1. STATES
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedEnquiry, setSelectedEnquiry] = useState(null); // For Modal
+  const [selectedEnquiry, setSelectedEnquiry] = useState(null); 
 
-  // 2. DATA
   const [enquiries] = useState([
     { 
       id: 1, 
@@ -45,7 +43,6 @@ const ContactEnquiries = () => {
     }
   ]);
 
-  // 3. FUNCTIONALITY: Filtering Logic
   const filteredData = useMemo(() => {
     return enquiries.filter(item => {
       const matchesSearch = item.sender.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -58,7 +55,7 @@ const ContactEnquiries = () => {
   return (
     <div className="min-h-screen bg-[#F8FAFF] text-slate-900 p-4 lg:p-10 font-sans relative overflow-x-hidden">
       
-      {/* Background Decor */}
+      {/* Background */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-100/50 blur-[120px] rounded-full -z-10" />
       
       <div className="max-w-7xl mx-auto">
@@ -89,7 +86,6 @@ const ContactEnquiries = () => {
           </div>
         </div>
 
-        {/* --- FILTER CHIPS (FUNCTIONAL BOXES) --- */}
         <div className="flex flex-wrap gap-4 mb-10">
           {['All', 'Urgent', 'Partner'].map((f) => (
             <button 
@@ -106,7 +102,7 @@ const ContactEnquiries = () => {
           ))}
         </div>
 
-        {/* --- GRID CARDS --- */}
+        {/* ---  CARDS --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredData.map((item) => (
             <div 
@@ -152,7 +148,7 @@ const ContactEnquiries = () => {
         )}
       </div>
 
-      {/* --- DETAIL MODAL (FUNCTIONAL POPUP) --- */}
+      {/* --- DETAIL MODAL --- */}
       {selectedEnquiry && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setSelectedEnquiry(null)} />
