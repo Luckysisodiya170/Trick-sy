@@ -1,20 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Save, Settings2, Edit3, Columns, Eye,
-  Type, AlignLeft, Monitor, Undo, FormInput 
+  Type, AlignLeft, Monitor, Undo, FormInput, Upload
 } from 'lucide-react';
 import ContactForm from '../../../pages/Contact/ContactForm'; 
 
 const ContactFormEditor = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [viewMode, setViewMode] = useState('split'); // 'edit', 'split', 'preview'
+  const [viewMode, setViewMode] = useState('split'); 
 
   const defaultData = {
     title: 'Request',
     titleHighlight: 'Service',
-    subtitle: 'Fill the details below and get a response within minutes.'
+    subtitle: 'Fill the details below and get a response within minutes.',
+    formImage: null
   };
 
   const [formData, setFormData] = useState(defaultData);
@@ -22,6 +24,14 @@ const ContactFormEditor = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setFormData(prev => ({ ...prev, formImage: imageUrl }));
+    }
   };
 
   const handleReset = () => {
@@ -33,7 +43,6 @@ const ContactFormEditor = () => {
   const handleSave = async () => {
     setIsSaving(true);
     await new Promise(resolve => setTimeout(resolve, 800));
-    console.log('Saved Form Data:', formData);
     setIsSaving(false);
     alert('Form section updated successfully!');
   };
@@ -41,7 +50,6 @@ const ContactFormEditor = () => {
   return (
     <div className="min-h-screen flex flex-col bg-[#FDFDFD] font-sans h-screen overflow-hidden">
       
-   {/* navbar */}
       <nav className="sticky top-0 z-[50] bg-white border-b border-slate-200 px-3 lg:px-6 py-3 flex items-center justify-between shadow-sm gap-2 shrink-0">
         <div className="flex items-center gap-1.5 lg:gap-3 flex-shrink-0">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-xl transition-all">
@@ -89,11 +97,8 @@ const ContactFormEditor = () => {
       </nav>
 
       <div className="flex-1 flex overflow-hidden relative">
-        
-        {/* LEFT editor */}
         {(viewMode === 'edit' || viewMode === 'split') && (
           <div className={`${viewMode === 'edit' ? 'w-full max-w-3xl mx-auto border-x' : 'w-full lg:w-[420px] border-r'} bg-white border-slate-200 flex flex-col h-full relative z-20 shadow-2xl shadow-slate-200/50 transition-all duration-300`}>
-            
             <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-8 scrollbar-hide">
               <div>
                 <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-1">Form Header Settings</h2>
@@ -111,7 +116,6 @@ const ContactFormEditor = () => {
                     value={formData.title} 
                     onChange={handleChange}
                     className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-indigo-100 focus:bg-white transition-all shadow-inner" 
-                    placeholder="e.g. Request"
                   />
                 </div>
 
@@ -125,7 +129,6 @@ const ContactFormEditor = () => {
                     value={formData.titleHighlight} 
                     onChange={handleChange}
                     className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-emerald-100 focus:bg-white transition-all shadow-inner" 
-                    placeholder="e.g. Service"
                   />
                 </div>
 
@@ -141,6 +144,26 @@ const ContactFormEditor = () => {
                     className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-indigo-100 focus:bg-white transition-all shadow-inner resize-none leading-relaxed" 
                   ></textarea>
                 </div>
+
+                <div className="pt-2">
+                   <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
+                    <Upload size={12} /> Form Illustration Image
+                  </label>
+                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
+                  <div onClick={() => fileInputRef.current.click()} className="w-full h-32 border-2 border-dashed border-slate-200 bg-slate-50 rounded-2xl flex flex-col items-center justify-center group hover:bg-indigo-50 hover:border-indigo-200 transition-all cursor-pointer overflow-hidden relative">
+                    {formData.formImage ? (
+                      <>
+                        <img src={formData.formImage} className="w-full h-full object-cover opacity-80" alt="form illustration" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-xs opacity-0 group-hover:opacity-100 transition-opacity">Change Image</div>
+                      </>
+                    ) : (
+                      <div className="text-center">
+                        <Upload className="mx-auto text-slate-300 mb-2 group-hover:text-indigo-400 transition-colors" />
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-indigo-600 transition-colors">Upload Form Image</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
                 
                 <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl">
                    <div className="flex items-center gap-2 text-slate-400 mb-2">
@@ -148,10 +171,9 @@ const ContactFormEditor = () => {
                       <span className="text-[10px] font-black uppercase tracking-widest">Input Fields</span>
                    </div>
                    <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                     Form inputs (Name, Email, Phone, Message) and the submit handler are locked to ensure stable data collection on the live site.
+                      Form inputs (Name, Email, Phone, Message) and the submit handler are locked to ensure stable data collection on the live site.
                    </p>
                 </div>
-
               </div>
             </div>
 
@@ -163,10 +185,8 @@ const ContactFormEditor = () => {
           </div>
         )}
 
-        {/*LIVE PREVIEW */}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'preview' ? 'w-full' : 'hidden lg:flex flex-1'} flex-col h-full bg-slate-100 relative transition-all duration-300`}>
-            
             <div className="h-12 flex items-center justify-center gap-2 bg-white border-b border-slate-200 shadow-sm shrink-0">
               <Monitor size={14} className="text-slate-400" />
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Live Output</span>
@@ -178,10 +198,10 @@ const ContactFormEditor = () => {
                   title={formData.title}
                   titleHighlight={formData.titleHighlight}
                   subtitle={formData.subtitle}
+                  formImage={formData.formImage}
                   onSubmitAction={(data) => {
                     return new Promise(resolve => {
                       setTimeout(() => {
-                        console.log("Admin Preview Submission Caught:", data);
                         resolve();
                       }, 1000);
                     });
@@ -191,7 +211,6 @@ const ContactFormEditor = () => {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

@@ -1,30 +1,59 @@
 import React from 'react';
-import { Phone, Mail, Clock, MessageSquareQuote } from 'lucide-react';
+import { 
+  Phone, MessageSquareQuote, Mail, Clock, 
+  MapPin, Globe, Link2 
+} from 'lucide-react';
+
+// 1. Backend se aane wali 'iconKey' string ko actual component me map karne ke liye object
+const iconMap = {
+  Phone: Phone,
+  MessageSquare: MessageSquareQuote, // MessageSquareQuote ko MessageSquare map karna better h
+  Mail: Mail,
+  Clock: Clock,
+  MapPin: MapPin,
+  Globe: Globe,
+  Link2: Link2
+};
 
 const ContactInfo = ({ infoData }) => {
   
   const defaultInfo = [
-    { id: 1, icon: <Phone/>, title: "Phone Support", info: "+971 50 123 4567", sub: "Toll-Free UAE", type: "call" },
-    { id: 2, icon: <MessageSquareQuote/>, title: "Chat on WhatsApp", info: "+971 50 123 4567", sub: "Instant Reply", type: "whatsapp" },
-    { id: 3, icon: <Mail/>, title: "Email Address", info: "support@tricksy.com", sub: "Reply within 2 hours", type: "email" },
-    { id: 4, icon: <Clock/>, title: "Working Hours", info: "08:00 AM - 08:00 PM", sub: "Mon - Sat (Sunday Emergency)", type: "time" }
+    { id: 1, iconKey: "Phone", title: "Phone Support", info: "+971 50 123 4567", sub: "Toll-Free UAE", type: "call" },
+    { id: 2, iconKey: "MessageSquare", title: "Chat on WhatsApp", info: "+971 50 123 4567", sub: "Instant Reply", type: "whatsapp" },
+    { id: 3, iconKey: "Mail", title: "Email Address", info: "support@tricksy.com", sub: "Reply within 2 hours", type: "email" },
+    { id: 4, iconKey: "Clock", title: "Working Hours", info: "08:00 AM - 08:00 PM", sub: "Mon - Sat (Sunday Emergency)", type: "time" }
   ];
-  const displayData = Array.isArray(infoData) && infoData.length > 0 ? infoData : defaultInfo;
+  
+  const displayData = infoData?.length ? infoData : defaultInfo;
 
-  const getLinkProps = (type, info) => {
-    const cleanInfo = info ? info.replace(/\s+/g, '') : '';
+  // 2. Updated Link Generation Logic
+  const getLinkProps = (item) => {
+    // Agar iconKey MapPin ya Globe hai, toh usko uske hisaab se link denge (Google maps, Website)
+    const type = item.type || item.iconKey?.toLowerCase(); 
+    const cleanInfo = item.info ? item.info.replace(/\s+/g, '') : '';
     
-    switch(type) {
-      case 'call': 
-        return { as: 'a', href: `tel:${cleanInfo}` };
-      case 'whatsapp': 
-        const waNumber = info ? info.replace(/\D/g, '') : '';
-        return { as: 'a', href: `https://wa.me/${waNumber}`, target: "_blank", rel: "noreferrer" };
-      case 'email': 
-        return { as: 'a', href: `mailto:${cleanInfo}` };
-      default: 
-        return { as: 'div' }; 
+    if (type === 'call' || type === 'phone') {
+      return { as: 'a', href: `tel:${cleanInfo}` };
+    } 
+    if (type === 'whatsapp' || type === 'messagesquare') {
+      const waNumber = item.info ? item.info.replace(/\D/g, '') : '';
+      return { as: 'a', href: `https://wa.me/${waNumber}`, target: "_blank", rel: "noreferrer" };
+    } 
+    if (type === 'email' || type === 'mail') {
+      return { as: 'a', href: `mailto:${cleanInfo}` };
     }
+    if (type === 'mappin') {
+       // Search address on google maps
+       return { as: 'a', href: `https://maps.google.com/?q=${encodeURIComponent(item.info)}`, target: "_blank", rel: "noreferrer" };
+    }
+    if (type === 'globe' || type === 'link2') {
+       // Regular website link
+       let url = cleanInfo.startsWith('http') ? cleanInfo : `https://${cleanInfo}`;
+       return { as: 'a', href: url, target: "_blank", rel: "noreferrer" };
+    }
+    
+    // Default fallback (e.g., for Clock/Time)
+    return { as: 'div' }; 
   };
 
   return (
@@ -32,7 +61,14 @@ const ContactInfo = ({ infoData }) => {
       <h2 className="text-2xl font-bold text-zinc-950 uppercase tracking-wide mb-2">Connect Directly</h2>
       
       {displayData.map((item) => {
-        const { as: Component, ...linkProps } = getLinkProps(item.type, item.info);
+        // Use Link props dynamically
+        const { as: Component, ...linkProps } = getLinkProps(item);
+        
+        // Resolve Icon (Handles both new 'iconKey' string format and old direct 'icon' format)
+        const IconComponent = item.iconKey ? iconMap[item.iconKey] : item.icon; 
+        
+        // Fallback icon if something goes wrong
+        const SafeIcon = IconComponent || Phone; 
         
         return (
           <Component 
@@ -43,7 +79,7 @@ const ContactInfo = ({ infoData }) => {
             }`}
           >
             <div className="w-16 h-16 shrink-0 bg-zinc-50 rounded-2xl flex items-center justify-center text-emerald-600 border border-zinc-100 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-              {item.icon}
+              <SafeIcon size={24} />
             </div>
             <div>
               <h4 className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-1">{item.title}</h4>

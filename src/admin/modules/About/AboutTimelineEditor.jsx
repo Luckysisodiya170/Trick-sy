@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Save, Edit3, Columns, Eye, Settings2, Type, 
-  Rocket, Star, ShieldCheck, Trophy, Plus, Trash2, Calendar, ArrowUpRight
+  Rocket, Star, ShieldCheck, Trophy, Plus, Trash2, Calendar
 } from 'lucide-react';
 
 const AboutTimelineEditor = () => {
@@ -22,7 +21,6 @@ const AboutTimelineEditor = () => {
     ]
   });
 
-  // Default icons for the preview
   const iconLibrary = [<Rocket size={18}/>, <Star size={18}/>, <ShieldCheck size={18}/>, <Trophy size={18}/>, <Calendar size={18}/>];
 
   const handleStepUpdate = (index, field, val) => {
@@ -137,21 +135,26 @@ const AboutTimelineEditor = () => {
                 </div>
 
                 <div className="relative">
-                  {/* Progress Line */}
-                  <div className="hidden lg:block absolute top-[28px] left-0 w-full h-[3px] bg-slate-100 rounded-full">
-                    <div className="absolute top-0 left-0 h-full w-[75%] bg-gradient-to-r from-emerald-500 to-teal-400"></div>
-                  </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
+                  {/* 🔥 FIXED LINE LOGIC 🔥 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
                     {timelineData.steps.map((step, idx) => (
                       <div key={idx} className="relative lg:pt-14 group">
+                        
+                        {/* Dynamic Line connecting to the next card horizontally */}
+                        {/* This line now lives INSIDE each card, so it repeats for every row */}
+                        <div className="hidden lg:block absolute top-[28px] left-[20px] w-[calc(100%+2rem)] h-[3px] bg-slate-100 z-0">
+                           {/* Add gradient progress if it's not the very last item overall */}
+                           {idx < timelineData.steps.length - 1 && (
+                              <div className="absolute top-0 left-0 h-full w-full bg-gradient-to-r from-emerald-500 to-teal-400"></div>
+                           )}
+                        </div>
+
                         {/* Timeline Dot */}
                         <div className="hidden lg:flex absolute top-[20px] left-0 z-20 w-5 h-5 rounded-full bg-white border-4 border-slate-200 group-hover:border-emerald-500 transition-all"></div>
                         
                         {/* Floating Icon Card */}
-                        <div className="relative mt-10 p-6 rounded-[2.5rem] bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 h-full">
+                        <div className="relative mt-10 p-6 rounded-[2.5rem] bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 h-full z-10">
                           
-                          {/* THE FLOATING ICON: Positioning fixed so it floats above */}
                           <div className="absolute -top-6 left-8 w-12 h-12 rounded-2xl bg-white shadow-xl flex items-center justify-center text-emerald-500 border border-slate-50 group-hover:bg-emerald-500 group-hover:text-white group-hover:scale-110 transition-all duration-500 z-30">
                             {iconLibrary[idx % iconLibrary.length]}
                           </div>
@@ -176,6 +179,7 @@ const AboutTimelineEditor = () => {
                     ))}
                   </div>
                 </div>
+
                 {/* Footer Banner */}
                 <div className="mt-16 rounded-[2.5rem] bg-slate-900 p-8 flex flex-col md:flex-row items-center justify-between gap-6 border border-slate-800">
                    <div className="text-center md:text-left">

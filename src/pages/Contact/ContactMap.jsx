@@ -2,10 +2,8 @@ import React from 'react';
 import { Navigation } from 'lucide-react';
 
 const ContactMap = ({ mapConfig }) => {
-  
-  const defaultEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14442.888562725801!2d55.2631326!3d25.1822453!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f682c201e5201%3A0x6a2c286dce81e649!2sBusiness%20Bay%20-%20Dubai%20-%20United%20Arab%20Emirates!5e0!3m2!1sen!2sin!4v1710660000000!5m2!1sen!2sin";
-  
-  const defaultDirectionUrl = "https://www.google.com/maps/dir//Business+Bay+-+Dubai+-+United+Arab+Emirates/";
+  const defaultEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d115531.06692224707!2d55.19241617264883!3d25.18783457187979!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f43496ad9c645%3A0xbde66e5084295162!2sDubai%20-%20United%20Arab%20Emirates!5e0!3m2!1sen!2sin!4v1711364000000!5m2!1sen!2sin";
+  const defaultDirectionUrl = "https://goo.gl/maps/Qk3B8jY1yXWzHkQz8";
 
   const embedSrc = mapConfig?.embedUrl || defaultEmbedUrl;
   const directionHref = mapConfig?.directionUrl || defaultDirectionUrl;

@@ -1,5 +1,6 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+// Added useNavigate here for redirecting after logout
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ShieldCheck, MonitorPlay, UserCircle,
   Briefcase, FileText, Layout, Layers, MessageSquare,
@@ -8,6 +9,10 @@ import {
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const location = useLocation();
+  
+  // Added navigate tool
+  const navigate = useNavigate(); 
+  
   const linkClass = ({ isActive }) =>
     `flex items-center ${isSidebarOpen ? 'justify-start px-3' : 'justify-center px-0'} py-2.5 rounded-lg text-[13px] font-semibold transition-all duration-300 relative group ${isActive
       ? 'bg-blue-500/10 text-emerald-400 border border-emerald-500/20'
@@ -51,7 +56,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
           <NavLink to="/admin" end className={linkClass}>
             <LayoutDashboard size={18} className="shrink-0" />
             <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'ml-2.5 opacity-100 max-w-[200px]' : 'ml-0 opacity-0 max-w-0'}`}>Dashboard</span>
-
             {!isSidebarOpen && <span className="absolute left-16 bg-slate-800 text-white text-[10px] px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[200]">Dashboard</span>}
           </NavLink>
         </div>
@@ -139,7 +143,14 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
           {!isSidebarOpen && <span className="absolute left-16 bg-slate-800 text-white text-[10px] px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[200]">Settings</span>}
         </NavLink>
 
-        <button className={`flex items-center ${isSidebarOpen ? 'justify-start px-3' : 'justify-center px-0'} py-2.5 w-full rounded-lg text-[13px] font-semibold text-rose-500 hover:bg-rose-500/10 transition-colors relative group`}>
+        {/* Added onClick function here for Logout */}
+        <button 
+          onClick={() => {
+            localStorage.removeItem('tricksyAdminToken'); // Delete the token
+            navigate('/admin-login'); // Go back to login page
+          }}
+          className={`flex items-center ${isSidebarOpen ? 'justify-start px-3' : 'justify-center px-0'} py-2.5 w-full rounded-lg text-[13px] font-semibold text-rose-500 hover:bg-rose-500/10 transition-colors relative group`}
+        >
           <LogOut size={18} className="shrink-0" />
           <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'ml-2.5 opacity-100 max-w-[200px]' : 'ml-0 opacity-0 max-w-0'}`}>Logout</span>
           {!isSidebarOpen && <span className="absolute left-16 bg-rose-500 text-white text-[10px] px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[200]">Logout</span>}

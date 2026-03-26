@@ -2,24 +2,29 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 
+// Layouts
 import MainLayout from './components/layout/MainLayout';
+
+// User Pages
 import Home from "./pages/Home/Home";
 import AboutPage from './pages/About/About';
+// import Services from './pages/Services/Services'; 
 import ServiceDetail from './pages/Services/ServiceDetail';
-import BlogDetail from './pages/Blog/BlogDetail';
-import NotFound from './pages/NotFound/NotFound';
-import Contact from './pages/Contact/Contact';
-import Blog from './pages/Blog/Blog';
 import TechnicalServices from './pages/Technicalservice/TechnicalServices';
 import TechnicalDetail from './pages/Technicalservice/TechnicalDetail';
+import Blog from './pages/Blog/Blog';
+import BlogDetail from './pages/Blog/BlogDetail';
+import Contact from './pages/Contact/Contact';
+import NotFound from './pages/NotFound/NotFound';
 
-
-// admin 
-
-import AdminDashboard from './admin/modules/Dashboard/AdminDashboard';
+// Admin Auth & Layout
 import AdminLayout from './admin/layout/AdminLayout';
 import AdminLogin from './admin/auth/AdminLogin';
 import ProtectedRoute from './admin/routes/ProtectedRoute';
+import AdminDashboard from './admin/modules/Dashboard/AdminDashboard';
+import DynamicEditor from './admin/components/DynamicEditor';
+
+// Admin Modules - Home
 import HomePageOverview from './admin/modules/Home/HomePageOverview';
 import HeroEditor from './admin/modules/Home/HeroEditor';
 import AboutEditor from './admin/modules/Home/AboutEditor';
@@ -30,90 +35,89 @@ import FAQEditor from './admin/modules/Home/FAQEditor';
 import TestimonialsEditor from './admin/modules/Home/TestimonialsEditor';
 import GoogleReviewsEditor from './admin/modules/Home/GoogleReviewsEditor';
 import CtaEditor from './admin/modules/Home/CtaEditor';
-import DynamicEditor from './admin/components/DynamicEditor';
+
+// Admin Modules - About
 import AboutPageOverview from './admin/modules/About/AboutPageOverview';
 import AboutHeroEditor from './admin/modules/About/AboutHeroEditor';
 import AboutMissionEditor from './admin/modules/About/AboutMissionEditor';
 import AboutValuesEditor from './admin/modules/About/AboutValuesEditor';
 import AboutTimelineEditor from './admin/modules/About/AboutTimelineEditor';
 import AboutTeamEditor from './admin/modules/About/AboutTeamEditor';
+
+// Admin Modules - Contact
 import ContactPageOverview from './admin/modules/Contact/ContactPageOverview';
 import ContactHeroEditor from './admin/modules/Contact/ContactHeroEditor';
 import ContactFormEditor from './admin/modules/Contact/ContactFormEditor';
 import ContactInfoEditor from './admin/modules/Contact/ContactInfoEditor';
 import ContactMapEditor from './admin/modules/Contact/ContactMapEditor';
-import BlogManagerEditor from './admin/modules/Blog/BlogManagerEditor';
+
+// Admin Modules - Blog
 import BlogPageOverview from './admin/modules/Blog/BlogPageOverview';
 import BlogHeroEditor from './admin/modules/Blog/BlogHeroEditor';
 import BlogPostsEditor from './admin/modules/Blog/BlogPostsEditor';
 import BlogCategoriesEditor from './admin/modules/Blog/BlogCategoriesEditor';
 import BlogSEOEditor from './admin/modules/Blog/BlogSEOEditor';
 import BlogDetailEditor from './admin/modules/Blog/BlogDetailEditor';
+
+// Admin Modules - Services
 import ServicesPageOverview from './admin/modules/Services/ServicesPageOverview';
-import ServiceModulePicker from './admin/modules/Services/ServiceModulePicker';
+import ServiceModulePicker from './admin/modules/Services/ServiceWizard';
 import ServicePricingEditor from './admin/modules/Services/ServicePricingEditor';
 import ServiceHeroEditor from './admin/modules/Services/ServiceHeroEditor';
 import ServiceIncludesEditor from './admin/modules/Services/ServiceIncludesEditor';
 import ServiceFaqEditor from './admin/modules/Services/ServiceFaqEditor';
 import ServiceProcessEditor from './admin/modules/Services/ServiceProcessEditor';
+
+// Admin Modules - Technical
 import TechnicalPageOverview from './admin/modules/Technical_Services/TechnicalPageOverview';
 import TechnicalDomainsEditor from './admin/modules/Technical_Services/TechnicalDomainsEditor';
 import TechnicalHeroEditor from './admin/modules/Technical_Services/TechnicalHeroEditor';
-import TechnicalDisplayEditor from './admin/modules/Technical_Services/TechnicalDisplayEditor';
 import HardwareSpecsEditor from './admin/modules/Technical_Services/HardwareSpecsEditor';
 import TechnicalProcessEditor from './admin/modules/Technical_Services/TechnicalProcessEditor';
 import TechnicalFAQEditor from './admin/modules/Technical_Services/TechnicalFAQEditor';
 import TechnicalPricingEditor from './admin/modules/Technical_Services/TechnicalPricingEditor';
-import TechnicalTrustFooter from './pages/Technicalservice/TechnicalTrustFooter';
 import TechnicalTrustEditor from './admin/modules/Technical_Services/TechnicalTrustEditor';
-// Dummy Pages
-const Login = () => <div className="flex h-screen items-center justify-center bg-gray-100">Login Page (No Header/Footer)</div>;
+import ServiceWizard from './admin/modules/Services/ServiceWizard';
+
+// Dummy Auth Pages
+const Login = () => <div className="flex h-screen items-center justify-center bg-slate-50 font-bold text-xl">Login Page (User)</div>;
+const Register = () => <div className="flex h-screen items-center justify-center bg-slate-50 font-bold text-xl">Register Page (User)</div>;
 
 function App() {
   return (
     <HelmetProvider>
       <Router>
         <Routes>
-          {/* home Routes */}
-
+          
+          {/* USER ROUTES */}
           <Route path="/" element={<MainLayout><Home /></MainLayout>} />
-
-          {/* About Routes */}
-
           <Route path="/about" element={<MainLayout><AboutPage /></MainLayout>} />
-
-          {/* Service Routes */}
+          
+          {/* <Route path="/services" element={<MainLayout><Services /></MainLayout>} /> */}
           <Route path="/services/:serviceId" element={<MainLayout><ServiceDetail /></MainLayout>} />
-
-          {/* Contact Routes */}
-          <Route path="/contact" element={<MainLayout><Contact /></MainLayout>} />
-
-          {/* Blog Routes */}
-          <Route path="/blog" element={<MainLayout><Blog /></MainLayout>} />
-
-          {/* Single Blog Article Route */}
-          <Route path="/blog/:slug" element={<MainLayout><BlogDetail /></MainLayout>} />
-
-          {/* Technical Route */}
+          
           <Route path="/technical" element={<MainLayout><TechnicalServices /></MainLayout>} />
           <Route path="/technical-services/:serviceId" element={<MainLayout><TechnicalDetail /></MainLayout>} />
+          
+          <Route path="/blog" element={<MainLayout><Blog /></MainLayout>} />
+          <Route path="/blog/:slug" element={<MainLayout><BlogDetail /></MainLayout>} />
+          
+          <Route path="/contact" element={<MainLayout><Contact /></MainLayout>} />
 
-          {/* --Auth Pages --- */}
+          {/* AUTH ROUTES */}
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<div>Register Page</div>} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
 
           {/* 404 ROUTE */}
           <Route path="*" element={<NotFound />} />
-
-          {/* ADMIN LOGIN */}
-          <Route path="/admin-login" element={<AdminLogin />} />
 
           {/* SECURE ADMIN ROUTES */}
           <Route element={<ProtectedRoute />}>
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
 
-              {/* CMS ROUTES of homepage */}
+              {/* HOME CMS */}
               <Route path="pages/home" element={<HomePageOverview />} />
               <Route path="pages/home/hero" element={<HeroEditor />} />
               <Route path="pages/home/about" element={<AboutEditor />} />
@@ -124,12 +128,9 @@ function App() {
               <Route path="pages/home/testimonials" element={<TestimonialsEditor />} />
               <Route path="pages/home/cta" element={<CtaEditor />} />
               <Route path="pages/home/reviews" element={<GoogleReviewsEditor />} />
-              <Route path="/admin/pages/home/:moduleName" element={<DynamicEditor />} />
+              <Route path="pages/home/:moduleName" element={<DynamicEditor />} />
 
-
-              {/* CMS ROUTES of aboutpage */}
-
-
+              {/* ABOUT CMS */}
               <Route path="pages/about" element={<AboutPageOverview />} />
               <Route path="pages/about/hero" element={<AboutHeroEditor />} />
               <Route path="pages/about/mission" element={<AboutMissionEditor />} />
@@ -137,61 +138,46 @@ function App() {
               <Route path="pages/about/timeline" element={<AboutTimelineEditor />} />
               <Route path="pages/about/team" element={<AboutTeamEditor />} />
               <Route path="pages/about/why-us" element={<WhyChooseEditor />} />
-              <Route path="/admin/pages/about/:moduleName" element={<DynamicEditor />} />
+              <Route path="pages/about/:moduleName" element={<DynamicEditor />} />
 
-              {/* CMS ROUTES of contact page */}
-
+              {/* CONTACT CMS */}
               <Route path="pages/contact" element={<ContactPageOverview />} />
               <Route path="pages/contact/hero" element={<ContactHeroEditor />} />
               <Route path="pages/contact/info" element={<ContactInfoEditor />} />
               <Route path="pages/contact/form" element={<ContactFormEditor />} />
               <Route path="pages/contact/map" element={<ContactMapEditor />} />
-              <Route path="/admin/pages/contact/:moduleName" element={<DynamicEditor />} />
+              <Route path="pages/contact/:moduleName" element={<DynamicEditor />} />
 
-
-              {/* CMS ROUTES of blogpage */}
-
+              {/* BLOG CMS */}
               <Route path="pages/blog" element={<BlogPageOverview />} />
               <Route path="pages/blog/hero" element={<BlogHeroEditor />} />
               <Route path="pages/blog/posts" element={<BlogPostsEditor />} />
               <Route path="pages/blog/categories" element={<BlogCategoriesEditor />} />
               <Route path="pages/blog/seo" element={<BlogSEOEditor />} />
               <Route path="pages/blog/detail" element={<BlogDetailEditor />} />
-              <Route path="/admin/pages/blog/:moduleName" element={<DynamicEditor />} />
+              <Route path="pages/blog/:moduleName" element={<DynamicEditor />} />
 
-              {/* CMS ROUTES of servicepage */}
-
+              {/* SERVICES CMS */}
               <Route path="pages/services" element={<ServicesPageOverview />} />
-              <Route path="pages/services/:serviceId" element={<ServiceModulePicker />} />
-              {/* Separate Routes for each section */}
+              <Route path="pages/services/:serviceId" element={<ServiceWizard />} />
               <Route path="pages/services/:serviceId/hero" element={<ServiceHeroEditor />} />
               <Route path="pages/services/:serviceId/includes" element={<ServiceIncludesEditor />} />
               <Route path="pages/services/:serviceId/faq" element={<ServiceFaqEditor />} />
               <Route path="pages/services/:serviceId/process" element={<ServiceProcessEditor />} />
               <Route path="pages/services/:serviceId/pricing" element={<ServicePricingEditor />} />
-              <Route path="/admin/pages/services/:moduleName" element={<DynamicEditor />} />
+              <Route path="pages/services/:moduleName" element={<DynamicEditor />} />
 
-              {/* CMS ROUTES of technicalpage */}
-
+              {/* TECHNICAL CMS */}
               <Route path="pages/technical" element={<TechnicalPageOverview />} />
               <Route path="pages/technical/hero" element={<TechnicalHeroEditor />} />
-               <Route path="pages/technical/domains" element={<TechnicalDomainsEditor />} />
-                              <Route path="pages/technical/specs" element={<HardwareSpecsEditor />} />
-                              <Route path="pages/technical/process" element={<TechnicalProcessEditor />} />
-<Route path="pages/technical/pricing" element={< TechnicalPricingEditor/>} />
+              <Route path="pages/technical/domains" element={<TechnicalDomainsEditor />} />
+              <Route path="pages/technical/specs" element={<HardwareSpecsEditor />} />
+              <Route path="pages/technical/process" element={<TechnicalProcessEditor />} />
+              <Route path="pages/technical/pricing" element={<TechnicalPricingEditor />} />
               <Route path="pages/technical/faq" element={<TechnicalFAQEditor />} />
               <Route path="pages/technical/footer" element={<TechnicalTrustEditor />} />
-              {/* Separate Routes for each section */}
-              {/* <Route path="pages/services/:serviceId/hero" element={<ServiceHeroEditor />} />
-              <Route path="pages/services/:serviceId/includes" element={<ServiceIncludesEditor />} />
-              <Route path="pages/services/:serviceId/faq" element={<ServiceFaqEditor />} />
-              <Route path="pages/services/:serviceId/process" element={<ServiceProcessEditor />} />
-              <Route path="pages/services/:serviceId/pricing" element={<ServicePricingEditor />} />
-              <Route path="/admin/pages/services/:moduleName" element={<DynamicEditor />} /> */} 
-
             </Route>
           </Route>
-
 
         </Routes>
       </Router>

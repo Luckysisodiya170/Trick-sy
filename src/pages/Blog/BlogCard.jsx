@@ -8,20 +8,19 @@ const BlogCard = ({ post }) => {
   return (
     <article className="bg-white rounded-[2rem] border border-zinc-200 overflow-hidden hover:shadow-[12px_12px_0px_0px_rgba(24,24,27,1)] hover:-translate-y-2 transition-all duration-300 group flex flex-col h-full">
       
-      {/* dynamic image */}
+      {/* Dynamic Image */}
       <div className="relative h-60 overflow-hidden bg-zinc-100">
         <img 
           src={post.image} 
           alt={post.title} 
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
         />
-        {/* category badge */}
         <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-4 py-1.5 rounded-full text-xs font-black text-zinc-950 uppercase tracking-widest shadow-sm">
           {post.category}
         </div>
       </div>
 
-      {/* content */}
+      {/* Content Area */}
       <div className="p-8 flex flex-col flex-grow">
         <div className="flex items-center gap-4 text-xs font-bold text-zinc-500 mb-4">
           <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4"/> {post.date}</span>

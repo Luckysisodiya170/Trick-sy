@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 
+
 const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -29,12 +30,6 @@ const AdminLayout = () => {
         />
       )}
 
-      <style jsx>{`
-        .custom-scrollbar-main::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar-main::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar-main::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .custom-scrollbar-main::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-      `}</style>
     </div>
   );
 };

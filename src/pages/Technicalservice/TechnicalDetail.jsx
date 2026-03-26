@@ -146,7 +146,6 @@ const TechnicalDetail = () => {
                   key={i} 
                   className="group relative bg-white p-6 rounded-3xl border border-slate-200/60 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden"
                 >
-                  {/* Color wash on hover */}
                   <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-500 ${theme.bg}`}></div>
                   
                   <div>
@@ -215,12 +214,10 @@ const TechnicalDetail = () => {
                 key={i} 
                 className="group relative bg-slate-50 p-10 rounded-[3rem] border border-slate-100 hover:bg-white hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col items-center text-center"
               >
-                {/* Floating Icon */}
                 <div className={`w-20 h-20 rounded-[2rem] ${item.color} flex items-center justify-center text-white mb-8 shadow-xl ${item.glow} group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500`}>
                   {item.icon}
                 </div>
 
-                {/* Badge */}
                 <div className="absolute top-6 left-6 px-3 py-1 bg-white rounded-full text-[10px] font-black uppercase tracking-widest text-slate-400 shadow-sm border border-slate-100 group-hover:text-slate-800 transition-colors">
                   Phase {item.step}
                 </div>
@@ -232,7 +229,6 @@ const TechnicalDetail = () => {
                   {item.desc}
                 </p>
 
-                {/* Connector Arrow*/}
                 {i !== 3 && (
                   <div className="hidden lg:block absolute -right-6 top-1/2 -translate-y-1/2 text-slate-200 group-hover:text-slate-400 group-hover:translate-x-1 transition-all z-20">
                     <ArrowRight size={32} />

@@ -291,7 +291,7 @@ const AboutEditor = () => {
 
                               <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 transition-all ${activeField === 'features' ? 'opacity-100 scale-105 origin-left' : 'opacity-90'}`}>
                                  {aboutData.features.slice(0, 4).map((f, i) => (
-                                    <div key={i} className="flex items-center gap-3">
+                                    <div key={i} className="flex items-center gap-3 bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-100 hover:border-emerald-200 transition-colors">
                                        <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
                                          <CheckCircle2 size={14} className="text-emerald-600" />
                                        </div>

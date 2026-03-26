@@ -21,9 +21,9 @@ const Header = ({ navData, dropdownServices, contactInfo }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  //  whenever route will change it start from top
   useEffect(() => {
     window.scrollTo(0, 0);
+    setMobileMenuOpen(false); // Close menu on route change
   }, [location.pathname]);
 
   const defaultNavLinks = [
@@ -32,7 +32,6 @@ const Header = ({ navData, dropdownServices, contactInfo }) => {
     { name: 'Technical', path: '/technical' },
     { name: 'Blog', path: '/blog' },
     { name: 'Contact', path: '/contact' }
-
   ];
 
   const defaultServices = [
@@ -41,48 +40,34 @@ const Header = ({ navData, dropdownServices, contactInfo }) => {
     { name: 'Commercial Cleaning', path: '/services/commercial-cleaning', icon: <Building2 className="w-4 h-4 text-emerald-500" /> },
     { name: 'Upholstery Cleaning', path: '/services/upholstery-cleaning', icon: <Armchair className="w-4 h-4 text-emerald-500" /> },
     { name: 'Painting Services', path: '/services/painting-services', icon: <Paintbrush className="w-4 h-4 text-emerald-500" /> },
-    { name: 'Handyman Services', path: '/services/handyman-services', icon: <Wrench className="w-4 h-4 text-emerald-500" /> },
+    { name: 'Handyman', path: '/services/handyman-services', icon: <Wrench className="w-4 h-4 text-emerald-500" /> },
   ];
 
   const phoneDetails = contactInfo?.phone || "+971501234567";
-
-  const navLinks = Array.isArray(navData) && navData.length > 0 ? navData : defaultNavLinks;
-  const services = Array.isArray(dropdownServices) && dropdownServices.length > 0 ? dropdownServices : defaultServices;
+  const navLinks = navData?.length ? navData : defaultNavLinks;
+  const services = dropdownServices?.length ? dropdownServices : defaultServices;
+  const isServicesActive = currentPath.startsWith('/services');
 
   const getLinkStyle = (path) => {
     const isActive = currentPath === path;
     return `font-bold transition-all text-[13px] uppercase tracking-widest relative group flex items-center ${isActive ? 'text-emerald-500' : 'text-zinc-700 hover:text-emerald-500'}`;
   };
 
-  const getUnderlineStyle = (path) => {
-    const isActive = currentPath === path;
-    return `absolute -bottom-1 left-0 h-0.5 bg-emerald-500 transition-all ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`;
-  };
-
-  const isServicesActive = currentPath.startsWith('/services');
-
   const renderNavLinks = (linksArray) => {
     return linksArray.map((link, index) => (
       <Link key={index} to={link?.path || '/'} className={getLinkStyle(link?.path)}>
         {link?.name || "Link"}
-        <span className={getUnderlineStyle(link?.path)}></span>
+        <span className={`absolute -bottom-1 left-0 h-0.5 bg-emerald-500 transition-all ${currentPath === link?.path ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
       </Link>
     ));
   };
 
   return (
-    <header 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 w-full ${
-        isScrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-sm py-3 border-b border-zinc-100' 
-          : 'bg-white py-4 border-b border-zinc-100' 
-      }`}
-    >
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 w-full ${isScrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-3 border-b border-zinc-100' : 'bg-white py-4 border-b border-zinc-100'}`}>
       <div className="w-full max-w-[1400px] mx-auto px-6 md:px-12">
         <div className="flex justify-between items-center">
           
-          {/*Logo */}
-          <Link to="/" className="flex-shrink-0 cursor-pointer flex items-center gap-2 z-50 group">
+          <Link to="/" className="flex-shrink-0 flex items-center gap-2 z-50 group">
             <div className="w-10 h-10 bg-zinc-950 rounded-xl flex items-center justify-center transform group-hover:-rotate-12 transition-transform duration-300 shadow-[4px_4px_0px_0px_rgba(16,185,129,1)]">
               <span className="text-white font-black text-xl">T</span>
             </div>
@@ -91,41 +76,23 @@ const Header = ({ navData, dropdownServices, contactInfo }) => {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-6 lg:space-x-8">
-            
             {renderNavLinks(navLinks.slice(0, 2))}
             
-            {/* Services Dropdown */}
-            <div 
-              className="relative group"
-              onMouseEnter={() => setServicesDropdownOpen(true)}
-              onMouseLeave={() => setServicesDropdownOpen(false)}
-            >
-              <button 
-                className={`flex items-center gap-1.5 font-bold transition-colors py-1.5 text-[13px] uppercase tracking-widest relative group focus:outline-none ${isServicesActive ? 'text-emerald-500' : 'text-zinc-700 hover:text-emerald-500'}`}
-                aria-expanded={servicesDropdownOpen}
-              >
+            <div className="relative group" onMouseEnter={() => setServicesDropdownOpen(true)} onMouseLeave={() => setServicesDropdownOpen(false)}>
+              <button className={`flex items-center gap-1.5 font-bold transition-colors py-1.5 text-[13px] uppercase tracking-widest relative group focus:outline-none ${isServicesActive ? 'text-emerald-500' : 'text-zinc-700 hover:text-emerald-500'}`}>
                 Services <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${servicesDropdownOpen ? 'rotate-180' : ''}`} />
                 <span className={`absolute -bottom-1 left-0 h-0.5 bg-emerald-500 transition-all ${isServicesActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
               </button>
               
-              <div 
-                className={`absolute top-[120%] left-1/2 -translate-x-1/2 w-72 bg-white rounded-2xl shadow-xl border border-zinc-100 p-2.5 transition-all duration-200 origin-top
-                  ${servicesDropdownOpen ? 'opacity-100 scale-100 translate-y-0 visible' : 'opacity-0 scale-95 -translate-y-2 invisible'}`}
-              >
+              <div className={`absolute top-[120%] left-1/2 -translate-x-1/2 w-72 bg-white rounded-2xl shadow-xl border border-zinc-100 p-2.5 transition-all duration-200 origin-top ${servicesDropdownOpen ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-95 invisible'}`}>
                 {services.map((service, index) => (
-                  <Link 
-                    key={index} 
-                    to={service?.path || '/services'} 
-                    className="flex items-center gap-3 px-3 py-3 hover:bg-zinc-50 rounded-xl transition-colors group/item"
-                    onClick={() => setServicesDropdownOpen(false)} 
-                  >
+                  <Link key={index} to={service?.path || '/services'} className="flex items-center gap-3 px-3 py-3 hover:bg-zinc-50 rounded-xl transition-colors group/item" onClick={() => setServicesDropdownOpen(false)}>
                     <span className="w-9 h-9 flex items-center justify-center bg-zinc-100 rounded-lg group-hover/item:bg-white group-hover/item:shadow-sm border border-transparent group-hover/item:border-zinc-200 transition-all">
                       {service?.icon || <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
                     </span>
                     <span className="text-sm font-bold text-zinc-700 group-hover/item:text-emerald-600 transition-colors">
-                      {service?.name || "Service"}
+                      {service?.name}
                     </span>
                   </Link>
                 ))}
@@ -133,81 +100,45 @@ const Header = ({ navData, dropdownServices, contactInfo }) => {
             </div>
 
             {renderNavLinks(navLinks.slice(2))}
-            
           </nav>
 
-          {/* CTA */}
           <div className="hidden lg:flex items-center space-x-3">
-            {/* Call Icon */}
-            <a href={`tel:${phoneDetails}`} className="w-10 h-10 rounded-xl bg-zinc-50 flex items-center justify-center border border-zinc-200 hover:bg-zinc-950 hover:text-white transition-colors text-zinc-600" title="Call Us">
+            <a href={`tel:${phoneDetails}`} className="w-10 h-10 rounded-xl bg-zinc-50 flex items-center justify-center border border-zinc-200 hover:bg-zinc-950 hover:text-white transition-colors text-zinc-600">
               <Phone className="w-4 h-4" />
             </a>
-            
-            {/* WhatsApp Icon */}
-            <a href={`https://wa.me/${phoneDetails.replace('+', '')}`} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl bg-[#E8F8F5] flex items-center justify-center border border-[#A9DFD8] hover:bg-[#25D366] hover:text-white transition-colors text-[#25D366]" title="WhatsApp Us">
+            <a href={`https://wa.me/${phoneDetails.replace('+', '')}`} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl bg-[#E8F8F5] flex items-center justify-center border border-[#A9DFD8] hover:bg-[#25D366] hover:text-white transition-colors text-[#25D366]">
               <MessageCircle className="w-5 h-5" />
             </a>
-
-            {/* Book Now Button */}
-            <button 
-              onClick={() => console.log("Book Now Clicked")}
-              className="flex items-center gap-2 bg-zinc-950 text-white px-6 py-2.5 rounded-xl font-black uppercase text-xs tracking-widest transition-all shadow-[4px_4px_0px_0px_rgba(16,185,129,1)] hover:translate-y-1 hover:shadow-none hover:bg-emerald-500 border-2 border-transparent hover:border-zinc-950"
-            >
+            <button className="flex items-center gap-2 bg-zinc-950 text-white px-6 py-2.5 rounded-xl font-black uppercase text-xs tracking-widest transition-all shadow-[4px_4px_0px_0px_rgba(16,185,129,1)] hover:translate-y-1 hover:shadow-none hover:bg-emerald-500 border-2 border-transparent hover:border-zinc-950">
               <Calendar className="w-4 h-4" /> Book Now
             </button>
           </div>
 
-          
-
-          {/* Mobile Menu Button */}
-          <button 
-            className="lg:hidden p-2 text-zinc-900 bg-zinc-100 rounded-xl transition-colors z-50 focus:outline-none border border-zinc-200"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle Menu"
-          >
+          <button className="lg:hidden p-2 text-zinc-900 bg-zinc-100 rounded-xl transition-colors z-50 border border-zinc-200" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </div>
 
-      {/* --- Mobile Menu --- */}
+      {/* Mobile Menu */}
       <div className={`lg:hidden absolute top-full left-0 w-full bg-white border-b border-zinc-100 shadow-xl transition-all duration-300 origin-top ${mobileMenuOpen ? 'opacity-100 scale-y-100 visible' : 'opacity-0 scale-y-0 invisible'}`}>
-        <div className="px-6 py-6 space-y-4 max-h-[85vh] overflow-y-auto w-full">
-          
+        <div className="px-6 py-6 space-y-4 max-h-[85vh] overflow-y-auto">
           {navLinks.slice(0, 2).map((link, idx) => (
-            <Link 
-              key={idx} 
-              to={link?.path || '/'} 
-              className={`block font-black text-[18px] uppercase tracking-tight ${currentPath === link?.path ? 'text-emerald-500' : 'text-zinc-900'}`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
+            <Link key={idx} to={link?.path || '/'} className={`block font-black text-[18px] uppercase tracking-tight ${currentPath === link?.path ? 'text-emerald-500' : 'text-zinc-900'}`}>
               {link?.name}
             </Link>
           ))}
           
-          {/* Mobile Services Dropdown */}
           <div className="space-y-2">
-            <button 
-              className={`w-full font-black text-[18px] uppercase tracking-tight flex justify-between items-center focus:outline-none ${isServicesActive ? 'text-emerald-500' : 'text-zinc-900'}`} 
-              onClick={() => setServicesDropdownOpen(!servicesDropdownOpen)}
-            >
-              Services
-              <ChevronDown className={`w-5 h-5 transition-transform ${servicesDropdownOpen ? 'rotate-180 text-emerald-500' : ''}`} />
+            <button className={`w-full font-black text-[18px] uppercase tracking-tight flex justify-between items-center ${isServicesActive ? 'text-emerald-500' : 'text-zinc-900'}`} onClick={() => setServicesDropdownOpen(!servicesDropdownOpen)}>
+              Services <ChevronDown className={`w-5 h-5 transition-transform ${servicesDropdownOpen ? 'rotate-180 text-emerald-500' : ''}`} />
             </button>
-            
             {servicesDropdownOpen && (
-              <div className="pl-4 space-y-3 py-3 border-l-2 border-emerald-100 ml-2">
+              <div className="pl-4 py-3 border-l-2 border-emerald-100 ml-2 space-y-3">
                 {services.map((service, index) => (
-                  <Link 
-                    key={index} 
-                    to={service?.path || '/services'} 
-                    className="flex items-center gap-3 text-zinc-600 font-bold hover:text-emerald-600 text-[14px]"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <span className="p-1.5 bg-zinc-100 rounded-md">
-                      {service?.icon || <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
-                    </span>
-                    <span>{service?.name || "Service"}</span>
+                  <Link key={index} to={service?.path || '/services'} className="flex items-center gap-3 text-zinc-600 font-bold hover:text-emerald-600 text-[14px]">
+                    <span className="p-1.5 bg-zinc-100 rounded-md">{service?.icon}</span>
+                    <span>{service?.name}</span>
                   </Link>
                 ))}
               </div>
@@ -215,40 +146,10 @@ const Header = ({ navData, dropdownServices, contactInfo }) => {
           </div>
           
           {navLinks.slice(2).map((link, idx) => (
-            <Link 
-              key={idx + 2} 
-              to={link?.path || '/'} 
-              className={`block font-black text-[18px] uppercase tracking-tight ${currentPath === link?.path ? 'text-emerald-500' : 'text-zinc-900'}`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
+            <Link key={idx + 2} to={link?.path || '/'} className={`block font-black text-[18px] uppercase tracking-tight ${currentPath === link?.path ? 'text-emerald-500' : 'text-zinc-900'}`}>
               {link?.name}
             </Link>
           ))}
-          
-          {/*Mobile CTAs */}
-          <div className="pt-6 mt-4 border-t border-zinc-100 flex flex-col gap-3">
-            <div className="flex gap-3">
-              <a 
-                href={`tel:${phoneDetails}`}
-                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-zinc-50 text-zinc-800 font-bold border border-zinc-200 hover:bg-zinc-100"
-              >
-                <Phone className="w-4 h-4" /> Call
-              </a>
-              <a 
-                href={`https://wa.me/${phoneDetails.replace('+', '')}`}
-                target="_blank" rel="noreferrer"
-                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#E8F8F5] text-[#25D366] font-bold border border-[#A9DFD8] hover:bg-[#d1f4ed]"
-              >
-                <MessageCircle className="w-4 h-4" /> WhatsApp
-              </a>
-            </div>
-            <button 
-              onClick={() => console.log("Mobile Book Now Clicked")}
-              className="flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-zinc-950 text-white font-black shadow-[4px_4px_0px_0px_rgba(16,185,129,1)] uppercase tracking-widest text-sm"
-            >
-              <Calendar className="w-4 h-4" /> Book Now
-            </button>
-          </div>
         </div>
       </div>
     </header>

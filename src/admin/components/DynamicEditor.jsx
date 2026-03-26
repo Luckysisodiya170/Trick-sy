@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Save, Settings2, Edit3, Columns, Eye, 
-  LayoutTemplate, Plus, Trash2, Type, AlignLeft, Image as ImageIcon, Upload
+  LayoutTemplate, Plus, Trash2, Type, AlignLeft, Image as ImageIcon, Upload,
+  Link as LinkIcon, List as ListIcon, Minus, GripVertical, ChevronUp, ChevronDown
 } from 'lucide-react';
 
 const DynamicEditor = () => {
   const { moduleName } = useParams(); 
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState('split');
+  const [draggedIdx, setDraggedIdx] = useState(null); // DRAG & DROP STATE
   
   const formattedName = moduleName 
     ? moduleName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') 
@@ -25,21 +27,66 @@ const DynamicEditor = () => {
     localStorage.setItem(storageKey, JSON.stringify(moduleData));
   }, [moduleData, storageKey]);
 
+  // ADD NEW BLOCK
   const addField = (type) => {
     const newField = {
       id: `field_${Date.now()}`,
       type: type, 
       label: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
-      value: ''
+      value: '',
+      link: '' 
     };
     setModuleData(prev => ({ ...prev, fields: [...prev.fields, newField] }));
   };
 
+  // UPDATE TEXT/VALUE
   const updateFieldValue = (id, key, newValue) => {
     setModuleData(prev => ({
       ...prev,
       fields: prev.fields.map(f => f.id === id ? { ...f, [key]: newValue } : f)
     }));
+  };
+
+  // DELETE BLOCK
+  const deleteField = (id) => {
+    setModuleData(prev => ({ ...prev, fields: prev.fields.filter(f => f.id !== id) }));
+  };
+
+  // MOVE BLOCK UP/DOWN (ARROW BUTTONS)
+  const moveField = (index, direction) => {
+    const newFields = [...moduleData.fields];
+    if (direction === 'up' && index > 0) {
+      [newFields[index - 1], newFields[index]] = [newFields[index], newFields[index - 1]];
+    } else if (direction === 'down' && index < newFields.length - 1) {
+      [newFields[index + 1], newFields[index]] = [newFields[index], newFields[index + 1]];
+    }
+    setModuleData({ ...moduleData, fields: newFields });
+  };
+
+  // DRAG & DROP LOGIC
+  const handleDragStart = (e, index) => {
+    setDraggedIdx(index);
+    // Setup drag image transparency
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault(); // Zaroori hai taaki drop ho sake
+  };
+
+  const handleDrop = (e, dropIndex) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === dropIndex) return;
+    
+    const newFields = [...moduleData.fields];
+    const draggedItem = newFields[draggedIdx];
+    
+    // Remove se purani position and insert at new position
+    newFields.splice(draggedIdx, 1);
+    newFields.splice(dropIndex, 0, draggedItem);
+    
+    setModuleData({ ...moduleData, fields: newFields });
+    setDraggedIdx(null);
   };
 
   const handleImageUpload = (id, e) => {
@@ -51,10 +98,6 @@ const DynamicEditor = () => {
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  const deleteField = (id) => {
-    setModuleData(prev => ({ ...prev, fields: prev.fields.filter(f => f.id !== id) }));
   };
 
   return (
@@ -99,11 +142,15 @@ const DynamicEditor = () => {
               
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <h2 className="text-2xl font-black text-slate-800">Blocks</h2>
-                {/* PHOTO UPLOAD BUTTON  */}
-                <div className="flex gap-2 bg-white p-1 rounded-xl shadow-sm border border-slate-200">
-                  <button onClick={() => addField('text')} className="text-slate-600 p-2 rounded-lg font-bold text-[10px] flex items-center gap-1.5 hover:bg-slate-50 transition-all"><Type size={16}/> Text</button>
-                  <button onClick={() => addField('textarea')} className="text-slate-600 p-2 rounded-lg font-bold text-[10px] flex items-center gap-1.5 hover:bg-slate-50 transition-all"><AlignLeft size={16}/> Para</button>
-                  <button onClick={() => addField('image')} className="text-blue-600 p-2 rounded-lg font-bold text-[10px] flex items-center gap-1.5 hover:bg-blue-50 transition-all"><ImageIcon size={16}/> Image</button>
+                
+                {/* TOOLBAR */}
+                <div className="flex gap-1.5 bg-white p-1.5 rounded-xl shadow-sm border border-slate-200 flex-wrap justify-end">
+                  <button onClick={() => addField('text')} className="text-slate-600 p-2 rounded-lg font-bold text-[10px] flex items-center gap-1 hover:bg-slate-50 transition-all"><Type size={14}/> Text</button>
+                  <button onClick={() => addField('textarea')} className="text-slate-600 p-2 rounded-lg font-bold text-[10px] flex items-center gap-1 hover:bg-slate-50 transition-all"><AlignLeft size={14}/> Para</button>
+                  <button onClick={() => addField('image')} className="text-blue-600 p-2 rounded-lg font-bold text-[10px] flex items-center gap-1 hover:bg-blue-50 transition-all"><ImageIcon size={14}/> Image</button>
+                  <button onClick={() => addField('button')} className="text-emerald-600 p-2 rounded-lg font-bold text-[10px] flex items-center gap-1 hover:bg-emerald-50 transition-all"><LinkIcon size={14}/> Button</button>
+                  <button onClick={() => addField('list')} className="text-amber-600 p-2 rounded-lg font-bold text-[10px] flex items-center gap-1 hover:bg-amber-50 transition-all"><ListIcon size={14}/> List</button>
+                  <button onClick={() => addField('divider')} className="text-slate-400 p-2 rounded-lg font-bold text-[10px] flex items-center gap-1 hover:bg-slate-50 transition-all"><Minus size={14}/> Line</button>
                 </div>
               </div>
 
@@ -114,26 +161,81 @@ const DynamicEditor = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {moduleData.fields.map((field) => (
-                    <div key={field.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative group animate-in fade-in zoom-in-95">
+                  {moduleData.fields.map((field, index) => (
+                    
+                    /* DRAGGABLE BLOCK CONTAINER */
+                    <div 
+                      key={field.id} 
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, index)}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, index)}
+                      className={`bg-white p-5 rounded-2xl border ${draggedIdx === index ? 'border-blue-400 shadow-xl opacity-60 scale-[0.98]' : 'border-slate-200 shadow-sm'} relative group transition-all duration-200`}
+                    >
                       
-                      <div className="flex items-center justify-between mb-3 border-b border-slate-50 pb-3">
-                         <input 
-                            value={field.label} 
-                            onChange={(e) => updateFieldValue(field.id, 'label', e.target.value)} 
-                            className="bg-transparent text-[10px] font-black uppercase tracking-widest text-slate-400 outline-none hover:text-slate-600 focus:text-blue-500 w-full"
-                         />
-                         <button onClick={() => deleteField(field.id)} className="text-slate-300 hover:text-rose-500 transition-colors">
-                           <Trash2 size={16} />
-                         </button>
+                      {/* BLOCK HEADER (Controls) */}
+                      <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                         
+                         <div className="flex items-center gap-2 w-full">
+                           {/* DRAG HANDLE */}
+                           <div className="cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-600 p-1 -ml-2 rounded transition-colors">
+                              <GripVertical size={18} />
+                           </div>
+                           
+                           {/* LABEL INPUT */}
+                           <input 
+                              value={field.label} 
+                              onChange={(e) => updateFieldValue(field.id, 'label', e.target.value)} 
+                              className="bg-transparent text-[10px] font-black uppercase tracking-widest text-slate-400 outline-none hover:text-slate-600 focus:text-blue-500 w-full"
+                           />
+                         </div>
+
+                         {/* ACTION BUTTONS (Up, Down, Delete) */}
+                         <div className="flex items-center gap-1 ml-4 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                           <button onClick={() => moveField(index, 'up')} disabled={index === 0} className="text-slate-400 hover:text-blue-500 disabled:opacity-30 disabled:hover:text-slate-400 p-1"><ChevronUp size={16} /></button>
+                           <button onClick={() => moveField(index, 'down')} disabled={index === moduleData.fields.length - 1} className="text-slate-400 hover:text-blue-500 disabled:opacity-30 disabled:hover:text-slate-400 p-1"><ChevronDown size={16} /></button>
+                           <div className="w-[1px] h-4 bg-slate-200 mx-1"></div>
+                           <button onClick={() => deleteField(field.id)} className="text-slate-400 hover:text-rose-500 p-1 transition-colors"><Trash2 size={16} /></button>
+                         </div>
                       </div>
 
+                      {/* TEXT INPUT */}
                       {field.type === 'text' && (
                         <input placeholder="Type your heading here..." value={field.value} onChange={(e) => updateFieldValue(field.id, 'value', e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:ring-2 ring-blue-100" />
                       )}
                       
+                      {/* TEXTAREA INPUT */}
                       {field.type === 'textarea' && (
                         <textarea placeholder="Type your paragraph here..." value={field.value} onChange={(e) => updateFieldValue(field.id, 'value', e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm h-28 resize-none outline-none leading-relaxed focus:ring-2 ring-blue-100" />
+                      )}
+
+                      {/* LIST INPUT */}
+                      {field.type === 'list' && (
+                        <div>
+                          <p className="text-[10px] text-slate-400 mb-2 font-semibold">Press Enter to add a new bullet point</p>
+                          <textarea placeholder="Feature 1&#10;Feature 2&#10;Feature 3" value={field.value} onChange={(e) => updateFieldValue(field.id, 'value', e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm h-28 resize-none outline-none leading-relaxed focus:ring-2 ring-amber-100" />
+                        </div>
+                      )}
+
+                      {/* BUTTON INPUT */}
+                      {field.type === 'button' && (
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Button Text</label>
+                            <input placeholder="Click Here" value={field.value} onChange={(e) => updateFieldValue(field.id, 'value', e.target.value)} className="w-full mt-1 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:ring-2 ring-emerald-100" />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-slate-500 uppercase">Destination URL</label>
+                            <input placeholder="https://..." value={field.link || ''} onChange={(e) => updateFieldValue(field.id, 'link', e.target.value)} className="w-full mt-1 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none focus:ring-2 ring-emerald-100" />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* DIVIDER INPUT */}
+                      {field.type === 'divider' && (
+                        <div className="py-4 text-center border-t-2 border-dashed border-slate-200">
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Section Divider</span>
+                        </div>
                       )}
 
                       {/* IMAGE UPLOADER UI */}
@@ -166,6 +268,7 @@ const DynamicEditor = () => {
             
             <div className={`w-full h-full max-w-5xl bg-white shadow-2xl rounded-3xl md:rounded-[3rem] overflow-hidden flex flex-col border-[4px] md:border-[10px] border-slate-900 transition-all duration-500 ${viewMode === 'split' ? 'lg:scale-[0.95]' : 'scale-100'}`}>
                 
+                {/* Browser-like Header bar */}
                 <div className="h-8 md:h-10 bg-slate-100 border-b border-slate-200 flex items-center px-4 md:px-6 gap-2 shrink-0">
                     <div className="flex gap-1.5">
                       <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
@@ -175,7 +278,7 @@ const DynamicEditor = () => {
                 </div>
 
                 <div className="flex-1 overflow-y-auto bg-white p-8 md:p-16 custom-scrollbar text-center md:text-left">
-                    <div className="max-w-3xl mx-auto space-y-6">
+                    <div className="max-w-3xl mx-auto">
                       
                       {moduleData.fields.length === 0 ? (
                         <div className="opacity-30 text-center py-20">
@@ -184,30 +287,61 @@ const DynamicEditor = () => {
                           <p className="mt-2 text-slate-500 font-medium">Add some content in the editor to see it here.</p>
                         </div>
                       ) : (
-                        moduleData.fields.map((field, index) => (
-                          <React.Fragment key={field.id}>
-                            {field.type === 'text' && (
-                              <h2 className={`font-black text-slate-900 tracking-tight leading-tight ${index === 0 ? 'text-4xl md:text-6xl mb-6' : 'text-2xl md:text-3xl mt-8'}`}>
-                                {field.value || field.label}
-                              </h2>
-                            )}
-                            {field.type === 'textarea' && (
-                              <p className="text-slate-500 text-sm md:text-base leading-relaxed whitespace-pre-line">
-                                {field.value || "This is a placeholder paragraph. Type something in the editor to update this text."}
-                              </p>
-                            )}
-                            {/* PREVIEW FOR IMAGES */}
-                            {field.type === 'image' && (
-                              <div className="w-full rounded-[2rem] overflow-hidden my-6 shadow-lg border border-slate-100 bg-slate-50 aspect-video flex items-center justify-center relative group">
-                                {field.value ? (
-                                  <img src={field.value} className="w-full h-full object-cover" alt="Module visual" />
-                                ) : (
-                                  <ImageIcon size={48} className="text-slate-300" strokeWidth={1} />
-                                )}
-                              </div>
-                            )}
-                          </React.Fragment>
-                        ))
+                        <div className="flex flex-col gap-6">
+                          {moduleData.fields.map((field, index) => (
+                            <React.Fragment key={field.id}>
+                              
+                              {field.type === 'text' && (
+                                <h2 className={`font-black text-slate-900 tracking-tight leading-tight ${index === 0 ? 'text-4xl md:text-6xl mb-2' : 'text-2xl md:text-3xl mt-4'}`}>
+                                  {field.value || field.label}
+                                </h2>
+                              )}
+
+                              {field.type === 'textarea' && (
+                                <p className="text-slate-500 text-sm md:text-base leading-relaxed whitespace-pre-line">
+                                  {field.value || "This is a placeholder paragraph. Type something in the editor to update this text."}
+                                </p>
+                              )}
+
+                              {field.type === 'list' && (
+                                <ul className="list-disc list-outside ml-5 space-y-2 text-slate-600 text-sm md:text-base text-left">
+                                  {(field.value || "Sample Bullet 1\nSample Bullet 2").split('\n').filter(item => item.trim() !== '').map((item, i) => (
+                                    <li key={i} className="pl-2">{item}</li>
+                                  ))}
+                                </ul>
+                              )}
+
+                              {field.type === 'button' && (
+                                <div className="mt-4 mb-2">
+                                  <a 
+                                    href={field.link || '#'} 
+                                    target="_blank" 
+                                    rel="noreferrer"
+                                    onClick={(e) => { if(!field.link) e.preventDefault(); }}
+                                    className="inline-flex items-center justify-center px-8 py-4 bg-emerald-500 text-white rounded-full font-black uppercase tracking-widest text-xs hover:bg-emerald-400 transition-all hover:-translate-y-1 shadow-[0_10px_20px_-10px_rgba(16,185,129,0.5)]"
+                                  >
+                                    {field.value || 'Click Here'}
+                                  </a>
+                                </div>
+                              )}
+
+                              {field.type === 'divider' && (
+                                <hr className="my-8 border-t-2 border-slate-100" />
+                              )}
+
+                              {field.type === 'image' && (
+                                <div className="w-full rounded-[2rem] overflow-hidden shadow-lg border border-slate-100 bg-slate-50 aspect-video flex items-center justify-center relative group mt-2">
+                                  {field.value ? (
+                                    <img src={field.value} className="w-full h-full object-cover" alt="Module visual" />
+                                  ) : (
+                                    <ImageIcon size={48} className="text-slate-300" strokeWidth={1} />
+                                  )}
+                                </div>
+                              )}
+                              
+                            </React.Fragment>
+                          ))}
+                        </div>
                       )}
 
                     </div>

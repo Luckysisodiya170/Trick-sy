@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Send, Mail, User, Phone, MessageSquare, ShieldCheck, Loader2 } from 'lucide-react';
-
-import formImage from '../../assets/contact/form.png';
+import defaultFormImage from '../../assets/contact/form.png';
 
 const ContactForm = ({
   title = "Request",
   titleHighlight = "Service",
   subtitle = "Fill the details below and get a response within minutes.",
+  formImage,
   onSubmitAction
 }) => {
   const { hash } = useLocation();
@@ -17,20 +17,13 @@ const ContactForm = ({
     if (hash === '#contact-form') {
       const element = document.getElementById('contact-form');
       if (element) {
-        setTimeout(() => {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }, 200); 
+        setTimeout(() => element.scrollIntoView({ behavior: 'smooth' }), 200); 
       }
     }
   }, [hash]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    message: ''
-  });
+  const [formData, setFormData] = useState({ fullName: '', email: '', phone: '', message: '' });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,23 +38,19 @@ const ContactForm = ({
         await onSubmitAction(formData);
       } else {
         await new Promise(resolve => setTimeout(resolve, 1500));
-        console.log("Submitted:", formData);
       }
       setFormData({ fullName: '', email: '', phone: '', message: '' });
-      alert("Message sent!");
+      alert("Message sent successfully!");
     } catch (error) {
-      console.error(error);
+      alert("Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div 
-      id="contact-form" 
-      className="scroll-mt-32 bg-white p-6 md:p-10 rounded-[2.5rem] shadow-2xl shadow-zinc-300/40 border border-zinc-100 grid grid-cols-1 md:grid-cols-12 gap-10"
-    >
-      {/*LEFT PART*/}
+    <div id="contact-form" className="scroll-mt-32 bg-white p-6 md:p-10 rounded-[2.5rem] shadow-2xl shadow-zinc-300/40 border border-zinc-100 grid grid-cols-1 md:grid-cols-12 gap-10">
+      
       <div className="md:col-span-8 space-y-8">
         <div>
           <h3 className="text-4xl font-bold text-zinc-950 mb-2 tracking-tight">
@@ -90,14 +79,13 @@ const ContactForm = ({
             <MessageSquare className="w-5 h-5 text-zinc-300 absolute right-6 top-6"/>
           </div>
           <button type="submit" disabled={isSubmitting} className="w-full mt-4 py-5 bg-zinc-950 text-white font-black text-lg rounded-full hover:bg-emerald-500 transition-all uppercase tracking-widest flex items-center justify-center gap-3 disabled:opacity-70">
-            {isSubmitting ? <><Loader2 className="w-6 h-6 animate-spin" /> Processing...</> : <><Send className="w-6 h-6" /> Blast Message</>}
+            {isSubmitting ? <><Loader2 className="w-6 h-6 animate-spin" /> Processing...</> : <><Send className="w-6 h-6" /> Send Message</>}
           </button>
         </form>
       </div>
 
-      {/* RIGHT PART  */}
       <div className="md:col-span-4 bg-zinc-50 rounded-3xl p-6 border border-zinc-100 flex flex-col items-center justify-between">
-         <img src={formImage} alt="TRICKSY Support" className="w-full h-52 object-cover rounded-2xl mb-6 shadow-md" />
+         <img src={formImage || defaultFormImage} alt="TRICKSY Support" className="w-full h-52 object-cover rounded-2xl mb-6 shadow-md" />
          <div className="flex-1 w-full space-y-4">
             <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-zinc-100 shadow-sm">
                 <ShieldCheck className="w-8 h-8 text-emerald-500"/>

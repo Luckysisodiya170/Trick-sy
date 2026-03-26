@@ -1,18 +1,23 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Home, AlertCircle } from 'lucide-react';
+import SEO from '../../components/SEO'; 
 
 const NotFound = () => {
   return (
-    <div className="min-h-[80vh] flex items-center justify-center bg-zinc-50 px-6 py-24">
+    <div className="min-h-[80vh] flex items-center justify-center bg-zinc-50 px-6 py-24 relative overflow-hidden">
+      
+      {/* SEO browser tab title */}
+      <SEO title="404 - Page Not Found" description="The page you are looking for does not exist." />
+
       <div className="w-full max-w-2xl text-center relative z-10">
         
-        {/*404 Text */}
+        {/* 404 Text */}
         <h1 className="text-[120px] md:text-[180px] font-black text-zinc-950 leading-none tracking-tighter drop-shadow-sm">
           4<span className="text-emerald-500">0</span>4
         </h1>
         
-        {/*Content Box */}
+        {/* Content Box */}
         <div className="bg-white border-4 border-zinc-950 p-8 md:p-12 rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(24,24,27,1)] transform -translate-y-6 relative z-20 mx-auto max-w-xl">
           <div className="w-16 h-16 rounded-2xl bg-zinc-100 border-2 border-zinc-200 flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-8 h-8 text-zinc-950" />
@@ -33,6 +38,7 @@ const NotFound = () => {
           </Link>
         </div>
 
+        {/* Background Grid Pattern */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] opacity-[0.03] -z-10 pointer-events-none" style={{ backgroundImage: 'linear-gradient(to right, #000 2px, transparent 2px), linear-gradient(to bottom, #000 2px, transparent 2px)', backgroundSize: '64px 64px' }}></div>
       </div>
     </div>

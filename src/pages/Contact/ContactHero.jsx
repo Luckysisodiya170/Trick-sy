@@ -1,18 +1,21 @@
 import React from 'react';
 
 import contactImage from '../../assets/contact/contact.png';
+
 const ContactHero = ({
   badgeText = 'Contact tricksy',
   titlePart1 = 'Premium Care',
   titleAccent = 'Your Space.',
-  paragraphText = 'Need a personalized quote or have a query? We are here to provide 5-star maintenance support. Reach us within minutes.'
+  paragraphText = 'Need a personalized quote or have a query? We are here to provide 5-star maintenance support. Reach us within minutes.',
+  bgImage // 🔥 Naya prop yahan add kiya hai
 }) => {
   return (
     <section className="relative pt-24 pb-40 overflow-hidden bg-zinc-950">
       
       {/* Background Image */}
       <img
-        src={contactImage}
+        // 🔥 Yahan logic change kiya: Agar bgImage (uploaded) hai toh wo dikhao, warna default contactImage
+        src={bgImage || contactImage} 
         alt="Tricksy Contact Page Hero Background"
         className="absolute inset-0 w-full h-full object-cover opacity-40" 
       />

@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Save, Settings2, Edit3, Columns, Eye,
-  Plus, Trash2, Folder, Monitor, LayoutGrid, Info
+  Plus, Trash2, Folder, Monitor, Info
 } from 'lucide-react';
+
+// USER-SIDE COMPONENT IMPORT
+import BlogCategories from '../../../pages/Blog/BlogCategories'; 
 
 const BlogCategoriesEditor = () => {
   const navigate = useNavigate();
@@ -16,9 +19,7 @@ const BlogCategoriesEditor = () => {
     { id: '3', name: 'Apartment Life' },
     { id: '4', name: 'Commercial' },
     { id: '5', name: 'Fitness Centers' },
-    { id: '6', name: 'Industrial' },
-    { id: '7', name: 'Plumbing' },
-    { id: '8', name: 'Pest Control' }
+    { id: '6', name: 'Industrial' }
   ];
 
   const [categories, setCategories] = useState(defaultCategories);
@@ -136,67 +137,35 @@ const BlogCategoriesEditor = () => {
           </div>
         )}
 
-        {/* RIGHT PANEL: LIVE PREVIEW */}
+        {/* RIGHT PANEL: LIVE PREVIEW W/ COMPONENT IMPORT */}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'preview' ? 'w-full' : 'hidden lg:flex flex-1'} flex-col h-full bg-zinc-50 relative transition-all duration-300 min-w-0`}>
             
             <div className="h-12 flex items-center justify-center px-6 bg-white border-b border-slate-200 shadow-sm shrink-0">
               <div className="flex items-center gap-2">
                 <Monitor size={14} className="text-slate-400" />
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Live Blog UI Output</span>
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Live Component Output</span>
               </div>
             </div>
 
             <div className="flex-1 overflow-y-auto w-full p-4 lg:p-10 flex flex-col items-center">
-              
               <div className="w-full max-w-[1000px] space-y-4">
                 <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest mb-4">How it looks on your website</h3>
                 
-                <div className="relative w-full group">
-                  
-                  <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white to-transparent z-10 rounded-l-[2rem] pointer-events-none"></div>
-                  <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white to-transparent z-10 rounded-r-[2rem] pointer-events-none"></div>
-
-                  <div className="bg-white p-3 lg:p-4 rounded-[2rem] shadow-sm border border-zinc-100 flex items-center overflow-x-auto no-scrollbar gap-2 lg:gap-3 w-full relative z-0">
-                    
-                    <div className="pl-3 pr-4 py-2 flex items-center gap-2 border-r border-zinc-100 text-zinc-400 shrink-0 sticky left-0 bg-white z-20">
-                      <LayoutGrid size={16} />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Filter:</span>
-                    </div>
-                    
-                    <button
-                      onClick={() => setActivePreviewCat('All')}
-                      className={`px-4 lg:px-5 py-2 lg:py-2.5 rounded-full text-[11px] lg:text-xs font-black uppercase tracking-widest transition-all shrink-0 ${
-                        activePreviewCat === 'All' 
-                          ? 'bg-zinc-950 text-white shadow-md' 
-                          : 'bg-zinc-50 text-zinc-500 hover:bg-emerald-50 hover:text-emerald-600'
-                      }`}
-                    >
-                      All
-                    </button>
-
-                    {categories.map(cat => (
-                      <button
-                        key={cat.id}
-                        onClick={() => setActivePreviewCat(cat.name)}
-                        className={`px-4 lg:px-5 py-2 lg:py-2.5 rounded-full text-[11px] lg:text-xs font-black uppercase tracking-widest transition-all shrink-0 ${
-                          activePreviewCat === cat.name 
-                            ? 'bg-zinc-950 text-white shadow-md' 
-                            : 'bg-zinc-50 text-zinc-500 hover:bg-emerald-50 hover:text-emerald-600'
-                        }`}
-                      >
-                        {cat.name}
-                      </button>
-                    ))}
-                    
-                    <div className="shrink-0 w-4"></div>
-                  </div>
+                {/* Yahan pe ab original manual HTML ki jagah BlogCategories
+                  component import karke live data as props bheja gaya hai.
+                */}
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-zinc-100">
+                   <BlogCategories 
+                     categories={categories} 
+                     activeCategory={activePreviewCat} 
+                     onCategorySelect={(cat) => setActivePreviewCat(cat)} 
+                   />
                 </div>
 
                 <p className="text-[11px] text-zinc-400 font-medium italic mt-4 pl-4">
-                  * Scroll horizontally to see all tags. Click to test the active state.
+                  * Live interactive preview. Click tags to test state changes.
                 </p>
-
               </div>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { CheckCircle2, Award, ArrowRight, Sparkles } from 'lucide-react';
 import propic from "../../assets/aboutsectionimg/profileabout.jpeg"
 import propic1 from "../../assets/aboutsectionimg/profileabout2.jpeg"
@@ -25,19 +26,15 @@ const AboutSection = ({ aboutData }) => {
 
   return (
     <section className="py-16 lg:py-20 bg-slate-50 overflow-hidden relative">
-
       <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-emerald-50/50 rounded-full blur-3xl -z-10 translate-x-1/3 -translate-y-1/4 pointer-events-none"></div>
 
       <div className="w-full max-w-[1500px] mx-auto px-4 sm:px-6 md:px-10 lg:px-12 2xl:px-16">
-
         <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
 
-          {/*Left Side*/}
           <div className="w-full lg:w-1/2 relative px-4 sm:px-8 lg:px-0 mt-6 lg:mt-0">
             <div className="relative max-w-lg mx-auto lg:max-w-none lg:ml-auto lg:mr-8">
               <div className="absolute -top-4 -left-4 sm:-top-6 sm:-left-6 w-3/4 h-3/4 bg-slate-900 rounded-[2rem] z-0 opacity-95"></div>
 
-              {/* Main Image */}
               <div className="rounded-[2rem] overflow-hidden shadow-xl border-4 border-white relative z-10 w-full bg-slate-100">
                 <img
                   src={content.mainImage}
@@ -47,7 +44,6 @@ const AboutSection = ({ aboutData }) => {
                 />
               </div>
 
-              {/* Smaller Image */}
               <div className="absolute -bottom-8 -right-4 sm:-right-8 w-1/2 rounded-[1.5rem] overflow-hidden shadow-2xl border-[4px] sm:border-[6px] border-white z-20 bg-slate-100">
                 <img
                   src={content.secondaryImage}
@@ -57,7 +53,6 @@ const AboutSection = ({ aboutData }) => {
                 />
               </div>
 
-              {/* Floating Badge */}
               <div className="absolute top-1/2 -left-6 sm:-left-12 -translate-y-1/2 bg-white p-4 sm:p-5 rounded-2xl shadow-xl z-30 flex items-center gap-4 animate-bounce-slow border border-slate-100">
                 <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center shadow-md shadow-emerald-500/30">
                   <Award className="w-6 h-6 text-white" />
@@ -70,7 +65,6 @@ const AboutSection = ({ aboutData }) => {
             </div>
           </div>
 
-          {/* Right Side */}
           <div className="w-full lg:w-1/2 mt-16 lg:mt-0 relative z-10">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white font-semibold text-xs sm:text-sm mb-5 shadow-md">
               <Sparkles className="w-4 h-4 text-emerald-400" />
@@ -88,47 +82,34 @@ const AboutSection = ({ aboutData }) => {
               {content.description}
             </p>
 
-            {Array.isArray(content.features) && content.features.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-8">
-                {content.features.map((text, index) => (
-                  <div key={index} className="flex items-center gap-3 bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-100 hover:border-emerald-200 transition-colors">
-                    <div className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center shrink-0 shadow-md">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                    </div>
-                    <span className="text-[14px] sm:text-[15px] font-bold text-slate-800">{text}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-8">
+              {content.features.map((text, index) => (
+                <div key={index} className="flex items-center gap-3 bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-100 hover:border-emerald-200 transition-colors">
+                  <div className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center shrink-0 shadow-md">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                   </div>
-                ))}
-              </div>
-            )}
+                  <span className="text-[14px] sm:text-[15px] font-bold text-slate-800">{text}</span>
+                </div>
+              ))}
+            </div>
 
-            {/* Action Area */}
             <div className="flex flex-col sm:flex-row items-center gap-6 pt-6 border-t border-slate-200/60">
-              <button 
-                onClick={(e) => { e.preventDefault(); console.log("Navigate to About"); }}
-                className="group w-full sm:w-auto flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white px-7 py-3.5 sm:py-4 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-green-500/30 text-[15px] hover:-translate-y-1"
-              >
-                More About Us
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </button>
+              <Link to="/about" className="w-full sm:w-auto">
+                <button className="group w-full flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white px-7 py-3.5 sm:py-4 rounded-xl font-bold transition-all duration-300 shadow-lg shadow-green-500/30 text-[15px] hover:-translate-y-1">
+                  More About Us
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </button>
+              </Link>
 
-              {/* customers */}
               <div className="flex items-center gap-3">
-                {Array.isArray(content.customerAvatars) && content.customerAvatars.length > 0 && (
-                  <div className="flex -space-x-3">
-                    {content.customerAvatars.slice(0, 3).map((avatarSrc, idx) => (
-                      <img
-                        key={idx}
-                        src={avatarSrc}
-                        alt="Happy Customer Profile"
-                        loading="lazy"
-                        className="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover"
-                      />
-                    ))}
-                    <div className="w-10 h-10 rounded-full border-2 border-white bg-slate-900 flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
-                      {content.customersText}
-                    </div>
+                <div className="flex -space-x-3">
+                  {content.customerAvatars.slice(0, 3).map((avatarSrc, idx) => (
+                    <img key={idx} src={avatarSrc} alt="Customer" loading="lazy" className="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover" />
+                  ))}
+                  <div className="w-10 h-10 rounded-full border-2 border-white bg-slate-900 flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
+                    {content.customersText}
                   </div>
-                )}
+                </div>
                 <div className="flex flex-col">
                   <span className="text-sm font-extrabold text-slate-900 leading-none mb-0.5">Happy</span>
                   <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wide">Customers</span>
@@ -139,16 +120,9 @@ const AboutSection = ({ aboutData }) => {
           </div>
         </div>
       </div>
-
-      {/* animation */}
       <style>{`
-        @keyframes bounce-slow {
-          0%, 100% { transform: translateY(-3%); }
-          50% { transform: translateY(3%); }
-        }
-        .animate-bounce-slow {
-          animation: bounce-slow 4s infinite ease-in-out;
-        }
+        @keyframes bounce-slow { 0%, 100% { transform: translateY(-3%); } 50% { transform: translateY(3%); } }
+        .animate-bounce-slow { animation: bounce-slow 4s infinite ease-in-out; }
       `}</style>
     </section>
   );

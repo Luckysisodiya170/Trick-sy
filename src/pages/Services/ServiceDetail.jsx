@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-
 import SEO from '../../components/SEO';
 import { servicesData } from '../../data/servicesData';
 
@@ -12,7 +11,6 @@ import Electric from "../../assets/serviceimage/electric.png";
 import pest from "../../assets/serviceimage/pest.png";
 import handy from "../../assets/serviceimage/image.png";
 
-// Import Components
 import ServiceHero from './ServiceHero';
 import ServiceIncludes from './ServiceIncludes';
 import ServiceProcess from './ServiceProcess';
@@ -58,7 +56,7 @@ const ServiceDetail = ({ previewData, previewSection }) => {
           setServiceInfo(servicesData[serviceId] || null);
         }
       } catch (error) {
-        console.log("Error loading service data:", error.message);
+        console.error("Error loading service data:", error);
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -92,7 +90,7 @@ const ServiceDetail = ({ previewData, previewSection }) => {
         <SEO 
           title={serviceInfo.title} 
           description={serviceInfo.description} 
-          keywords={`${serviceInfo.title}, deep cleaning services, home cleaning`} 
+          keywords={`${serviceInfo.title}, cleaning services, professional maintenance`} 
         />
       )}
 

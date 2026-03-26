@@ -8,6 +8,7 @@ const BlogHero = ({
 }) => {
   return (
     <section className="bg-zinc-950 py-20 lg:py-28 relative overflow-hidden border-b-[8px] border-emerald-500">
+      {/* Pattern Background */}
       <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)', backgroundSize: '48px 48px' }}></div>
       
       <div className="w-full max-w-[1280px] mx-auto px-6 relative z-10 text-center">
@@ -19,6 +20,7 @@ const BlogHero = ({
         <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.05] tracking-tighter mb-6">
           {titlePart1} <span className="text-emerald-500">{titleAccent}</span>
         </h1>
+        
         <p className="text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
           {paragraphText}
         </p>

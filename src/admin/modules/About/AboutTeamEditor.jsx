@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Save, Edit3, Columns, Eye, Settings2, Type, 
-  Linkedin, Mail, ArrowUpRight, CheckCircle2, Upload, Trash2, Plus, Users
+  Linkedin, Mail, ArrowUpRight, CheckCircle2, Upload, Trash2, Plus, Users, Sparkles, Twitter
 } from 'lucide-react';
 
 const AboutTeamEditor = () => {
@@ -12,6 +12,7 @@ const AboutTeamEditor = () => {
   const [teamData, setTeamData] = useState({
     teamTitle: "Meet The",
     teamHighlight: "Masterminds",
+    teamDescription: "A world-class team of certified professionals dedicated to bringing perfection to your space.",
     members: [
       { 
         name: "Saurabh Sharma", 
@@ -102,6 +103,7 @@ const AboutTeamEditor = () => {
                 <input value={teamData.teamTitle} onChange={(e) => setTeamData({...teamData, teamTitle: e.target.value})} placeholder="Title" className="p-4 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none w-full" />
                 <input value={teamData.teamHighlight} onChange={(e) => setTeamData({...teamData, teamHighlight: e.target.value})} placeholder="Highlight" className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl font-black text-emerald-700 outline-none w-full" />
               </div>
+              <textarea rows="2" value={teamData.teamDescription} onChange={(e) => setTeamData({...teamData, teamDescription: e.target.value})} placeholder="Section Description..." className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl text-xs font-medium outline-none resize-none focus:bg-white focus:border-emerald-400 transition-all leading-relaxed" />
             </section>
 
             <div className="space-y-4">
@@ -114,7 +116,7 @@ const AboutTeamEditor = () => {
 
                   <div className="flex gap-4">
                     <div className="w-16 h-16 rounded-2xl bg-slate-100 flex-shrink-0 relative overflow-hidden group/img border border-slate-100">
-                      {member.img ? <img src={member.img} className="w-full h-full object-cover" /> : <Users className="m-auto text-slate-300" size={20}/>}
+                      {member.img ? <img src={member.img} className="w-full h-full object-cover" /> : <Users className="m-auto mt-4 text-slate-300" size={24}/>}
                       <label className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex cursor-pointer">
                         <Upload className="m-auto text-white" size={14} />
                         <input type="file" className="hidden" onChange={(e) => handleImageUpload(i, e)} />
@@ -127,6 +129,21 @@ const AboutTeamEditor = () => {
                   </div>
 
                   <textarea value={member.bio} onChange={(e) => handleMemberChange(i, 'bio', e.target.value)} className="w-full text-[11px] font-medium text-slate-500 bg-slate-50 p-3 rounded-xl outline-none resize-none border border-transparent focus:border-emerald-100" rows="2" placeholder="Short bio..." />
+                  
+                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-50">
+                    <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-lg">
+                      <Linkedin size={12} className="text-slate-400"/>
+                      <input value={member.socials?.linkedin || ""} onChange={(e) => handleSocialChange(i, 'linkedin', e.target.value)} className="w-full bg-transparent text-[9px] outline-none text-slate-600" placeholder="LinkedIn URL"/>
+                    </div>
+                    <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-lg">
+                      <Twitter size={12} className="text-slate-400"/>
+                      <input value={member.socials?.twitter || ""} onChange={(e) => handleSocialChange(i, 'twitter', e.target.value)} className="w-full bg-transparent text-[9px] outline-none text-slate-600" placeholder="Twitter URL"/>
+                    </div>
+                    <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-lg">
+                      <Mail size={12} className="text-slate-400"/>
+                      <input value={member.socials?.mail || ""} onChange={(e) => handleSocialChange(i, 'mail', e.target.value)} className="w-full bg-transparent text-[9px] outline-none text-slate-600" placeholder="Email"/>
+                    </div>
+                  </div>
                 </div>
               ))}
 
@@ -147,10 +164,18 @@ const AboutTeamEditor = () => {
               
               <section className="py-16 px-8 relative">
                 <div className="text-center mb-16">
-                  <span className="text-emerald-600 font-black text-[10px] uppercase tracking-[0.3em] block mb-2">Our Foundation</span>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-50 border border-slate-200 mb-4 shadow-sm">
+                    <Sparkles className="w-4 h-4 text-emerald-500" />
+                    <span className="text-slate-900 font-black text-[11px] uppercase tracking-[0.2em]">Our Leadership</span>
+                  </div> 
                   <h2 className="text-4xl lg:text-5xl font-black text-slate-900 tracking-tighter">
-                    {teamData.teamTitle} <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">{teamData.teamHighlight}</span>
+                    {teamData.teamTitle} 
                   </h2>
+                  <span className="text-4xl lg:text-5xl font-black text-slate-900 tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-emerald-500">{teamData.teamHighlight}</span>
+                  
+                  <p className="text-slate-500 font-medium max-w-2xl mx-auto mt-4 text-sm">
+                    {teamData.teamDescription}
+                  </p>
                 </div>
 
                 {/* Team Grid: Compact Version */}
@@ -165,10 +190,6 @@ const AboutTeamEditor = () => {
                         ) : (
                           <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400"><Users size={32}/></div>
                         )}
-                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
-                          <CheckCircle2 size={10} className="text-emerald-500" />
-                          <span className="text-[7px] font-black uppercase text-slate-800">Verified</span>
-                        </div>
                       </div>
 
                       <div className="p-5">
@@ -178,8 +199,9 @@ const AboutTeamEditor = () => {
                         
                         <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
                           <div className="flex gap-2">
-                             <div className="w-7 h-7 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-emerald-500 transition-colors"><Linkedin size={12}/></div>
-                             <div className="w-7 h-7 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-emerald-500 transition-colors"><Mail size={12}/></div>
+                             {member.socials?.linkedin && (<div className="w-7 h-7 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-emerald-500 transition-colors"><Linkedin size={12}/></div>)}
+                             {member.socials?.twitter && (<div className="w-7 h-7 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-sky-500 transition-colors"><Twitter size={12}/></div>)}
+                             {member.socials?.mail && (<div className="w-7 h-7 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors"><Mail size={12}/></div>)}
                           </div>
                           <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center group-hover:bg-emerald-600 transition-all cursor-pointer">
                             <ArrowUpRight size={14}/>
