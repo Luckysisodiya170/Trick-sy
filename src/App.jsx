@@ -78,6 +78,10 @@ import TechnicalFAQEditor from './admin/modules/Technical_Services/TechnicalFAQE
 import TechnicalPricingEditor from './admin/modules/Technical_Services/TechnicalPricingEditor';
 import TechnicalTrustEditor from './admin/modules/Technical_Services/TechnicalTrustEditor';
 import ServiceWizard from './admin/modules/Services/ServiceWizard';
+import ContactEnquiries from './admin/pages/ContactEnquiries';
+import ServiceBookings from './admin/pages/ServiceBookings';
+import NewsletterSubscribers from './admin/pages/NewsletterSubscribers';
+import AdminSettings from './admin/pages/AdminSettings';
 
 // Dummy Auth Pages
 const Login = () => <div className="flex h-screen items-center justify-center bg-slate-50 font-bold text-xl">Login Page (User)</div>;
@@ -176,6 +180,13 @@ function App() {
               <Route path="pages/technical/pricing" element={<TechnicalPricingEditor />} />
               <Route path="pages/technical/faq" element={<TechnicalFAQEditor />} />
               <Route path="pages/technical/footer" element={<TechnicalTrustEditor />} />
+
+
+              {/* interaction pages */}
+              <Route path='leads' element={<ServiceBookings/>}/>
+              <Route path='enquiries' element={<ContactEnquiries/>}/>
+               <Route path='newsletter' element={<NewsletterSubscribers/>}/>
+              <Route path='settings' element={<AdminSettings/>}/>
             </Route>
           </Route>
 

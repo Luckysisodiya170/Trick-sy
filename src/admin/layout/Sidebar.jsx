@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 // Added useNavigate here for redirecting after logout
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ShieldCheck, MonitorPlay, UserCircle,
   Briefcase, FileText, Layout, Layers, MessageSquare,
-  Inbox, Mail, Settings, LogOut, ChevronLeft, ChevronRight
+  Inbox, Mail, Settings, LogOut, ChevronLeft, ChevronRight,AlertTriangle,
 } from 'lucide-react';
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
@@ -12,6 +12,13 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   
   // Added navigate tool
   const navigate = useNavigate(); 
+
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem('tricksyAdminToken');
+    navigate('/admin-login');
+  };
   
   const linkClass = ({ isActive }) =>
     `flex items-center ${isSidebarOpen ? 'justify-start px-3' : 'justify-center px-0'} py-2.5 rounded-lg text-[13px] font-semibold transition-all duration-300 relative group ${isActive
@@ -20,6 +27,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     }`;
 
   return (
+    <>
     <aside
       className={`bg-[#0a0a0a] border-r border-white/5 h-full transition-all duration-300 flex flex-col z-[100] fixed inset-y-0 left-0 lg:static shrink-0
         ${isSidebarOpen ? 'w-64 lg:w-72 translate-x-0' : 'w-20 -translate-x-full lg:translate-x-0'}
@@ -145,10 +153,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
         {/* Added onClick function here for Logout */}
         <button 
-          onClick={() => {
-            localStorage.removeItem('tricksyAdminToken'); // Delete the token
-            navigate('/admin-login'); // Go back to login page
-          }}
+          onClick={() => setShowLogoutModal(true)}
           className={`flex items-center ${isSidebarOpen ? 'justify-start px-3' : 'justify-center px-0'} py-2.5 w-full rounded-lg text-[13px] font-semibold text-rose-500 hover:bg-rose-500/10 transition-colors relative group`}
         >
           <LogOut size={18} className="shrink-0" />
@@ -158,6 +163,56 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       </div>
 
     </aside>
+
+    
+
+
+       
+
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+          {/* Blurred Background Overlay */}
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-md animate-in fade-in duration-300"
+            onClick={() => setShowLogoutModal(false)} // Close on click outside
+          />
+          
+          {/* Modal Content */}
+          <div className="bg-white rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl relative z-10 animate-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-6">
+                <AlertTriangle className="text-rose-500 w-8 h-8" />
+              </div>
+              
+              <h3 className="text-2xl font-black italic uppercase tracking-tighter text-slate-900 mb-2">
+                Sign <span className="text-rose-500">Out?</span>
+              </h3>
+              <p className="text-slate-500 text-sm font-medium mb-8">
+                Are you sure you want to end your session? You'll need to login again to access the dashboard.
+              </p>
+
+              <div className="grid grid-cols-2 gap-3 w-full">
+                <button 
+                  onClick={() => setShowLogoutModal(false)}
+                  className="py-3.5 px-6 rounded-2xl text-[11px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 hover:bg-slate-200 transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleLogout}
+                  className="py-3.5 px-6 rounded-2xl text-[11px] font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 shadow-lg shadow-rose-200 transition-all"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </>
+
+    
   );
 };
 
