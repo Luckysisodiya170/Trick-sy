@@ -27,7 +27,7 @@ const defaultServices = [
 const ServicesPageOverview = () => {
   return (
     <PageManager 
-      title="Services Manager"
+      title="SERVICE MANAGER"
       storageKey="tricksy_services_manager"
       defaultSections={defaultServices}
       iconLibrary={iconLibrary}

@@ -47,20 +47,20 @@ const Hero = ({ heroData }) => {
               {content.description}
             </p>
             
-            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0">
-              <Link to="/services" className="w-full sm:w-auto">
-                <Button variant="primary" className="w-full px-8 py-3.5 sm:py-4 text-base rounded-xl font-semibold hover:-translate-y-1 transition-transform">
-                  {content.primaryBtnText}
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-              
-              <Link to="/contact" className="w-full sm:w-auto">
-                <button className="w-full flex items-center justify-center gap-2 px-8 py-3.5 sm:py-4 text-base text-slate-700 font-semibold rounded-xl bg-white border border-slate-200 hover:border-indigo-200 hover:bg-indigo-50 transition-all hover:-translate-y-1">
-                  {content.secondaryBtnText}
-                </button>
-              </Link>
-            </div>
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0">
+  <Link to="/services" className="w-full sm:w-auto">
+    <button className="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 sm:py-4 text-white bg-brand-primary rounded-xl font-black uppercase tracking-widest text-[11px] hover:-translate-y-1 transition-all shadow-lg shadow-brand-primary/20 active:scale-95">
+      {content.primaryBtnText}
+      <ArrowRight className="w-4 h-4 ml-2 stroke-[3]" />
+    </button>
+  </Link>
+  
+  <Link to="/contact" className="w-full sm:w-auto">
+    <button className="w-full flex items-center justify-center gap-2 px-8 py-3.5 sm:py-4 text-[11px] font-black uppercase tracking-widest text-brand-dark rounded-xl bg-white border-2 border-slate-100 hover:border-brand-primary hover:text-brand-primary transition-all hover:-translate-y-1 active:scale-95">
+      {content.secondaryBtnText}
+    </button>
+  </Link>
+</div>
           </div>
 
           <div className="w-full lg:w-1/2 flex justify-center lg:justify-end mt-10 lg:mt-0 relative px-4 sm:px-0">

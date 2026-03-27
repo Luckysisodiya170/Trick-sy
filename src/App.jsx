@@ -82,6 +82,7 @@ import ContactEnquiries from './admin/pages/ContactEnquiries';
 import ServiceBookings from './admin/pages/ServiceBookings';
 import NewsletterSubscribers from './admin/pages/NewsletterSubscribers';
 import AdminSettings from './admin/pages/AdminSettings';
+import AdminProfile from './admin/modules/profile/AdminProfile';
 
 // Dummy Auth Pages
 const Login = () => <div className="flex h-screen items-center justify-center bg-slate-50 font-bold text-xl">Login Page (User)</div>;
@@ -187,6 +188,11 @@ function App() {
               <Route path='enquiries' element={<ContactEnquiries/>}/>
                <Route path='newsletter' element={<NewsletterSubscribers/>}/>
               <Route path='settings' element={<AdminSettings/>}/>
+
+
+              {/* profile page */}
+
+              <Route path="profile" element={<AdminProfile />} />
             </Route>
           </Route>
 

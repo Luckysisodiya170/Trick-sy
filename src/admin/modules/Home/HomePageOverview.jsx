@@ -31,7 +31,7 @@ const defaultSections = [
 const HomePageOverview = () => {
   return (
     <PageManager 
-      title="Home Section"
+      title="HOME SECTIONS"
       storageKey="tricksy_home_modules"
       defaultSections={defaultSections}
       iconLibrary={iconLibrary}

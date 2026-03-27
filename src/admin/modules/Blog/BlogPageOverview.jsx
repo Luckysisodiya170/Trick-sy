@@ -22,7 +22,7 @@ const defaultSections = [
 const BlogPageOverview = () => {
   return (
     <PageManager 
-      title="Blog Modules"
+      title="BLOG MODULES"
       storageKey="tricksy_blog_modules"
       defaultSections={defaultSections}
       iconLibrary={iconLibrary}

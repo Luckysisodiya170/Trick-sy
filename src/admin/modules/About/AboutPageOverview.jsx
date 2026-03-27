@@ -25,7 +25,7 @@ const defaultSections = [
 const AboutPageOverview = () => {
   return (
     <PageManager 
-      title="About Sections"
+      title={<>ABOUT <span className="text-brand-primary">SECTIONS.</span></>}
       storageKey="tricksy_about_modules"
       defaultSections={defaultSections}
       iconLibrary={iconLibrary}

@@ -27,7 +27,7 @@ const defaultSections = [
 const TechnicalPageOverview = () => {
   return (
     <PageManager 
-      title="Technical Services"
+      title="TECHNICAL SERVICES"
       storageKey="tricksy_technical_modules"
       defaultSections={defaultSections}
       iconLibrary={iconLibrary}

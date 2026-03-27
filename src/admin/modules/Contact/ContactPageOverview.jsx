@@ -21,7 +21,7 @@ const defaultSections = [
 const ContactPageOverview = () => {
   return (
     <PageManager 
-      title="Contact Sections"
+      title="CONTACT SECTIONS"
       storageKey="tricksy_contact_modules"
       defaultSections={defaultSections}
       iconLibrary={iconLibrary}

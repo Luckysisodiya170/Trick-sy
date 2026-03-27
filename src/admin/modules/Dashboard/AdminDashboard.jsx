@@ -1,152 +1,142 @@
 import React from 'react';
-import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, Cell
-} from 'recharts';
-import { 
-  Zap, Users, Wrench, Star, LayoutGrid 
-} from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Zap, Wrench, Star, LayoutGrid, Sparkles, TrendingUp } from 'lucide-react';
 
 const data = [
-  { name: 'Mon', bookings: 400 },
-  { name: 'Tue', bookings: 300 },
-  { name: 'Wed', bookings: 600 },
-  { name: 'Thu', bookings: 800 },
-  { name: 'Fri', bookings: 500 },
-  { name: 'Sat', bookings: 900 },
-  { name: 'Sun', bookings: 700 },
-];
-
-const serviceData = [
-  { name: 'AC', value: 45, color: '#10b981' },
-  { name: 'Clean', value: 30, color: '#3b82f6' },
-  { name: 'Plumb', value: 15, color: '#f59e0b' },
-  { name: 'Paint', value: 10, color: '#8b5cf6' },
+  { day: 'Mon', bookings: 400 },
+  { day: 'Tue', bookings: 300 },
+  { day: 'Wed', bookings: 600 },
+  { day: 'Thu', bookings: 800 },
+  { day: 'Fri', bookings: 500 },
+  { day: 'Sat', bookings: 950 },
+  { day: 'Sun', bookings: 700 },
 ];
 
 const ColorfulDashboard = () => {
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-4 lg:p-8 font-sans text-slate-900">
+    <div className="min-h-screen bg-[#FDFDFD] p-6 lg:p-10 flex flex-col gap-8">
       
-      {/* ---  TOP BAR --- */}
-      <div className="flex justify-between items-center mb-10 px-2">
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2 mb-1">
-             <div className="w-2 h-2 bg-indigo-600 rounded-full animate-pulse" />
-             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">System Live</span>
+      {/* ---  HEADER --- */}
+      <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-8">
+        <div>
+          <div className="flex items-center gap-2 text-brand-primary mb-1">
+            <Sparkles size={12} className="fill-brand-primary" />
+            <span className="t-subtitle">Performance Tracking</span>
           </div>
-          <h2 className="text-3xl font-black italic uppercase tracking-tighter text-slate-800">
-            Tricksy <span className="text-indigo-600">Dashboard</span>
-          </h2>
+          <h1 className="t-title text-4xl">
+            Tricksy <span className="text-brand-primary">Dashboard.</span>
+          </h1>
+          <p className="text-[13px] text-slate-400 font-medium italic">
+            System Overview & Real-time Analytics
+          </p>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="hidden md:block text-right">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Access Node</p>
-            <p className="text-[11px] font-bold text-slate-700">DXB_ADMIN_MAIN</p>
+        <div className="flex items-center gap-3">
+          <div className="px-5 py-3 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="t-nav text-[10px]">System Live</span>
           </div>
-          <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">
-             <LayoutGrid size={18} className="text-indigo-600" />
+          <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm hover:border-brand-primary transition-all cursor-pointer">
+             <LayoutGrid size={20} className="text-brand-primary" />
           </div>
         </div>
       </div>
 
-      {/* --- STATS ROW --- */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      {/* ---  STATS  --- */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: "Revenue", val: "₹12,480", icon: <Zap size={16}/>, color: "bg-amber-500" },
-          { label: "Active Jobs", val: "84", icon: <Wrench size={16}/>, color: "bg-indigo-600" },
-          { label: "Rating", val: "4.9/5", icon: <Star size={16}/>, color: "bg-rose-500" }
+          { label: "Revenue", val: "₹12,480", icon: <Zap />, color: "text-brand-primary" },
+          { label: "Active Jobs", val: "84 Units", icon: <Wrench />, color: "text-slate-700" },
+          { label: "Rating", val: "4.9 / 5.0", icon: <Star />, color: "text-rose-500" }
         ].map((s, i) => (
-          <div key={i} className="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-4 hover:translate-y-[-2px] transition-all">
-            <div className={`${s.color} w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg shadow-inner shrink-0`}>
-              {s.icon}
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{s.label}</p>
-              <h3 className="text-xl font-black text-slate-800">{s.val}</h3>
+          <div key={i} className="group p-[2px] rounded-[1.8rem] bg-gradient-to-br from-white to-slate-50 border border-slate-100 shadow-sm hover:from-brand-primary hover:to-brand-primary/80 transition-all duration-300">
+            <div className="bg-white px-6 py-4 rounded-[1.7rem] flex items-center justify-between min-h-[90px]">
+              <div className="flex items-center gap-4">
+                <div className={`${s.color} bg-slate-50 w-14 h-14 rounded-full flex items-center justify-center border border-slate-100 group-hover:bg-white group-hover:scale-110 transition-transform`}>
+                   {React.cloneElement(s.icon, { size: 24, className: s.color })}
+                </div>
+                <div>
+                   <p className="t-nav text-slate-400 italic mb-1 uppercase tracking-widest">{s.label}</p>
+                   <h3 className="t-accent text-3xl text-slate-800 tracking-tighter leading-none">{s.val}</h3>
+                </div>
+              </div>
+              <TrendingUp size={16} className="text-emerald-500" />
             </div>
           </div>
         ))}
       </div>
 
-      {/* --- GRAPHS SECTION --- */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+     {/* --- GRAPH SECTION  --- */}
+<div className="w-full bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.02)]">
+  <div className="flex justify-between items-center mb-6">
+    <div className="flex flex-col">
+      <h3 className="t-nav text-slate-800 tracking-normal normal-case text-sm font-black italic">Booking Velocity</h3>
+      <span className="text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em]">Scale: 0 - 1000 Units</span>
+    </div>
+    <div className="flex gap-2">
+      <div className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse mt-1.5" />
+      <span className="t-nav text-[9px] text-brand-primary uppercase tracking-widest">Real-time Data</span>
+    </div>
+  </div>
+
+  <div className="h-[200px] w-full">
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart data={data} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
+        <defs>
+          <linearGradient id="colorBookings" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.12}/>
+            <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="10 10" vertical={false} stroke="#f8fafc" />
         
-        {/* Main Area Chart */}
-        <div className="lg:col-span-8 bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
-          <div className="flex justify-between items-center mb-10">
-            <h3 className="font-black italic uppercase text-sm tracking-widest text-slate-400">Booking Velocity</h3>
-            <div className="flex gap-2">
-               <span className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-lg text-[10px] font-bold uppercase">Weekly</span>
-            </div>
-          </div>
-          <div className="h-[320px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data}>
-                <defs>
-                  <linearGradient id="colorBookings" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 11, fontWeight: 700, fill: '#94a3b8'}} dy={10} />
-                <YAxis hide />
-                <Tooltip 
-                  contentStyle={{borderRadius: '20px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}}
-                  itemStyle={{fontWeight: '800', color: '#6366f1', fontSize: '12px'}}
-                />
-                <Area type="monotone" dataKey="bookings" stroke="#6366f1" strokeWidth={4} fillOpacity={1} fill="url(#colorBookings)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        <XAxis 
+          dataKey="day" 
+          axisLine={false} 
+          tickLine={false} 
+          tick={{fontSize: 10, fontWeight: 700, fill: '#334155', letterSpacing: '0.5px'}} 
+          dy={10}
+        />
+        
+        <YAxis 
+          domain={[0, 1000]} 
+          axisLine={false} 
+          tickLine={false} 
+          tick={{fontSize: 10, fontWeight: 700, fill: '#334155'}} 
+        />
+        
+        <Tooltip 
+          cursor={{ stroke: '#4f46e5', strokeWidth: 1 }}
+          contentStyle={{
+            borderRadius: '12px', 
+            border: 'none', 
+            boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', 
+            fontSize: '11px', 
+            fontWeight: '600'
+          }}
+        />
+        
+        <Area 
+          type="monotone" 
+          dataKey="bookings" 
+          stroke="#4f46e5" 
+          strokeWidth={3} 
+          fillOpacity={1} 
+          fill="url(#colorBookings)" 
+        />
+      </AreaChart>
+    </ResponsiveContainer>
+  </div>
+</div>
 
-        {/* Side Bar Chart / Distribution */}
-        <div className="lg:col-span-4 space-y-8">
-          <div className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
-            <h3 className="font-black italic uppercase text-sm tracking-widest text-slate-400 mb-8">Service Split</h3>
-            <div className="h-[200px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={serviceData}>
-                  <Bar dataKey="value" radius={[8, 8, 8, 8]} barSize={28}>
-                    {serviceData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Bar>
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 800, fill: '#94a3b8'}} />
-                  <Tooltip cursor={{fill: 'transparent'}} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="mt-8 space-y-3">
-              {serviceData.map((s, i) => (
-                <div key={i} className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: s.color}} />
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{s.name}</span>
-                  </div>
-                  <span className="text-xs font-black text-slate-800">{s.value}%</span>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* --- FOOTER --- */}
+      <footer className="w-full bg-brand-dark p-3 rounded-[2rem] flex items-center justify-between text-white shadow-xl">
+          <p className="t-nav text-[9px] opacity-60 italic tracking-widest ml-6">STATUS: Operational // SYNC: Just Now</p>
+          <button className="t-nav bg-brand-primary text-white px-8 py-4 rounded-xl hover:brightness-110 transition-all text-[10px] tracking-widest">
+            EXPORT ANALYTICS
+          </button>
+      </footer>
 
-          {/* Quick Action Card - Minimal Version */}
-          <div className="bg-indigo-600 p-8 rounded-[3rem] text-white relative overflow-hidden shadow-xl shadow-indigo-100">
-            <div className="relative z-10">
-              <h4 className="font-black text-xl italic uppercase leading-tight mb-4 tracking-tighter">Team<br/>Expansion</h4>
-              <p className="text-indigo-100 text-[11px] font-medium mb-6 leading-relaxed opacity-80">3 new requests pending in Marina district. Boost fleet?</p>
-              <button className="bg-white text-indigo-600 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all">
-                Dispatch Pro
-              </button>
-            </div>
-            <Users className="absolute -right-4 -bottom-4 w-32 h-32 text-white opacity-10" />
-          </div>
-        </div>
-
-      </div>
     </div>
   );
 };
