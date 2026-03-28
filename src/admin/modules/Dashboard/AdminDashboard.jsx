@@ -1,22 +1,48 @@
 import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Zap, Wrench, Star, LayoutGrid, Sparkles, TrendingUp } from 'lucide-react';
+import { Zap, Wrench, Star, LayoutGrid, Sparkles, TrendingUp, Clock, CheckCircle } from 'lucide-react';
 
 const data = [
   { day: 'Mon', bookings: 400 },
-  { day: 'Tue', bookings: 300 },
+  { day: 'Tue', bookings: 1300 },
   { day: 'Wed', bookings: 600 },
-  { day: 'Thu', bookings: 800 },
-  { day: 'Fri', bookings: 500 },
-  { day: 'Sat', bookings: 950 },
-  { day: 'Sun', bookings: 700 },
+  { day: 'Thu', bookings: 1800 },
+  { day: 'Fri', bookings: 2500 },
+  { day: 'Sat', bookings: 1950 },
+  { day: 'Sun', bookings: 3000 },
+];
+
+const recentActivities = [
+  {
+    id: 1,
+    title: 'New Booking Completed',
+    description: 'Order #4892 from John Doe',
+    time: '2 mins ago',
+    icon: <CheckCircle size={18} className="text-emerald-500" />,
+    bgColor: 'bg-emerald-50'
+  },
+  {
+    id: 2,
+    title: 'System Server Sync',
+    description: 'All databases updated successfully',
+    time: '1 hour ago',
+    icon: <Sparkles size={18} className="text-brand-primary" />,
+    bgColor: 'bg-brand-primary/10'
+  },
+  {
+    id: 3,
+    title: 'Maintenance Alert Resolved',
+    description: 'Unit A-42 cooling system checked',
+    time: '3 hours ago',
+    icon: <Wrench size={18} className="text-amber-500" />,
+    bgColor: 'bg-amber-50'
+  }
 ];
 
 const ColorfulDashboard = () => {
   return (
     <div className="min-h-screen bg-[#FDFDFD] p-6 lg:p-10 flex flex-col gap-8">
       
-      {/* ---  HEADER --- */}
       <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-8">
         <div>
           <div className="flex items-center gap-2 text-brand-primary mb-1">
@@ -42,7 +68,6 @@ const ColorfulDashboard = () => {
         </div>
       </div>
 
-      {/* ---  STATS  --- */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
           { label: "Revenue", val: "₹12,480", icon: <Zap />, color: "text-brand-primary" },
@@ -66,76 +91,96 @@ const ColorfulDashboard = () => {
         ))}
       </div>
 
-     {/* --- GRAPH SECTION  --- */}
-<div className="w-full bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.02)]">
-  <div className="flex justify-between items-center mb-6">
-    <div className="flex flex-col">
-      <h3 className="t-nav text-slate-800 tracking-normal normal-case text-sm font-black italic">Booking Velocity</h3>
-      <span className="text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em]">Scale: 0 - 1000 Units</span>
-    </div>
-    <div className="flex gap-2">
-      <div className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse mt-1.5" />
-      <span className="t-nav text-[9px] text-brand-primary uppercase tracking-widest">Real-time Data</span>
-    </div>
-  </div>
+      <div className="w-full bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.02)]">
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col">
+            <h3 className="t-nav text-slate-800 tracking-normal normal-case text-sm font-black italic">Booking Velocity</h3>
+            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em]">Scale: 0 - 1000 Units</span>
+          </div>
+          <div className="flex gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse mt-1.5" />
+            <span className="t-nav text-[9px] text-brand-primary uppercase tracking-widest">Real-time Data</span>
+          </div>
+        </div>
 
-  <div className="h-[200px] w-full">
-    <ResponsiveContainer width="100%" height="100%">
-      <AreaChart data={data} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
-        <defs>
-          <linearGradient id="colorBookings" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.12}/>
-            <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
-          </linearGradient>
-        </defs>
-        <CartesianGrid strokeDasharray="10 10" vertical={false} stroke="#f8fafc" />
-        
-        <XAxis 
-          dataKey="day" 
-          axisLine={false} 
-          tickLine={false} 
-          tick={{fontSize: 10, fontWeight: 700, fill: '#334155', letterSpacing: '0.5px'}} 
-          dy={10}
-        />
-        
-        <YAxis 
-          domain={[0, 1000]} 
-          axisLine={false} 
-          tickLine={false} 
-          tick={{fontSize: 10, fontWeight: 700, fill: '#334155'}} 
-        />
-        
-        <Tooltip 
-          cursor={{ stroke: '#4f46e5', strokeWidth: 1 }}
-          contentStyle={{
-            borderRadius: '12px', 
-            border: 'none', 
-            boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', 
-            fontSize: '11px', 
-            fontWeight: '600'
-          }}
-        />
-        
-        <Area 
-          type="monotone" 
-          dataKey="bookings" 
-          stroke="#4f46e5" 
-          strokeWidth={3} 
-          fillOpacity={1} 
-          fill="url(#colorBookings)" 
-        />
-      </AreaChart>
-    </ResponsiveContainer>
-  </div>
-</div>
+        <div className="h-[200px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorBookings" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.12}/>
+                  <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="10 10" vertical={false} stroke="#f8fafc" />
+              
+              <XAxis 
+                dataKey="day" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{fontSize: 10, fontWeight: 700, fill: '#334155', letterSpacing: '0.5px'}} 
+                dy={10}
+              />
+              
+              <YAxis 
+                domain={[0, 'auto']} 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{fontSize: 10, fontWeight: 700, fill: '#334155'}} 
+              />
+              
+              <Tooltip 
+                cursor={{ stroke: '#4f46e5', strokeWidth: 1 }}
+                contentStyle={{
+                  borderRadius: '12px', 
+                  border: 'none', 
+                  boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', 
+                  fontSize: '11px', 
+                  fontWeight: '600'
+                }}
+              />
+              
+              <Area 
+                type="monotone" 
+                dataKey="bookings" 
+                stroke="#4f46e5" 
+                strokeWidth={3} 
+                fillOpacity={1} 
+                fill="url(#colorBookings)" 
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
 
-      {/* --- FOOTER --- */}
-      <footer className="w-full bg-brand-dark p-3 rounded-[2rem] flex items-center justify-between text-white shadow-xl">
-          <p className="t-nav text-[9px] opacity-60 italic tracking-widest ml-6">STATUS: Operational // SYNC: Just Now</p>
-          <button className="t-nav bg-brand-primary text-white px-8 py-4 rounded-xl hover:brightness-110 transition-all text-[10px] tracking-widest">
-            EXPORT ANALYTICS
-          </button>
-      </footer>
+      <div className="w-full bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.02)]">
+        <div className="flex items-center gap-2 mb-6">
+          <Clock size={16} className="text-brand-primary" />
+          <h3 className="t-nav text-slate-800 tracking-normal normal-case text-sm font-black italic">Recent Activity</h3>
+        </div>
+        
+        <div className="flex flex-col gap-4">
+          {recentActivities.map((activity) => (
+            <div 
+              key={activity.id} 
+              className="group flex flex-col md:flex-row md:items-center justify-between p-4 rounded-2xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:shadow-sm transition-all duration-300 cursor-pointer"
+            >
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${activity.bgColor}`}>
+                  {activity.icon}
+                </div>
+                <div>
+                  <h4 className="text-[13px] font-bold text-slate-800">{activity.title}</h4>
+                  <p className="text-[11px] text-slate-400 font-medium">{activity.description}</p>
+                </div>
+              </div>
+              <div className="mt-3 md:mt-0 ml-16 md:ml-0">
+                <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">{activity.time}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
     </div>
   );

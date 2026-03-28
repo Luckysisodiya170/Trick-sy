@@ -102,10 +102,10 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
         {/* --- FOOTER  --- */}
         <div className="p-4 border-t border-white/5 space-y-1 shrink-0 mt-auto bg-[#0a0a0a] relative z-10">
-          <NavLink to="/admin/settings" className={linkClass}>
+          {/* <NavLink to="/admin/settings" className={linkClass}>
             <Settings size={18} />
             <span className={`ml-3.5 transition-all ${isSidebarOpen ? 'opacity-100' : 'hidden'}`}>Settings</span>
-          </NavLink>
+          </NavLink> */}
 
           <button
             onClick={() => setShowLogoutModal(true)}
