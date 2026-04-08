@@ -1,9 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react'; 
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { 
   Sparkles, Plus, X, Trash2, Edit3, ArrowRight, 
   Save, RotateCcw, Search, Box 
 } from 'lucide-react';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+// Import your Redux actions
+import { createSubsection, deleteSubsection } from '../../store/index'; 
 
 const themeOptions = {
   slate: { color: 'text-slate-500', bg: 'bg-slate-100', hex: 'bg-slate-500' },
@@ -19,34 +27,81 @@ const themeOptions = {
   fuchsia: { color: 'text-fuchsia-500', bg: 'bg-fuchsia-50', hex: 'bg-fuchsia-500' },
 };
 
-const PageManager = ({ title, storageKey, defaultSections, iconLibrary, baseRoute, itemLabel = 'Section' }) => {
+const SortableItem = ({ sec, children }) => {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: sec.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: transform ? 999 : 'auto',
+  };
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      {children}
+    </div>
+  );
+};
+
+const PageManager = ({ title, defaultSections, iconLibrary, baseRoute, itemLabel = 'Section', onUpdate, sectionId,onReorder }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null); 
-
-  const [sections, setSections] = useState(() => {
-    const saved = localStorage.getItem(storageKey);
-    return saved ? JSON.parse(saved) : defaultSections;
-  });
-
-  useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(sections));
-  }, [sections, storageKey]);
-
   const [formData, setFormData] = useState({ name: '', path: '', status: 'Draft', theme: 'indigo', iconKey: 'box' });
 
-  const handleDelete = (id, e) => {
-    e.stopPropagation(); 
-    if(window.confirm(`Delete this ${itemLabel.toLowerCase()} permanently?`)) {
-      setSections(sections.filter(sec => sec.id !== id));
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 1 },
+    })
+  );
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (active.id !== over.id) {
+      const oldIndex = defaultSections.findIndex((items) => items.id === active.id);
+      const newIndex = defaultSections.findIndex((items) => items.id === over.id);
+      const newOrder = arrayMove(defaultSections, oldIndex, newIndex);
+      if (onReorder) onReorder(newOrder);
     }
   };
 
-  const handleRestore = () => {
-    if(window.confirm("Restore default sections?")) {
-      setSections(defaultSections);
+  const handleDelete = (sec, e) => {
+    e.stopPropagation(); 
+    if (sec.isSystem) {
+      alert("This section is protected and cannot be deleted.");
+      return;
     }
+    
+    if (window.confirm(`Delete this ${itemLabel.toLowerCase()} permanently?`)) {
+      dispatch(deleteSubsection(sec.dbId)); 
+    }
+  };
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    if (!formData.name.trim()) return;
+
+    if (editingId) {
+      const sectionToEdit = defaultSections.find(sec => sec.id === editingId);
+      if (sectionToEdit && onUpdate) {
+        onUpdate(sectionToEdit.dbId, editingId, {
+          subsectionName: formData.name,
+          isActive: formData.status === 'Live',
+          theme: formData.theme,
+          icon: formData.iconKey
+        });
+      }
+    } else {
+      // Create new dynamically
+      dispatch(createSubsection({
+        subsectionName: formData.name,
+        section_id: sectionId, 
+        icon: formData.iconKey,
+        theme: formData.theme,
+        isActive: formData.status === 'Live'
+      }));
+    }
+    setIsModalOpen(false);
   };
 
   const openCreate = () => {
@@ -68,43 +123,22 @@ const PageManager = ({ title, storageKey, defaultSections, iconLibrary, baseRout
     setIsModalOpen(true);
   };
 
-  const handleSave = (e) => {
-    e.preventDefault();
-    if (!formData.name.trim()) return;
-    
-    const finalPath = formData.path.trim() || `${baseRoute}/${formData.name.toLowerCase().replace(/\s+/g, '-')}`;
-    
-    const moduleData = {
-      name: formData.name, 
-      status: formData.status, 
-      iconKey: formData.iconKey, 
-      path: finalPath,
-      theme: formData.theme, 
-      color: themeOptions[formData.theme]?.color || 'text-slate-500', 
-      bg: themeOptions[formData.theme]?.bg || 'bg-slate-100'
-    };
-
-    if (editingId) {
-      setSections(sections.map(sec => sec.id === editingId ? { ...sec, ...moduleData } : sec));
-    } else {
-      setSections([...sections, { id: `mod-${Date.now()}`, ...moduleData }]);
+  const handleRestore = () => {
+    if(window.confirm("Restore default sections?")) {
+      alert("Restore functionality will rely on Database now!");
     }
-    setIsModalOpen(false);
   };
 
-  const filteredSections = sections.filter(s => s.name.toLowerCase().includes(search.toLowerCase()));
+  const filteredSections = defaultSections.filter(s => s.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] p-6 lg:p-12 font-sans relative">
-      
-      {/* Header Section */}
       <div className="w-full mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-10">
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-brand-primary mb-1">
             <Sparkles size={14} className="fill-brand-primary" />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Editor Pages</span>
           </div>
-          
           <h1 className="page-title">
             {typeof title === 'string' ? (
               <>
@@ -112,20 +146,16 @@ const PageManager = ({ title, storageKey, defaultSections, iconLibrary, baseRout
               </>
             ) : title}
           </h1>
-          
-          <p className="page-subtitle italic">
-            {sections.length} Active {itemLabel}s Configured
-          </p>
+          <p className="page-subtitle italic">{defaultSections.length} Active {itemLabel}s Configured</p>
         </div>
-        
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative group">
-             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-brand-primary transition-colors" size={16} />
-             <input 
-               type="text" placeholder="Search..." 
-               className="pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl w-full md:w-[220px] outline-none focus:ring-4 focus:ring-brand-primary/5 transition-all font-bold text-xs shadow-sm"
-               onChange={(e) => setSearch(e.target.value)}
-             />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-brand-primary transition-colors" size={16} />
+            <input 
+              type="text" placeholder="Search..." 
+              className="pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl w-full md:w-[220px] outline-none focus:ring-4 focus:ring-brand-primary/5 transition-all font-bold text-xs shadow-sm"
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
           <button onClick={handleRestore} className="p-3 text-slate-400 bg-white border border-slate-200 rounded-2xl hover:text-brand-primary hover:border-brand-primary transition-all active:scale-95 shadow-sm">
             <RotateCcw size={18} />
@@ -136,51 +166,54 @@ const PageManager = ({ title, storageKey, defaultSections, iconLibrary, baseRout
         </div>
       </div>
 
-      {/* Grid Display */}
-      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-        {filteredSections.map((sec) => {
-          const IconComponent = iconLibrary[sec.iconKey] || Box; 
-          return (
-            <div key={sec.id} onClick={() => navigate(sec.path)} className="group relative bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm hover:border-brand-primary/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center gap-4 cursor-pointer overflow-hidden min-h-[100px]">
-              <div className={`w-14 h-14 rounded-2xl ${sec.bg} ${sec.color} flex items-center justify-center transition-transform duration-300 group-hover:scale-110 shrink-0`}>
-                <IconComponent size={24} />
+      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
+        <SortableContext items={filteredSections.map(s => s.id)} strategy={rectSortingStrategy}>
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {filteredSections.map((sec) => {
+              const IconComponent = iconLibrary[sec.iconKey] || Box; 
+              return (
+                <SortableItem key={sec.id} sec={sec}>
+                  <div onClick={() => navigate(sec.path)} className="group relative bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm hover:border-brand-primary/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center gap-4 cursor-pointer overflow-hidden min-h-[100px]">
+                    <div className={`w-14 h-14 rounded-2xl ${sec.bg} ${sec.color} flex items-center justify-center transition-transform duration-300 group-hover:scale-110 shrink-0`}>
+                      <IconComponent size={24} />
+                    </div>
+                    <div className="flex-1 min-w-0 pr-1">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <h3 className="text-[15px] font-bold text-brand-dark group-hover:text-brand-primary transition-colors truncate">{sec.name}</h3>
+                      </div>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">{sec.status}</p>
+                    </div>
+                    <div className="relative shrink-0 w-8 h-8 flex items-center justify-end">
+                      <div className="absolute right-0 text-slate-300 transition-all duration-300 group-hover:opacity-0 group-hover:translate-x-2">
+                        <ArrowRight size={18} />
+                      </div>
+                      <div className="absolute right-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                        <button onClick={(e) => openEdit(sec, e)} onPointerDown={(e) => e.stopPropagation()} className="p-2 text-slate-400 bg-slate-50 hover:bg-brand-primary/10 hover:text-brand-primary rounded-xl transition-colors"><Edit3 size={14} /></button>
+                        {!sec.isSystem && (
+                          <button onClick={(e) => handleDelete(sec, e)} className="p-2 text-slate-400 bg-slate-50 hover:bg-rose-50 hover:text-rose-500 rounded-xl transition-colors">
+                            <Trash2 size={14} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </SortableItem>
+              );
+            })}
+
+            <div onClick={openCreate} className="group p-5 rounded-[2rem] border-2 border-dashed border-slate-200 flex items-center gap-4 text-slate-400 hover:border-brand-primary hover:text-brand-primary hover:bg-brand-primary/5 transition-all cursor-pointer min-h-[100px] active:scale-95">
+              <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-white transition-all duration-300 shrink-0">
+                <Plus size={24} className="group-hover:rotate-90 transition-transform duration-300" />
               </div>
-              <div className="flex-1 min-w-0 pr-1">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <h3 className="text-[15px] font-bold text-brand-dark group-hover:text-brand-primary transition-colors truncate">
-                    {sec.name}
-                  </h3>
-                  {sec.status === 'Draft' && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"></span>}
-                </div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">{sec.status}</p>
-              </div>
-              <div className="relative shrink-0 w-8 h-8 flex items-center justify-end">
-                <div className="absolute right-0 text-slate-300 transition-all duration-300 group-hover:opacity-0 group-hover:translate-x-2">
-                  <ArrowRight size={18} />
-                </div>
-                <div className="absolute right-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
-                  <button onClick={(e) => openEdit(sec, e)} className="p-2 text-slate-400 bg-slate-50 hover:bg-brand-primary/10 hover:text-brand-primary rounded-xl transition-colors"><Edit3 size={14} /></button>
-                  <button onClick={(e) => handleDelete(sec.id, e)} className="p-2 text-slate-400 bg-slate-50 hover:bg-rose-50 hover:text-rose-500 rounded-xl transition-colors"><Trash2 size={14} /></button>
-                </div>
-              </div>
+              <div className="flex-1"><h3 className="text-[14px] font-bold text-slate-700 group-hover:text-brand-primary">Add {itemLabel}</h3></div>
             </div>
-          );
-        })}
-
-        {/* Create Button Card */}
-        <div onClick={openCreate} className="group p-5 rounded-[2rem] border-2 border-dashed border-slate-200 flex items-center gap-4 text-slate-400 hover:border-brand-primary hover:text-brand-primary hover:bg-brand-primary/5 transition-all cursor-pointer min-h-[100px] active:scale-95">
-          <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-white transition-all duration-300 shrink-0">
-            <Plus size={24} className="group-hover:rotate-90 transition-transform duration-300" />
           </div>
-          <div className="flex-1"><h3 className="text-[14px] font-bold text-slate-700 group-hover:text-brand-primary">Add {itemLabel}</h3></div>
-        </div>
-      </div>
+        </SortableContext>
+      </DndContext>
 
-      {/* Management Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-          
           <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl relative z-10 border border-slate-100 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-300">
             <div className="px-8 pt-8 pb-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
               <div>
@@ -189,7 +222,6 @@ const PageManager = ({ title, storageKey, defaultSections, iconLibrary, baseRout
               </div>
               <button onClick={() => setIsModalOpen(false)} className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all border border-slate-100"><X size={18} /></button>
             </div>
-            
             <div className="overflow-y-auto flex-1 p-8 sm:p-10 custom-scrollbar-main">
               <form onSubmit={handleSave} className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -205,7 +237,6 @@ const PageManager = ({ title, storageKey, defaultSections, iconLibrary, baseRout
                     </select>
                   </div>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pt-4 border-t border-slate-50">
                   <div className="md:col-span-5">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-3 block">Theme Accent</label>
@@ -231,7 +262,6 @@ const PageManager = ({ title, storageKey, defaultSections, iconLibrary, baseRout
                 </div>
               </form>
             </div>
-            
             <div className="px-8 py-5 border-t border-slate-50 flex justify-end gap-4 bg-white">
               <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-50">Cancel</button>
               <button onClick={handleSave} className="px-8 py-3 rounded-xl text-xs font-black text-white bg-brand-primary hover:bg-brand-dark shadow-lg flex items-center gap-2 transition-all">

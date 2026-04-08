@@ -1,15 +1,26 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent } from '../../../store/index'; 
 import { 
   Save, ArrowLeft, ShieldCheck, Leaf, BadgeDollarSign, 
   Zap, Headphones, Sparkles, CheckCircle2, Plus, 
-  Trash2, Type, Eye, Edit3, Columns, Settings2 ,ArrowRight
+  Trash2, Type, Eye, Edit3, Columns, Settings2, ArrowRight, Loader2
 } from 'lucide-react';
 
 const WhyChooseEditor = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { id } = useParams();
+  const subsectionId = id || 5; 
+
+  // --- Redux States ---
+  const content = useSelector((state) => state.content.activeSubsection);
+  const status = useSelector((state) => state.content.status);
+
   const [viewMode, setViewMode] = useState('split'); // 'edit', 'split', or 'preview'
   const [activeField, setActiveField] = useState(null);
+  const [isDeploying, setIsDeploying] = useState(false);
   
   const [sectionData, setSectionData] = useState({
     badge: "The TRICKSY Standard",
@@ -17,11 +28,7 @@ const WhyChooseEditor = () => {
     highlightText: "Choose Us?",
     description: "We bring perfection to your doorstep with our certified process and a team that actually cares about your comfort.",
     features: [
-      { id: 1, title: 'Professional Team', iconName: 'shield', desc: 'Certified & verified experts.' },
-      { id: 2, title: 'Eco-Friendly Products', iconName: 'leaf', desc: 'Safe for kids and pets.' },
-      { id: 3, title: 'Affordable Prices', iconName: 'dollar', desc: 'No hidden or extra costs.' },
-      { id: 4, title: 'Fast Service', iconName: 'zap', desc: 'Quick & on-time response.' },
-      { id: 5, title: '24/7 Support', iconName: 'headphones', desc: 'Always here to help you.' },
+      { id: 1, title: 'Professional Team', iconName: 'shield', desc: 'Certified & verified experts.' }
     ]
   });
 
@@ -34,6 +41,30 @@ const WhyChooseEditor = () => {
     { name: 'check', icon: CheckCircle2 },
   ];
 
+  // 1. Fetch data on Mount
+  useEffect(() => {
+    dispatch(fetchSingleSubsectionContent(subsectionId));
+  }, [dispatch, subsectionId]);
+
+  // 2. Sync DB Content to Local State
+  useEffect(() => {
+    if (content && Object.keys(content).length > 0) {
+      setSectionData({
+        badge: content.badge || "The TRICKSY Standard",
+        title: content.titleLine1 || "Why People",
+        highlightText: content.titleHighlight || "Choose Us?",
+        description: content.description || "",
+        features: content.features?.length > 0 
+          ? content.features.map((f, idx) => ({ 
+              ...f, 
+              id: f.id || Date.now() + idx 
+            })) 
+          : []
+      });
+    }
+  }, [content]);
+
+  // --- Handlers ---
   const updateFeature = (id, field, value) => {
     setSectionData({
       ...sectionData,
@@ -50,6 +81,43 @@ const WhyChooseEditor = () => {
   const removeFeature = (id) => {
     setSectionData({ ...sectionData, features: sectionData.features.filter(f => f.id !== id) });
   };
+
+  // 3. Deployment Logic
+  const handleDeploy = async () => {
+    setIsDeploying(true);
+    try {
+      const finalFeatures = sectionData.features.map(({ id, ...rest }) => rest);
+
+      const payload = {
+        badge: sectionData.badge,
+        titleLine1: sectionData.title,
+        titleHighlight: sectionData.highlightText,
+        description: sectionData.description,
+        features: finalFeatures,
+        images: [] 
+      };
+
+      await dispatch(updateSingleSubsectionContent({ 
+        subsectionId: subsectionId, 
+        updateData: payload 
+      })).unwrap();
+
+      alert("Why Choose Us Section Deployed Successfully! 🚀");
+    } catch (error) {
+      console.error(error);
+      alert(`Deploy Failed: ${error.message}`);
+    } finally {
+      setIsDeploying(false);
+    }
+  };
+
+  if (status === 'loading' && !content) {
+    return (
+      <div className="h-screen flex items-center justify-center font-black text-slate-400 uppercase tracking-widest text-xs">
+        <Loader2 className="animate-spin mr-2" size={16} /> Loading Why Us Lab...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 selection:bg-emerald-100 pb-20">
@@ -88,8 +156,13 @@ const WhyChooseEditor = () => {
         </div>
 
         <div className="w-1/4 sm:w-1/3 flex justify-end">
-          <button className="bg-slate-900 text-white px-4 sm:px-8 py-2.5 rounded-full font-extrabold text-[10px] sm:text-xs flex items-center gap-2 shadow-lg hover:bg-red-600 transition-all hover:-translate-y-0.5">
-            <Save size={14} className="hidden sm:block" /> Deploy
+          <button 
+            onClick={handleDeploy}
+            disabled={isDeploying}
+            className="bg-slate-900 text-white px-4 sm:px-8 py-2.5 rounded-full font-extrabold text-[10px] sm:text-xs flex items-center gap-2 shadow-lg hover:bg-red-600 transition-all hover:-translate-y-0.5 disabled:opacity-50"
+          >
+            {isDeploying ? <Loader2 size={14} className="animate-spin hidden sm:block" /> : <Save size={14} className="hidden sm:block" />} 
+            {isDeploying ? 'DEPLOYING...' : 'DEPLOY'}
           </button>
         </div>
       </nav>

@@ -1,25 +1,47 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
+import { BASE_URL } from '../../api/api'; 
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false); 
   
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  /**
+   * @param {Event} e - Form submission event
+   */
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
+    setIsLoading(true);
     
-    if (email === 'admin@tricksy.com' && password === 'admin123') {
+    try {
+      // API call to the backend authentication endpoint
+      const response = await fetch(`${BASE_URL}/admin/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password })
+      });
       
-      localStorage.setItem('tricksyAdminToken', 'logged-in-token');
-      
-      navigate('/admin');
-      
-    } else {
-      setError('Invalid admin credentials. Please try again.');
+      const data = await response.json();
+
+      if (data.success) {
+        localStorage.setItem('tricksyAdminToken', data.token);
+        navigate('/admin'); 
+      } else {
+        setError(data.message || 'Authentication failed. Please check your credentials.');
+      }
+    } catch (err) {
+      console.error("Login Error:", err);
+      setError('Unable to connect to the server. Please try again later.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -48,7 +70,9 @@ const AdminLogin = () => {
             )}
 
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Admin Email</label>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                Admin Email
+              </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <Mail className="h-5 w-5 text-slate-500" />
@@ -65,7 +89,9 @@ const AdminLogin = () => {
             </div>
 
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Security Key</label>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                Security Key
+              </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <Lock className="h-5 w-5 text-slate-500" />
@@ -76,16 +102,21 @@ const AdminLogin = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-11 pr-3 py-3 border border-white/10 rounded-2xl bg-zinc-900/50 text-white placeholder-slate-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                  placeholder="admin123"
+                  placeholder="Enter your password"
                 />
               </div>
             </div>
 
             <button
               type="submit"
-              className="w-full flex justify-center items-center gap-2 py-4 px-4 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-950 bg-emerald-500 hover:bg-emerald-400 transition-all hover:-translate-y-1"
+              disabled={isLoading}
+              className={`w-full flex justify-center items-center gap-2 py-4 px-4 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-950 transition-all ${
+                isLoading 
+                ? 'bg-emerald-700 cursor-not-allowed opacity-70' 
+                : 'bg-emerald-500 hover:bg-emerald-400 hover:-translate-y-1'
+              }`}
             >
-              Authenticate <ArrowRight size={16} />
+              {isLoading ? 'Authenticating...' : 'Authenticate'} <ArrowRight size={16} />
             </button>
           </form>
         </div>

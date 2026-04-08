@@ -83,6 +83,8 @@ import ServiceBookings from './admin/pages/ServiceBookings';
 import NewsletterSubscribers from './admin/pages/NewsletterSubscribers';
 import AdminSettings from './admin/pages/AdminSettings';
 import AdminProfile from './admin/modules/profile/AdminProfile';
+import TestPageOverview from './admin/modules/test/testPageOverview';
+import TestHeroEditor from './admin/modules/test/testhero';
 
 // Dummy Auth Pages
 const Login = () => <div className="flex h-screen items-center justify-center bg-slate-50 font-bold text-xl">Login Page (User)</div>;
@@ -93,20 +95,20 @@ function App() {
     <HelmetProvider>
       <Router>
         <Routes>
-          
+
           {/* USER ROUTES */}
           <Route path="/" element={<MainLayout><Home /></MainLayout>} />
           <Route path="/about" element={<MainLayout><AboutPage /></MainLayout>} />
-          
+
           {/* <Route path="/services" element={<MainLayout><Services /></MainLayout>} /> */}
           <Route path="/services/:serviceId" element={<MainLayout><ServiceDetail /></MainLayout>} />
-          
+
           <Route path="/technical" element={<MainLayout><TechnicalServices /></MainLayout>} />
           <Route path="/technical-services/:serviceId" element={<MainLayout><TechnicalDetail /></MainLayout>} />
-          
+
           <Route path="/blog" element={<MainLayout><Blog /></MainLayout>} />
           <Route path="/blog/:slug" element={<MainLayout><BlogDetail /></MainLayout>} />
-          
+
           <Route path="/contact" element={<MainLayout><Contact /></MainLayout>} />
 
           {/* AUTH ROUTES */}
@@ -132,8 +134,8 @@ function App() {
               <Route path="pages/home/faq" element={<FAQEditor />} />
               <Route path="pages/home/testimonials" element={<TestimonialsEditor />} />
               <Route path="pages/home/cta" element={<CtaEditor />} />
-              <Route path="pages/home/reviews" element={<GoogleReviewsEditor />} />
-              <Route path="pages/home/:moduleName" element={<DynamicEditor />} />
+              <Route path="pages/home/google" element={<GoogleReviewsEditor />} />
+              <Route path="pages/home/:slug/:id" element={<DynamicEditor />} />
 
               {/* ABOUT CMS */}
               <Route path="pages/about" element={<AboutPageOverview />} />
@@ -184,10 +186,15 @@ function App() {
 
 
               {/* interaction pages */}
-              <Route path='leads' element={<ServiceBookings/>}/>
-              <Route path='enquiries' element={<ContactEnquiries/>}/>
-               <Route path='newsletter' element={<NewsletterSubscribers/>}/>
-              <Route path='settings' element={<AdminSettings/>}/>
+              <Route path='leads' element={<ServiceBookings />} />
+              <Route path='enquiries' element={<ContactEnquiries />} />
+              <Route path='newsletter' element={<NewsletterSubscribers />} />
+              <Route path='settings' element={<AdminSettings />} />
+
+              {/* test */}
+
+              <Route path="pages/test/:sectionId" element={<TestPageOverview />} />
+              <Route path="pages/test/hero" element={<TestHeroEditor />} />
 
 
               {/* profile page */}

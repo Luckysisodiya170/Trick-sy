@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent } from '../../../store/index'; 
 import { 
   ArrowLeft, Sparkles, Calendar, Phone, ArrowRight, Shield, 
   Edit3, Columns, Eye, Type, MousePointer2, Settings2, Save,
-  Monitor, Smartphone
+  Monitor, Smartphone, Loader2
 } from 'lucide-react';
 
 const CtaEditor = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { id } = useParams();
+  const subsectionId = id || 8; 
+
+  const contentData = useSelector((state) => state.content.activeSubsection);
+  const status = useSelector((state) => state.content.status);
+
   const [viewMode, setViewMode] = useState('split');
+  const [isDeploying, setIsDeploying] = useState(false);
   
   const [content, setContent] = useState({
     badge: "We Are Ready To Help",
@@ -17,12 +27,70 @@ const CtaEditor = () => {
     description: "Book your service today and experience top-notch quality from our certified expert team. Your flawless space is just a click away.",
     primaryButtonText: "Book Appointment",
     secondaryButtonText: "Call Us Now",
-    phoneNumber: "+18001234567"
+    phoneNumber: "+18001234567",
+    verifiedText: "Verified Quality"
   });
+
+  useEffect(() => {
+    dispatch(fetchSingleSubsectionContent(subsectionId));
+  }, [dispatch, subsectionId]);
+
+  useEffect(() => {
+    if (contentData && Object.keys(contentData).length > 0) {
+      setContent({
+        badge: contentData.badge || "We Are Ready To Help",
+        titleLine1: contentData.titleLine1 || "Need Professional",
+        titleHighlight: contentData.titleHighlight || "Cleaning & Repairs?",
+        description: contentData.description || "",
+        primaryButtonText: contentData.primaryButtonText || "Book Appointment",
+        secondaryButtonText: contentData.secondaryButtonText || "Call Us Now",
+        phoneNumber: contentData.phoneNumber || "+18001234567",
+        verifiedText: contentData.verifiedText || "Verified Quality" 
+      });
+    }
+  }, [contentData]);
 
   const handleUpdate = (field, value) => {
     setContent(prev => ({ ...prev, [field]: value }));
   };
+
+  const handleDeploy = async () => {
+    setIsDeploying(true);
+
+    try {
+      const payload = {
+        badge: content.badge,
+        titleLine1: content.titleLine1,
+        titleHighlight: content.titleHighlight,
+        description: content.description,
+        primaryButtonText: content.primaryButtonText,
+        secondaryButtonText: content.secondaryButtonText,
+        phoneNumber: content.phoneNumber,
+        verifiedText: content.verifiedText, 
+        images: [] 
+      };
+
+      await dispatch(updateSingleSubsectionContent({ 
+        subsectionId: subsectionId, 
+        updateData: payload 
+      })).unwrap();
+
+      alert("CTA Section Deployed Successfully! 🚀");
+    } catch (error) {
+      console.error("Deploy Error:", error);
+      alert(`Deploy Failed: ${error.message}`);
+    } finally {
+      setIsDeploying(false);
+    }
+  };
+
+  if (status === 'loading' && !contentData) {
+    return (
+      <div className="h-screen flex items-center justify-center font-black text-slate-400 uppercase tracking-widest text-xs">
+        <Loader2 className="animate-spin mr-2" size={16} /> Loading CTA Lab...
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col bg-[#F1F5F9] font-sans">
@@ -38,31 +106,22 @@ const CtaEditor = () => {
           </h1>
         </div>
 
-        {/* 3-WAY Toggle */}
         <div className="flex bg-slate-100 p-1 sm:p-1.5 rounded-full shadow-inner w-auto justify-center">
-          <button 
-            onClick={() => setViewMode('edit')} 
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'edit' ? 'bg-white shadow-md text-pink-600' : 'text-slate-500 hover:text-slate-700'}`}
-          >
+          <button onClick={() => setViewMode('edit')} className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'edit' ? 'bg-white shadow-md text-pink-600' : 'text-slate-500 hover:text-slate-700'}`}>
             <Edit3 size={14} className="hidden sm:block" /> Edit
           </button>
-          <button 
-            onClick={() => setViewMode('split')} 
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'split' ? 'bg-white shadow-md text-pink-600' : 'text-slate-500 hover:text-slate-700'}`}
-          >
+          <button onClick={() => setViewMode('split')} className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'split' ? 'bg-white shadow-md text-pink-600' : 'text-slate-500 hover:text-slate-700'}`}>
             <Columns size={14} className="hidden sm:block" /> Split
           </button>
-          <button 
-            onClick={() => setViewMode('preview')} 
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'preview' ? 'bg-white shadow-md text-pink-600' : 'text-slate-500 hover:text-slate-700'}`}
-          >
+          <button onClick={() => setViewMode('preview')} className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'preview' ? 'bg-white shadow-md text-pink-600' : 'text-slate-500 hover:text-slate-700'}`}>
             <Eye size={14} className="hidden sm:block" /> Preview
           </button>
         </div>
 
         <div className="w-1/4 sm:w-1/3 flex justify-end">
-          <button className="bg-slate-900 text-white px-4 sm:px-8 py-2.5 rounded-full font-extrabold text-[10px] sm:text-xs flex items-center gap-2 shadow-lg hover:bg-pink-600 transition-all hover:-translate-y-0.5">
-            <Save size={14} className="hidden sm:block" /> Deploy
+          <button onClick={handleDeploy} disabled={isDeploying} className="bg-slate-900 text-white px-4 sm:px-8 py-2.5 rounded-full font-extrabold text-[10px] sm:text-xs flex items-center gap-2 shadow-lg hover:bg-pink-600 transition-all hover:-translate-y-0.5 disabled:opacity-50">
+            {isDeploying ? <Loader2 size={14} className="animate-spin hidden sm:block" /> : <Save size={14} className="hidden sm:block" />} 
+            {isDeploying ? 'DEPLOYING...' : 'DEPLOY'}
           </button>
         </div>
       </nav>
@@ -80,7 +139,6 @@ const CtaEditor = () => {
                 <p className="text-xs text-slate-500 font-medium">Edit the content of your Call-to-Action section.</p>
               </div>
 
-              {/* Main Content Card */}
               <div className="bg-white p-5 md:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
                 <div className="flex items-center gap-2 text-[10px] font-black text-emerald-600 uppercase tracking-widest border-b border-slate-50 pb-4">
                   <Type size={14} /> Typography
@@ -108,10 +166,9 @@ const CtaEditor = () => {
                 </div>
               </div>
 
-              {/* Buttons Card */}
               <div className="bg-white p-5 md:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
                 <div className="flex items-center gap-2 text-[10px] font-black text-emerald-600 uppercase tracking-widest border-b border-slate-50 pb-4">
-                  <MousePointer2 size={14} /> Actions
+                  <MousePointer2 size={14} /> Actions & Details
                 </div>
                 
                 <div className="grid grid-cols-1 gap-4">
@@ -125,9 +182,14 @@ const CtaEditor = () => {
                       <input value={content.secondaryButtonText} onChange={(e) => handleUpdate('secondaryButtonText', e.target.value)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-black outline-none" />
                     </div>
                   </div>
-                  <div>
+                  {/* <div>
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1.5 block">Phone Number</label>
                     <input value={content.phoneNumber} onChange={(e) => handleUpdate('phoneNumber', e.target.value)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none" />
+                  </div> */}
+                  {/* NEW FIELD IN EDITOR */}
+                  <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1.5 block">Trust Badge Text</label>
+                    <input value={content.verifiedText} onChange={(e) => handleUpdate('verifiedText', e.target.value)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none" />
                   </div>
                 </div>
               </div>
@@ -186,7 +248,8 @@ const CtaEditor = () => {
                               </div>
                            </div>
                            <div className="relative z-10 mt-6 text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2">
-                              <Shield size={12} className="text-emerald-500"/> Verified Quality
+                              {/* CONNECTED TO STATE */}
+                              <Shield size={12} className="text-emerald-500"/> {content.verifiedText}
                            </div>
                         </div>
                       </div>

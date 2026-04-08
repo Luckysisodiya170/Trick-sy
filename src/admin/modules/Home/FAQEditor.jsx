@@ -1,15 +1,26 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent } from '../../../store/index'; 
 import { 
   ArrowLeft, Plus, Trash2, Settings2, HelpCircle, 
   MessageSquare, ArrowRight, ChevronDown, Type, Save,
-  List, Eye, Edit3, Columns
+  List, Eye, Edit3, Columns, Loader2
 } from 'lucide-react';
 
 const FAQEditor = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { id } = useParams();
+  const subsectionId = id || 7; 
+
+  // --- Redux States ---
+  const content = useSelector((state) => state.content.activeSubsection);
+  const status = useSelector((state) => state.content.status);
+
   const [activeCard, setActiveCard] = useState(null); 
   const [viewMode, setViewMode] = useState('split'); 
+  const [isDeploying, setIsDeploying] = useState(false);
 
   const [headerSettings, setHeaderSettings] = useState({
     badgeText: "Support Center",
@@ -20,12 +31,36 @@ const FAQEditor = () => {
   });
 
   const [faqs, setFaqs] = useState([
-    { id: 1, question: "How much does cleaning cost?", answer: "We offer competitive flat rates for standard apartments and custom quotes for luxury villas. Pricing depends entirely on the area size and service type." },
-    { id: 2, question: "How long does deep cleaning take?", answer: "Typically, a deep clean takes 4-6 hours depending on the property's condition. Our team works efficiently to ensure every corner sparkles." },
-    { id: 3, question: "Do you provide free estimates?", answer: "Absolutely! We provide transparent, no-obligation estimates via WhatsApp or a quick site visit to give you the most accurate pricing." },
-    { id: 4, question: "How often should cleaning be done?", answer: "For Dubai homes, we recommend a professional deep clean every 3-4 months, with regular maintenance cleaning once or twice a week." }
+    { id: 1, question: "How much does cleaning cost?", answer: "We offer competitive flat rates..." }
   ]);
 
+  // 1. Fetch initial data on Mount
+  useEffect(() => {
+    dispatch(fetchSingleSubsectionContent(subsectionId));
+  }, [dispatch, subsectionId]);
+
+  // 2. Sync Database Content to Local State
+  useEffect(() => {
+    if (content && Object.keys(content).length > 0) {
+      setHeaderSettings({
+        badgeText: content.badge || "Support Center",
+        headingNormal: content.titleLine1 || content.title || "FAQ",
+        headingHighlight: content.titleHighlight || ".",
+        contactTitle: content.contactTitle || "Still unsure?",
+        contactCta: content.contactCta || "Chat with our team"
+      });
+
+      if (content.faqs && content.faqs.length > 0) {
+        const loadedFaqs = content.faqs.map((faqItem, idx) => ({
+          ...faqItem,
+          id: faqItem.id || Date.now() + idx, 
+        }));
+        setFaqs(loadedFaqs);
+      }
+    }
+  }, [content]);
+
+  // --- Event Handlers ---
   const handleAddFaq = () => {
     const newId = Date.now();
     setFaqs([...faqs, { id: newId, question: 'New Question?', answer: '' }]);
@@ -39,6 +74,45 @@ const FAQEditor = () => {
   const updateHeader = (field, value) => {
     setHeaderSettings(prev => ({ ...prev, [field]: value }));
   };
+
+  const handleDeploy = async () => {
+    setIsDeploying(true);
+
+    try {
+      const finalFaqs = faqs.map(({ id, ...rest }) => rest);
+
+      const payload = {
+        badge: headerSettings.badgeText,
+        title: headerSettings.headingNormal,
+        titleLine1: headerSettings.headingNormal, 
+        titleHighlight: headerSettings.headingHighlight,
+        contactTitle: headerSettings.contactTitle,
+        contactCta: headerSettings.contactCta,
+        faqs: finalFaqs,
+        images: [] 
+      };
+
+      await dispatch(updateSingleSubsectionContent({ 
+        subsectionId: subsectionId, 
+        updateData: payload 
+      })).unwrap();
+
+      alert("FAQ Section Deployed Successfully! 🚀");
+    } catch (error) {
+      console.error(error);
+      alert(`Deploy Failed: ${error.message}`);
+    } finally {
+      setIsDeploying(false);
+    }
+  };
+
+  if (status === 'loading' && !content) {
+    return (
+      <div className="h-screen flex items-center justify-center font-black text-slate-400 uppercase tracking-widest text-xs">
+        <Loader2 className="animate-spin mr-2" size={16} /> Loading FAQ Lab...
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col bg-[#F8FAFC] font-sans">
@@ -77,8 +151,13 @@ const FAQEditor = () => {
         </div>
 
         <div className="w-1/4 sm:w-1/3 flex justify-end">
-          <button className="bg-slate-900 text-white px-4 sm:px-8 py-2.5 rounded-full font-extrabold text-[10px] sm:text-xs flex items-center gap-2 shadow-lg hover:bg-purple-600 transition-all hover:-translate-y-0.5">
-            <Save size={14} className="hidden sm:block" /> Deploy
+          <button 
+            onClick={handleDeploy}
+            disabled={isDeploying}
+            className="bg-slate-900 text-white px-4 sm:px-8 py-2.5 rounded-full font-extrabold text-[10px] sm:text-xs flex items-center gap-2 shadow-lg hover:bg-purple-600 transition-all hover:-translate-y-0.5 disabled:opacity-50"
+          >
+            {isDeploying ? <Loader2 size={14} className="animate-spin hidden sm:block" /> : <Save size={14} className="hidden sm:block" />} 
+            {isDeploying ? 'DEPLOYING...' : 'DEPLOY'}
           </button>
         </div>
       </nav>
@@ -251,6 +330,7 @@ const FAQEditor = () => {
       <style jsx>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         @media (min-width: 768px) { .custom-scrollbar::-webkit-scrollbar { width: 5px; } }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
       `}</style>

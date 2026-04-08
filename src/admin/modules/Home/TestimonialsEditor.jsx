@@ -1,14 +1,25 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent } from '../../../store/index'; 
 import { 
   ArrowLeft, Plus, Trash2, Star, Quote, Sparkles, 
-  Eye, Edit3, Columns, User, Upload, MessageSquare, Type, ChevronDown, Settings2, Save,
+  Eye, Edit3, Columns, User, Upload, MessageSquare, Type, ChevronDown, Settings2, Save, Loader2
 } from 'lucide-react';
 
 const TestimonialsEditor = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { id } = useParams();
+  const subsectionId = id || 6; 
+
+  // --- Redux States ---
+  const content = useSelector((state) => state.content.activeSubsection);
+  const status = useSelector((state) => state.content.status);
+
   const [viewMode, setViewMode] = useState('split'); 
   const [activeCard, setActiveCard] = useState(null);
+  const [isDeploying, setIsDeploying] = useState(false);
 
   const [headerSettings, setHeaderSettings] = useState({
     badgeText: "Verified Client Stories",
@@ -18,20 +29,132 @@ const TestimonialsEditor = () => {
   });
 
   const [testimonials, setTestimonials] = useState([
-    { id: 1, name: 'Ahmed Khan', role: 'Villa Owner', comment: 'Absolutely brilliant service. The team arrived on time and my villa looks spotless. Highly recommended!', rating: 5, image: null },
-    { id: 2, name: 'Sarah W.', role: 'Office Manager', comment: 'TRICKSY transformed our workspace. We love that they use eco-friendly products. Will be booking monthly.', rating: 5, image: null },
-    { id: 3, name: 'Rahul Sharma', role: 'Property Head', comment: 'Unmatched quality! I manage 10+ properties in Dubai and TRICKSY is my go-to for all maintenance.', rating: 5, image: null }
+    { id: 1, name: 'Ahmed Khan', role: 'Villa Owner', comment: 'Absolutely brilliant service...', rating: 5, image: null, file: null }
   ]);
 
+  const getImageUrl = (path) => {
+    if (!path) return "";
+    if (path.startsWith('blob:') || path.startsWith('data:') || path.startsWith('http')) return path;
+    return `http://localhost:5000${path}`;
+  };
+
+  // 1. Fetch initial data 
+  useEffect(() => {
+    dispatch(fetchSingleSubsectionContent(subsectionId));
+  }, [dispatch, subsectionId]);
+
+  useEffect(() => {
+    if (content && Object.keys(content).length > 0) {
+      setHeaderSettings({
+        badgeText: content.badge || "Verified Client Stories",
+        headingNormal: content.title || "Real People.",
+        headingHighlight: content.highlightText || "Real Results.",
+        description: content.description || ""
+      });
+
+      if (content.reviews && content.reviews.length > 0) {
+        const loadedReviews = content.reviews.map((rev, idx) => ({
+          ...rev,
+          id: rev.id || Date.now() + idx, 
+          image: content.images?.[idx] || null, 
+          file: null
+        }));
+        setTestimonials(loadedReviews);
+      }
+    }
+  }, [content]);
+
+  // --- Event Handlers ---
   const handleAddReview = () => {
     const newId = Date.now();
-    setTestimonials([...testimonials, { id: newId, name: 'New Client', role: 'Verified Client', comment: '', rating: 5, image: null }]);
+    setTestimonials([...testimonials, { id: newId, name: 'New Client', role: 'Verified Client', comment: '', rating: 5, image: null, file: null }]);
     setActiveCard(newId);
   };
 
   const updateReview = (id, field, value) => {
     setTestimonials(testimonials.map(t => t.id === id ? { ...t, [field]: value } : t));
   };
+
+  const handleImageUpload = (e, id) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setTestimonials(testimonials.map(t => t.id === id ? { ...t, image: imageUrl, file: file } : t));
+    }
+  };
+
+  const handleDeploy = async () => {
+    setIsDeploying(true);
+    const token = localStorage.getItem('tricksyAdminToken');
+
+    try {
+      const uploadImg = async (file) => {
+        const fd = new FormData();
+        fd.append('heroImage', file); 
+        const res = await fetch('http://localhost:5000/api/upload/upload-hero', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: fd
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error("Image Upload Failed");
+        return data.imageUrl;
+      };
+
+      const finalReviews = [];
+      const finalImages = [];
+
+      for (let i = 0; i < testimonials.length; i++) {
+        let t = { ...testimonials[i] };
+        let finalImageUrl = t.image;
+
+        if (t.file) {
+          finalImageUrl = await uploadImg(t.file);
+        } else if (finalImageUrl && finalImageUrl.startsWith('blob:')) {
+          finalImageUrl = content.images?.[i] || null; // Fallback
+        }
+
+        finalImages.push(finalImageUrl);
+
+        delete t.image;
+        delete t.file;
+        delete t.id; 
+        finalReviews.push(t);
+      }
+
+      const payload = {
+        badge: headerSettings.badgeText,
+        title: headerSettings.headingNormal,
+        highlightText: headerSettings.headingHighlight,
+        description: headerSettings.description,
+        reviews: finalReviews, 
+        images: finalImages.filter(Boolean)
+      };
+
+      await dispatch(updateSingleSubsectionContent({ 
+        subsectionId: subsectionId, 
+        updateData: payload 
+      })).unwrap();
+
+      alert("Testimonials Deployed Successfully! 🚀");
+      
+      setTestimonials(testimonials.map((t, idx) => ({ ...t, file: null, image: finalImages[idx] })));
+
+    } catch (error) {
+      console.error(error);
+      alert(`Deploy Failed: ${error.message}`);
+    } finally {
+      setIsDeploying(false);
+    }
+  };
+
+  if (status === 'loading' && !content) {
+    return (
+      <div className="h-screen flex items-center justify-center font-black text-slate-400 uppercase tracking-widest text-xs">
+        <Loader2 className="animate-spin mr-2" size={16} /> Loading Testimonial Lab...
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col bg-[#F8FAFC] font-sans text-slate-900">
@@ -49,29 +172,25 @@ const TestimonialsEditor = () => {
 
         {/* 3-Way View Mode Toggle */}
         <div className="flex bg-slate-100 p-1 sm:p-1.5 rounded-full shadow-inner w-auto justify-center">
-          <button 
-            onClick={() => setViewMode('edit')} 
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'edit' ? 'bg-white shadow-md text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
-          >
+          <button onClick={() => setViewMode('edit')} className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'edit' ? 'bg-white shadow-md text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}>
             <Edit3 size={14} className="hidden sm:block" /> Edit
           </button>
-          <button 
-            onClick={() => setViewMode('split')} 
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'split' ? 'bg-white shadow-md text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
-          >
+          <button onClick={() => setViewMode('split')} className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'split' ? 'bg-white shadow-md text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}>
             <Columns size={14} className="hidden sm:block" /> Split
           </button>
-          <button 
-            onClick={() => setViewMode('preview')} 
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'preview' ? 'bg-white shadow-md text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
-          >
+          <button onClick={() => setViewMode('preview')} className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'preview' ? 'bg-white shadow-md text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}>
             <Eye size={14} className="hidden sm:block" /> Preview
           </button>
         </div>
 
         <div className="w-1/4 sm:w-1/3 flex justify-end">
-          <button className="bg-slate-900 text-white px-4 sm:px-8 py-2.5 rounded-full font-extrabold text-[10px] sm:text-xs flex items-center gap-2 shadow-lg hover:bg-blue-600 transition-all hover:-translate-y-0.5">
-            <Save size={14} className="hidden sm:block" /> Deploy
+          <button 
+            onClick={handleDeploy}
+            disabled={isDeploying}
+            className="bg-slate-900 text-white px-4 sm:px-8 py-2.5 rounded-full font-extrabold text-[10px] sm:text-xs flex items-center gap-2 shadow-lg hover:bg-blue-600 transition-all hover:-translate-y-0.5 disabled:opacity-50"
+          >
+            {isDeploying ? <Loader2 size={14} className="animate-spin hidden sm:block" /> : <Save size={14} className="hidden sm:block" />} 
+            {isDeploying ? 'DEPLOYING...' : 'DEPLOY'}
           </button>
         </div>
       </nav>
@@ -113,7 +232,7 @@ const TestimonialsEditor = () => {
                     <div onClick={() => setActiveCard(activeCard === t.id ? null : t.id)} className="p-3 flex items-center justify-between cursor-pointer">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
-                          {t.image ? <img src={t.image} className="w-full h-full object-cover" /> : <User size={14} className="text-slate-400" />}
+                          {t.image ? <img src={getImageUrl(t.image)} className="w-full h-full object-cover" /> : <User size={14} className="text-slate-400" />}
                         </div>
                         <h4 className="font-bold text-[11px] text-slate-700 line-clamp-1">{t.name || 'New Review'}</h4>
                       </div>
@@ -137,10 +256,7 @@ const TestimonialsEditor = () => {
                           </div>
                           
                           <div className="flex gap-2">
-                             <input type="file" id={`p-${t.id}`} hidden onChange={(e) => {
-                               const file = e.target.files[0];
-                               if(file) updateReview(t.id, 'image', URL.createObjectURL(file));
-                             }} />
+                             <input type="file" id={`p-${t.id}`} hidden onChange={(e) => handleImageUpload(e, t.id)} />
                              <button onClick={() => document.getElementById(`p-${t.id}`).click()} className="px-3 py-2 bg-slate-100 rounded-lg text-[10px] font-bold text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 transition-all flex items-center gap-1.5"><Upload size={12} /> Photo</button>
                              <button onClick={() => setTestimonials(testimonials.filter(x => x.id !== t.id))} className="p-2 bg-rose-50 rounded-lg text-rose-500 hover:bg-rose-100 transition-all"><Trash2 size={14} /></button>
                           </div>
@@ -200,7 +316,7 @@ const TestimonialsEditor = () => {
 
                            <div className="flex items-center gap-3 pt-4 border-t" style={{ borderColor: idx % 2 !== 0 ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
                               <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-200 overflow-hidden shrink-0 border-2 border-white/10">
-                                {item.image ? <img src={item.image} className="w-full h-full object-cover" /> : <User size={16} className="m-auto mt-1.5 md:mt-2.5 text-slate-400" />}
+                                {item.image ? <img src={getImageUrl(item.image)} className="w-full h-full object-cover" /> : <User size={16} className="m-auto mt-1.5 md:mt-2.5 text-slate-400" />}
                               </div>
                               <div className="overflow-hidden">
                                 <h4 className={`text-xs font-black truncate ${idx % 2 !== 0 ? 'text-white' : 'text-slate-900'}`}>{item.name}</h4>

@@ -1,33 +1,40 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent } from '../../../store/index'; 
 import { 
   ArrowLeft, Plus, Trash2, Image as ImageIcon, Sparkles, 
   Settings2, Droplets, Snowflake, Wrench, Zap, Home, 
   Shield, ChevronDown, Upload, ArrowRight, Type, 
-  Eye, Edit3, Columns
+  Eye, Edit3, Columns, Loader2,Save,
 } from 'lucide-react';
 
 const ServiceEditor = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { id } = useParams();
+  const subsectionId = id || 3; 
+
+  // --- Redux States ---
+  const content = useSelector((state) => state.content.activeSubsection);
+  const status = useSelector((state) => state.content.status);
+
   const [activeCard, setActiveCard] = useState(null); 
   const [viewMode, setViewMode] = useState('split'); 
+  const [isDeploying, setIsDeploying] = useState(false);
 
   const [headerSettings, setHeaderSettings] = useState({
     badgeText: "What We Offer",
     headingNormal: "Explore Our",
     headingHighlight: "Premium Services",
-    description: "We provide a wide range of professional services to keep your home and office in perfect condition. Quality and satisfaction guaranteed."
+    description: "We provide a wide range of professional services..."
   });
 
-  const iconMap = {
-    droplets: Droplets,
-    snowflake: Snowflake,
-    wrench: Wrench,
-    zap: Zap,
-    home: Home,
-    shield: Shield,
-    sparkles: Sparkles
-  };
+  const [services, setServices] = useState([
+    { id: 1, title: 'Deep Cleaning', desc: 'Complete deep cleaning for homes...', icon: 'droplets', color: 'blue', img: null, file: null }
+  ]);
+
+  const iconMap = { droplets: Droplets, snowflake: Snowflake, wrench: Wrench, zap: Zap, home: Home, shield: Shield, sparkles: Sparkles };
 
   const getColorStyle = (colorName) => {
     const style = {
@@ -42,15 +49,42 @@ const ServiceEditor = () => {
     return style[colorName?.toLowerCase()] || style.blue; 
   };
 
-  const [services, setServices] = useState([
-    { id: 1, title: 'Deep Cleaning', desc: 'Complete deep cleaning for homes and offices to ensure a spotless environment.', icon: 'droplets', color: 'blue', img: null },
-    { id: 2, title: 'AC Maintenance', desc: 'Expert AC repair, servicing, duct cleaning, and installation by certified pros.', icon: 'snowflake', color: 'cyan', img: null },
-    { id: 3, title: 'Plumbing Solutions', desc: 'Quick fixes for leaks, pipe bursts, blockages, and new bathroom fittings.', icon: 'wrench', color: 'orange', img: null },
-  ]);
+  const getImageUrl = (path) => {
+    if (!path) return "";
+    if (path.startsWith('blob:') || path.startsWith('data:') || path.startsWith('http')) return path;
+    return `http://localhost:5000${path}`;
+  };
 
+  // 1. Fetch data on Mount
+  useEffect(() => {
+    dispatch(fetchSingleSubsectionContent(subsectionId));
+  }, [dispatch, subsectionId]);
+
+  useEffect(() => {
+    if (content && Object.keys(content).length > 0) {
+      setHeaderSettings({
+        badgeText: content.badgeText || "What We Offer",
+        headingNormal: content.headingNormal || "Explore Our",
+        headingHighlight: content.headingHighlight || "Premium Services",
+        description: content.description || content.sectionDesc || ""
+      });
+
+      if (content.services && content.services.length > 0) {
+        const loadedServices = content.services.map((s, index) => ({
+          ...s,
+          id: s.id || Date.now() + index, 
+          img: content.images?.[index] || null, 
+          file: null 
+        }));
+        setServices(loadedServices);
+      }
+    }
+  }, [content]);
+
+  // --- Handlers ---
   const handleAddService = () => {
     const newId = Date.now();
-    setServices([...services, { id: newId, title: 'New Service', desc: '', icon: 'sparkles', color: 'indigo', img: null }]);
+    setServices([...services, { id: newId, title: 'New Service', desc: '', icon: 'sparkles', color: 'indigo', img: null, file: null }]);
     setActiveCard(newId);  
   };
 
@@ -58,15 +92,77 @@ const ServiceEditor = () => {
     setServices(services.map(s => s.id === id ? { ...s, [field]: value } : s));
   };
 
-  const updateHeader = (field, value) => {
-    setHeaderSettings(prev => ({ ...prev, [field]: value }));
-  };
+  const updateHeader = (field, value) => setHeaderSettings(prev => ({ ...prev, [field]: value }));
 
   const handleImageUpload = (e, id) => {
     const file = e.target.files[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
-      updateService(id, 'img', imageUrl);
+      setServices(services.map(s => s.id === id ? { ...s, img: imageUrl, file: file } : s));
+    }
+  };
+
+  const handleDeploy = async () => {
+    setIsDeploying(true);
+    const token = localStorage.getItem('tricksyAdminToken');
+
+    try {
+      const uploadImg = async (file) => {
+        const fd = new FormData();
+        fd.append('heroImage', file); 
+        const res = await fetch('http://localhost:5000/api/upload/upload-hero', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: fd
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error("Image Upload Failed");
+        return data.imageUrl;
+      };
+
+      const finalServices = [];
+      const finalImages = [];
+
+      for (let i = 0; i < services.length; i++) {
+        let s = { ...services[i] };
+        let finalImageUrl = s.img; 
+
+        if (s.file) {
+          finalImageUrl = await uploadImg(s.file);
+        } else if (finalImageUrl && finalImageUrl.startsWith('blob:')) {
+          finalImageUrl = content.images?.[i] || null;
+        }
+
+        finalImages.push(finalImageUrl);
+
+        delete s.img;
+        delete s.file;
+        finalServices.push(s);
+      }
+
+      const payload = {
+        badgeText: headerSettings.badgeText,
+        headingNormal: headerSettings.headingNormal,
+        headingHighlight: headerSettings.headingHighlight,
+        description: headerSettings.description,
+        services: finalServices, 
+        images: finalImages.filter(Boolean) 
+      };
+
+      await dispatch(updateSingleSubsectionContent({ 
+        subsectionId: subsectionId, 
+        updateData: payload 
+      })).unwrap();
+
+      alert("Services Deployed Successfully! 🚀");
+      
+      setServices(services.map((s, idx) => ({ ...s, file: null, img: finalImages[idx] })));
+
+    } catch (err) {
+      console.error("Deploy Error:", err);
+      alert(`Deploy Failed: ${err.message}`);
+    } finally {
+      setIsDeploying(false);
     }
   };
 
@@ -74,6 +170,14 @@ const ServiceEditor = () => {
     const IconComponent = iconMap[name] || Sparkles;
     return <IconComponent size={size} className={className} />;
   };
+
+  if (status === 'loading' && !content) {
+    return (
+      <div className="h-screen flex items-center justify-center font-black text-slate-400 uppercase tracking-widest text-xs">
+        <Loader2 className="animate-spin mr-2" size={16} /> Loading Service Lab...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 pb-20 font-sans selection:bg-indigo-100">
@@ -89,56 +193,30 @@ const ServiceEditor = () => {
           </h1>
         </div>
 
-        {/* 3-Way Toggle Switch */}
         <div className="flex bg-slate-100 p-1 sm:p-1.5 rounded-full shadow-inner w-auto justify-center">
-          <button 
-            onClick={() => setViewMode('edit')} 
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'edit' ? 'bg-white shadow-md text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            <Edit3 size={14} className="hidden sm:block" /> Edit
-          </button>
-          <button 
-            onClick={() => setViewMode('split')} 
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'split' ? 'bg-white shadow-md text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            <Columns size={14} className="hidden sm:block" /> Split
-          </button>
-          <button 
-            onClick={() => setViewMode('preview')} 
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'preview' ? 'bg-white shadow-md text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            <Eye size={14} className="hidden sm:block" /> Preview
-          </button>
+          <button onClick={() => setViewMode('edit')} className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'edit' ? 'bg-white shadow-md text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}><Edit3 size={14} className="hidden sm:block" /> Edit</button>
+          <button onClick={() => setViewMode('split')} className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'split' ? 'bg-white shadow-md text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}><Columns size={14} className="hidden sm:block" /> Split</button>
+          <button onClick={() => setViewMode('preview')} className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'preview' ? 'bg-white shadow-md text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}><Eye size={14} className="hidden sm:block" /> Preview</button>
         </div>
 
         <div className="w-1/4 sm:w-1/3 flex justify-end">
-          <button className="bg-slate-900 text-white px-4 sm:px-8 py-2.5 rounded-full font-extrabold text-[10px] sm:text-xs shadow-lg hover:bg-indigo-600 transition-all hover:-translate-y-0.5">
-            Deploy
+          <button 
+            onClick={handleDeploy} 
+            disabled={isDeploying}
+            className="bg-slate-900 text-white px-4 sm:px-8 py-2.5 rounded-full font-extrabold text-[10px] sm:text-xs flex items-center gap-2 shadow-lg hover:bg-indigo-600 transition-all disabled:opacity-50"
+          >
+            {isDeploying ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} className="hidden sm:block" />}
+            {isDeploying ? 'DEPLOYING...' : 'DEPLOY'}
           </button>
         </div>
       </nav>
 
-      {/* --- DYNAMIC  CONTAINER --- */}
-      <div className={`mx-auto transition-all duration-500 ${
-        viewMode === 'split' 
-          ? 'max-w-[1800px] p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mt-4' 
-          : viewMode === 'edit' 
-            ? 'max-w-5xl p-4 lg:p-10 mt-4' 
-            : 'max-w-6xl p-4 lg:p-10 mt-4'
-      }`}>
+      <div className={`mx-auto transition-all duration-500 ${viewMode === 'split' ? 'max-w-[1800px] p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mt-4' : viewMode === 'edit' ? 'max-w-5xl p-4 lg:p-10 mt-4' : 'max-w-6xl p-4 lg:p-10 mt-4'}`}>
         
-        {/* --- EDITOr --- */}
+        {/* --- EDIT PANEL --- */}
         {(viewMode === 'edit' || viewMode === 'split') && (
           <div className={`${viewMode === 'split' ? 'lg:col-span-5' : ''} space-y-8 animate-in fade-in zoom-in-95 duration-300`}>
             
-            {viewMode === 'edit' && (
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-black text-slate-900 tracking-tight">Manage Services</h2>
-                <p className="text-slate-500 text-sm mt-2">Update texts, icons, images, and colors for your services section.</p>
-              </div>
-            )}
-
-            {/* Header Content Section */}
             <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
               <h3 className="font-black text-slate-900 mb-6 flex items-center gap-2 text-sm uppercase tracking-tight border-b border-slate-100 pb-4">
                  <Type size={18} className="text-indigo-500" /> Section Header Content
@@ -167,18 +245,13 @@ const ServiceEditor = () => {
               </div>
             </div>
 
-            {/* Services Cards List Header */}
             <div className="flex items-center justify-between pt-6 border-t border-slate-200">
               <h2 className="text-xl font-black uppercase tracking-tight text-slate-900 leading-tight">Service <span className="text-indigo-600 leading-tight">Cards</span></h2>
-              <button 
-                onClick={handleAddService}
-                className="flex items-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-xl font-black text-xs hover:bg-indigo-600 shadow-md transition-all active:scale-95 hover:-translate-y-1"
-              >
+              <button onClick={handleAddService} className="flex items-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-xl font-black text-xs hover:bg-indigo-600 shadow-md transition-all active:scale-95 hover:-translate-y-1">
                 <Plus size={16} strokeWidth={3} /> ADD NEW SERVICE
               </button>
             </div>
 
-            {/* Individual Service Cards Editor List */}
             <div className="space-y-4">
               {services.map((s) => {
                 const cardStyle = getColorStyle(s.color);
@@ -187,7 +260,6 @@ const ServiceEditor = () => {
                 return (
                 <div key={s.id} className={`bg-white rounded-[2rem] border transition-all duration-300 ${isActive ? 'border-indigo-300 ring-4 ring-indigo-50 shadow-xl scale-[1.01]' : 'border-slate-200 shadow-sm hover:border-slate-300'}`}>
                   
-                  {/* Card Editor Header Toggle */}
                   <div onClick={() => setActiveCard(isActive ? null : s.id)} className="p-5 sm:p-6 flex items-center justify-between cursor-pointer group">
                     <div className="flex items-center gap-4">
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white shadow bg-gradient-to-br ${cardStyle.gradient}`}>
@@ -201,22 +273,16 @@ const ServiceEditor = () => {
                     <ChevronDown size={20} className={`transition-transform duration-300 ${isActive ? 'rotate-180 text-indigo-500' : 'text-slate-300 group-hover:text-slate-600'}`} />
                   </div>
 
-                  {/* Card Editor Content */}
                   {isActive && (
                     <div className="px-6 sm:px-8 pb-8 pt-2 space-y-6 animate-in slide-in-from-top-4 duration-300 border-t border-slate-50 mt-1">
-                      
                       <div className={`grid grid-cols-1 ${viewMode === 'split' ? '' : 'sm:grid-cols-12'} gap-6`}>
-                        {/* Image Upload */}
                         <div className={viewMode === 'split' ? '' : 'sm:col-span-4'}>
                           <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Cover Photo</label>
-                          <div 
-                            onClick={() => document.getElementById(`file-${s.id}`).click()}
-                            className="w-full h-32 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center relative overflow-hidden cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/50 transition-all group"
-                          >
+                          <div onClick={() => document.getElementById(`file-${s.id}`).click()} className="w-full h-32 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center relative overflow-hidden cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/50 transition-all group">
                             <input type="file" id={`file-${s.id}`} hidden onChange={(e) => handleImageUpload(e, s.id)} accept="image/*" />
                             {s.img ? (
                                 <>
-                                    <img src={s.img} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt="service" />
+                                    <img src={getImageUrl(s.img)} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt="service" />
                                     <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-bold transition-opacity">Change Image</div>
                                 </>
                             ) : (
@@ -228,7 +294,6 @@ const ServiceEditor = () => {
                           </div>
                         </div>
 
-                        {/* Title & Desc Inputs */}
                         <div className={`${viewMode === 'split' ? '' : 'sm:col-span-8'} space-y-4`}>
                           <div>
                             <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Service Name</label>
@@ -241,9 +306,7 @@ const ServiceEditor = () => {
                         </div>
                       </div>
 
-                      {/* Icon & Color Settings */}
                       <div className={`flex ${viewMode === 'split' ? 'flex-col' : 'flex-col sm:flex-row'} gap-6 p-5 bg-slate-50 rounded-2xl border border-slate-100`}>
-                        
                         <div className={`w-full ${viewMode === 'split' ? '' : 'sm:w-1/2'}`}>
                           <label className="text-[11px] font-black text-slate-400 uppercase mb-3 block text-center sm:text-left tracking-widest">1. Theme Color</label>
                           <div className="flex flex-wrap justify-center sm:justify-start gap-3">
@@ -266,10 +329,8 @@ const ServiceEditor = () => {
                             ))}
                           </div>
                         </div>
-
                       </div>
 
-                      {/* Remove Service Button */}
                       <button onClick={() => setServices(services.filter(x => x.id !== s.id))} className="w-full bg-rose-50 text-rose-600 py-4 rounded-xl font-black text-[10px] sm:text-xs flex items-center justify-center gap-2 hover:bg-rose-100 transition-colors uppercase tracking-widest">
                         <Trash2 size={16}/> REMOVE SERVICE FROM CATALOG
                       </button>
@@ -281,12 +342,11 @@ const ServiceEditor = () => {
           </div>
         )}
 
-        {/* --- PREVIEW (Right Panel) --- */}
+        {/* --- PREVIEW PANEL --- */}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'split' ? 'lg:col-span-7 lg:sticky lg:top-24 h-fit' : ''} animate-in fade-in zoom-in-95 duration-500`}>
             <div className="w-full bg-white rounded-3xl sm:rounded-[3rem] border-4 sm:border-[12px] border-slate-900 shadow-2xl overflow-hidden relative">
               
-              {/* Browser Mockup Header */}
               <div className="h-8 sm:h-10 bg-slate-100 border-b border-slate-200 flex items-center px-4 sm:px-6 gap-2 relative z-50">
                   <div className="flex gap-1.5 sm:gap-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]"></div>
@@ -299,13 +359,10 @@ const ServiceEditor = () => {
               </div>
 
               <div className="relative overflow-y-auto h-[85vh] custom-scrollbar bg-slate-50 pb-10">
-                  
                   <div className="absolute top-0 left-0 w-[40rem] h-[40rem] bg-indigo-400/5 rounded-full blur-[100px] pointer-events-none -translate-x-1/2 -translate-y-1/2"></div>
-                  <div className="absolute bottom-0 right-0 w-[40rem] h-[40rem] bg-emerald-400/5 rounded-full blur-[100px] pointer-events-none translate-x-1/3 translate-y-1/3"></div>
-
+                  
                   <div className={`py-10 sm:py-16 relative z-10 w-full max-w-[1600px] mx-auto px-5 lg:px-8`}>
                       
-                      {/* Live Header Preview */}
                       <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
                         <div className="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full bg-white text-indigo-600 font-bold text-xs sm:text-sm mb-5 shadow-md border border-slate-100">
                           <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500" />
@@ -319,25 +376,16 @@ const ServiceEditor = () => {
                         </p>
                       </div>
 
-                      {/* Live Cards Grid Preview */}
                       <div className={`grid grid-cols-1 md:grid-cols-2 ${viewMode === 'split' ? 'xl:grid-cols-2' : 'xl:grid-cols-3'} gap-6 sm:gap-8 xl:gap-10`}>
                         {services.map((service, index) => {
                           const style = getColorStyle(service.color);
                           const isActive = activeCard === service.id;
                           
                           return (
-                            <div 
-                              key={service.id || `service-${index}`} 
-                              className={`group bg-white rounded-[1.5rem] sm:rounded-[2rem] shadow-lg hover:shadow-2xl transition-all duration-500 relative flex flex-col h-full border overflow-hidden hover:-translate-y-2 ${isActive ? 'border-indigo-300 ring-4 ring-indigo-50 scale-[1.02]' : 'border-slate-100'}`}
-                            >
+                            <div key={service.id || `service-${index}`} className={`group bg-white rounded-[1.5rem] sm:rounded-[2rem] shadow-lg hover:shadow-2xl transition-all duration-500 relative flex flex-col h-full border overflow-hidden hover:-translate-y-2 ${isActive ? 'border-indigo-300 ring-4 ring-indigo-50 scale-[1.02]' : 'border-slate-100'}`}>
                               <div className={`relative w-full ${viewMode === 'split' ? 'h-40 sm:h-48' : 'h-48 sm:h-60'} overflow-hidden bg-slate-100`}>
                                   {service.img ? (
-                                      <img 
-                                        src={service.img} 
-                                        alt={service.title} 
-                                        loading="lazy" 
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                      />
+                                      <img src={getImageUrl(service.img)} alt={service.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                                   ) : (
                                       <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-100/50">
                                         <ImageIcon size={64} className="sm:w-16 sm:h-16 w-12 h-12 mb-2" strokeWidth={1} />
@@ -348,19 +396,14 @@ const ServiceEditor = () => {
                               </div>
 
                               <div className={`absolute ${viewMode === 'split' ? 'top-[135px] sm:top-[165px]' : 'top-[165px] sm:top-[215px]'} right-6 sm:right-8 z-20`}>
-                                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br ${style.gradient} flex items-center justify-center shadow-lg shadow-${service.color || 'blue'}-500/30 border-4 border-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12`}>
+                                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br ${style.gradient} flex items-center justify-center shadow-lg border-4 border-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12`}>
                                       <RenderIcon name={service.icon} size={20} className="sm:w-6 sm:h-6 w-5 h-5 text-white" />
                                   </div>
                               </div>
 
                               <div className="relative z-10 p-5 sm:p-8 pt-8 sm:pt-10 flex flex-col flex-grow">
-                                <h3 className={`text-xl sm:text-2xl font-bold text-slate-900 mb-2 sm:mb-3 transition-colors duration-300 ${style.text} leading-snug`}>
-                                  {service.title || "Premium Service"}
-                                </h3>
-                                <p className="text-slate-600 leading-relaxed font-light text-[13px] sm:text-[15px] mb-4 whitespace-pre-line line-clamp-3">
-                                  {service.desc || "Description is not available at the moment."}
-                                </p>
-                                
+                                <h3 className={`text-xl sm:text-2xl font-bold text-slate-900 mb-2 sm:mb-3 transition-colors duration-300 ${style.text} leading-snug`}>{service.title || "Premium Service"}</h3>
+                                <p className="text-slate-600 leading-relaxed font-light text-[13px] sm:text-[15px] mb-4 whitespace-pre-line line-clamp-3">{service.desc || "Description is not available at the moment."}</p>
                                 <div className="mt-auto pt-4 sm:pt-6 border-t border-slate-100">
                                   <div className="flex items-center gap-2 text-[13px] sm:text-[14px] font-bold text-slate-700 transition-colors cursor-pointer leading-tight">
                                     <span className={`${style.text} transition-colors duration-300 leading-tight`}>View Details</span>
@@ -368,27 +411,19 @@ const ServiceEditor = () => {
                                   </div>
                                 </div>
                               </div>
-                              
                               <div className={`absolute bottom-0 left-0 h-1 sm:h-1.5 w-full bg-gradient-to-r ${style.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
                             </div>
                           );
                         })}
-                      </div>
-
-                      <div className="mt-12 sm:mt-16 text-center">
-                        <button className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-indigo-600 text-white px-8 sm:px-10 py-3.5 sm:py-4 rounded-full font-bold text-sm sm:text-base transition-all shadow-xl hover:-translate-y-1">
-                          View All Services <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                        </button>
                       </div>
                   </div>
               </div>
             </div>
           </div>
         )}
-
       </div>
 
-      <style jsx>{`
+      <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }

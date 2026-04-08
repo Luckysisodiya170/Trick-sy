@@ -1,37 +1,82 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent } from '../../../store/index'; 
 import { 
   ArrowLeft, Save, Image as ImageIcon, Sparkles, 
   Settings2, Home, Briefcase, Building2, Utensils, 
   Dumbbell, Factory, Plus, Trash2, Upload, ChevronDown, 
-  Type, Eye, Edit3, Columns, LayoutList, ArrowRight
+  Type, Eye, Edit3, Columns, LayoutList, ArrowRight, Loader2
 } from 'lucide-react';
 
 const PopularEditor = () => {
   const navigate = useNavigate();
-  
+  const dispatch = useDispatch();
+  const { id } = useParams();
+  const subsectionId = id || 4; 
+
+  // --- Redux States ---
+  const content = useSelector((state) => state.content.activeSubsection);
+  const status = useSelector((state) => state.content.status);
+
   const [viewMode, setViewMode] = useState('split'); 
   const [activeCard, setActiveCard] = useState(null); 
   const [previewIndex, setPreviewIndex] = useState(0); 
-
-  const [services, setServices] = useState([
-    { id: 1, title: 'Villa Cleaning', desc: 'Premium deep cleaning for luxury homes.', icon: 'Home', image: null },
-    { id: 2, title: 'Office Cleaning', desc: 'Sanitized workspaces to boost productivity.', icon: 'Briefcase', image: null },
-    { id: 3, title: 'Apartment Cleaning', desc: 'Quick and flawless services for modern flats.', icon: 'Building2', image: null },
-  ]);
+  const [isDeploying, setIsDeploying] = useState(false);
 
   const [headerSettings, setHeaderSettings] = useState({
     badgeText: "Categories",
     headingNormal: "Popular",
     headingHighlight: "Services",
-    description: "Choose from our highly-rated maintenance and cleaning categories tailored for your specific property needs."
+    description: "Choose from our highly-rated maintenance and cleaning categories..."
   });
+
+  const [services, setServices] = useState([
+    { id: 1, title: 'Villa Cleaning', desc: 'Premium deep cleaning for luxury homes.', icon: 'Home', image: null, file: null }
+  ]);
 
   const iconMap = { Home, Briefcase, Building2, Utensils, Dumbbell, Factory, Sparkles };
 
+  const getImageUrl = (path) => {
+    if (!path) return "";
+    if (path.startsWith('blob:') || path.startsWith('data:') || path.startsWith('http')) return path;
+    return `http://localhost:5000${path}`;
+  };
+
+  // 1. Fetch data on Mount
+  useEffect(() => {
+    dispatch(fetchSingleSubsectionContent(subsectionId));
+  }, [dispatch, subsectionId]);
+
+  // 2. Sync DB Content to Local State
+  useEffect(() => {
+    if (content && Object.keys(content).length > 0) {
+      setHeaderSettings({
+        badgeText: content.badge || "Categories",
+        headingNormal: content.title || "Popular",
+        headingHighlight: content.highlightText || "Services", 
+        description: content.description || ""
+      });
+
+      if (content.categories && content.categories.length > 0) {
+        const loadedServices = content.categories.map((cat, idx) => ({
+          ...cat,
+          id: cat.id || Date.now() + idx,
+          title: cat.title || '',
+          desc: cat.desc || '',
+          icon: cat.icon || 'Home',
+          image: content.images?.[idx] || null,
+          file: null
+        }));
+        setServices(loadedServices);
+      }
+    }
+  }, [content]);
+
+  // --- Event Handlers ---
   const handleAddService = () => {
     const newId = Date.now();
-    setServices([...services, { id: newId, title: 'New Service', desc: 'Description...', icon: 'Sparkles', image: null }]);
+    setServices([...services, { id: newId, title: 'New Service', desc: 'Description...', icon: 'Sparkles', image: null, file: null }]);
     setActiveCard(newId); 
     setPreviewIndex(services.length); 
   };
@@ -52,7 +97,71 @@ const PopularEditor = () => {
     const file = e.target.files[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
-      updateService(id, 'image', imageUrl);
+      setServices(services.map(s => s.id === id ? { ...s, image: imageUrl, file: file } : s));
+    }
+  };
+
+  const handleDeploy = async () => {
+    setIsDeploying(true);
+    const token = localStorage.getItem('tricksyAdminToken');
+
+    try {
+      const uploadImg = async (file) => {
+        const fd = new FormData();
+        fd.append('heroImage', file); 
+        const res = await fetch('http://localhost:5000/api/upload/upload-hero', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: fd
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error("Image Upload Failed");
+        return data.imageUrl;
+      };
+
+      const finalCategories = [];
+      const finalImages = [];
+
+      for (let i = 0; i < services.length; i++) {
+        let s = { ...services[i] };
+        let finalImageUrl = s.image;
+
+        if (s.file) {
+          finalImageUrl = await uploadImg(s.file);
+        } else if (finalImageUrl && finalImageUrl.startsWith('blob:')) {
+          finalImageUrl = content.images?.[i] || null; // Fallback
+        }
+
+        finalImages.push(finalImageUrl);
+
+        delete s.image;
+        delete s.file;
+        finalCategories.push(s);
+      }
+
+      const payload = {
+        badge: headerSettings.badgeText,
+        title: headerSettings.headingNormal,
+        highlightText: headerSettings.headingHighlight,
+        description: headerSettings.description,
+        categories: finalCategories,
+        images: finalImages.filter(Boolean)
+      };
+
+      await dispatch(updateSingleSubsectionContent({ 
+        subsectionId: subsectionId, 
+        updateData: payload 
+      })).unwrap();
+
+      alert("Popular Section Deployed Successfully! 🚀");
+      
+      setServices(services.map((s, idx) => ({ ...s, file: null, image: finalImages[idx] })));
+
+    } catch (error) {
+      console.error(error);
+      alert(`Deploy Failed: ${error.message}`);
+    } finally {
+      setIsDeploying(false);
     }
   };
 
@@ -60,6 +169,14 @@ const PopularEditor = () => {
     const IconComponent = iconMap[name] || Sparkles;
     return <IconComponent size={size} className={className} />;
   };
+
+  if (status === 'loading' && !content) {
+    return (
+      <div className="h-screen flex items-center justify-center font-black text-slate-400 uppercase tracking-widest text-xs">
+        <Loader2 className="animate-spin mr-2" size={16} /> Loading Popular Lab...
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col bg-[#F8FAFC] font-sans">
@@ -75,31 +192,20 @@ const PopularEditor = () => {
           </h1>
         </div>
     
-        {/* 3-Way View Mode Toggle */}
         <div className="flex bg-slate-100 p-1 sm:p-1.5 rounded-full shadow-inner w-auto justify-center">
-          <button 
-            onClick={() => setViewMode('edit')} 
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'edit' ? 'bg-white shadow-md text-yellow-600' : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            <Edit3 size={14} className="hidden sm:block" /> Edit
-          </button>
-          <button 
-            onClick={() => setViewMode('split')} 
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'split' ? 'bg-white shadow-md text-yellow-600' : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            <Columns size={14} className="hidden sm:block" /> Split
-          </button>
-          <button 
-            onClick={() => setViewMode('preview')} 
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'preview' ? 'bg-white shadow-md text-yellow-600' : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            <Eye size={14} className="hidden sm:block" /> Preview
-          </button>
+          <button onClick={() => setViewMode('edit')} className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'edit' ? 'bg-white shadow-md text-yellow-600' : 'text-slate-500 hover:text-slate-700'}`}><Edit3 size={14} className="hidden sm:block" /> Edit</button>
+          <button onClick={() => setViewMode('split')} className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'split' ? 'bg-white shadow-md text-yellow-600' : 'text-slate-500 hover:text-slate-700'}`}><Columns size={14} className="hidden sm:block" /> Split</button>
+          <button onClick={() => setViewMode('preview')} className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'preview' ? 'bg-white shadow-md text-yellow-600' : 'text-slate-500 hover:text-slate-700'}`}><Eye size={14} className="hidden sm:block" /> Preview</button>
         </div>
     
         <div className="w-1/4 sm:w-1/3 flex justify-end">
-          <button className="bg-slate-900 text-white px-4 sm:px-8 py-2.5 rounded-full font-extrabold text-[10px] sm:text-xs flex items-center gap-2 shadow-lg hover:bg-yellow-600 transition-all hover:-translate-y-0.5">
-            <Save size={14} className="hidden sm:block" /> Deploy
+          <button 
+            onClick={handleDeploy}
+            disabled={isDeploying}
+            className="bg-slate-900 text-white px-4 sm:px-8 py-2.5 rounded-full font-extrabold text-[10px] sm:text-xs flex items-center gap-2 shadow-lg hover:bg-yellow-600 transition-all disabled:opacity-50"
+          >
+            {isDeploying ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} className="hidden sm:block" />} 
+            {isDeploying ? 'DEPLOYING...' : 'DEPLOY'}
           </button>
         </div>
       </nav>
@@ -140,7 +246,7 @@ const PopularEditor = () => {
               {/* Service Cards */}
               <div className="flex items-center justify-between px-2">
                 <h2 className="text-xl md:text-2xl font-black tracking-tight flex items-center gap-3 italic">
-                   <LayoutList className="text-emerald-600" /> Services <span className="bg-emerald-100 text-emerald-600 text-[10px] px-2 py-0.5 rounded-md not-italic font-black">{services.length}</span>
+                   <LayoutList className="text-emerald-600" /> Categories <span className="bg-emerald-100 text-emerald-600 text-[10px] px-2 py-0.5 rounded-md not-italic font-black">{services.length}</span>
                 </h2>
                 <button onClick={handleAddService} className="bg-emerald-600 text-white px-4 md:px-5 py-2 md:py-3 rounded-2xl hover:bg-slate-900 shadow-xl shadow-emerald-100 transition-all flex items-center gap-2 font-black text-xs active:scale-95">
                   <Plus size={18} strokeWidth={3} /> <span className="hidden sm:inline">ADD NEW</span>
@@ -170,7 +276,7 @@ const PopularEditor = () => {
                     {activeCard === s.id && (
                       <div className="px-4 md:px-8 pb-8 md:pb-10 pt-4 border-t border-slate-50 grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 animate-in fade-in zoom-in-95 duration-300">
                         <div className="space-y-6">
-                          <input value={s.title} onChange={(e) => updateService(s.id, 'title', e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl text-sm font-bold border-none outline-none focus:bg-white transition-all shadow-inner" placeholder="Service Title" />
+                          <input value={s.title} onChange={(e) => updateService(s.id, 'title', e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl text-sm font-bold border-none outline-none focus:bg-white transition-all shadow-inner" placeholder="Category Title" />
                           <textarea value={s.desc} onChange={(e) => updateService(s.id, 'desc', e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl text-sm h-28 resize-none border-none outline-none focus:bg-white transition-all shadow-inner leading-relaxed" placeholder="Brief Description" />
                           <div className="flex flex-wrap gap-2.5">
                             {Object.keys(iconMap).map(i => (
@@ -185,9 +291,9 @@ const PopularEditor = () => {
                              <input type="file" id={`file-${s.id}`} hidden onChange={(e) => handleImageUpload(e, s.id)} />
                              {s.image ? (
                                 <>
-                                  <img src={s.image} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                                  <img src={getImageUrl(s.image)} className="w-full h-full object-cover transition-transform group-hover:scale-105" alt="Service preview" />
                                   <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                     <div className="bg-white/20 backdrop-blur-md p-4 rounded-full text-white"><Upload size={24} /></div>
+                                      <div className="bg-white/20 backdrop-blur-md p-4 rounded-full text-white"><Upload size={24} /></div>
                                   </div>
                                 </>
                              ) : (
@@ -212,10 +318,8 @@ const PopularEditor = () => {
         {/* LIVE PREVIEW */}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'split' ? 'w-full lg:w-[58%] min-h-[800px] lg:min-h-0 lg:h-full' : 'w-full h-full'} bg-slate-100 p-2 sm:p-4 md:p-8 flex items-center justify-center relative`}>
-            
             <div className="w-full h-full bg-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.12)] rounded-3xl md:rounded-[3rem] overflow-hidden flex flex-col border-[4px] md:border-[12px] border-slate-900 relative z-20">
               
-              {/* Fake Browser Tab Bar */}
               <div className="h-8 md:h-10 bg-slate-900 flex items-center px-4 md:px-6 gap-2 shrink-0">
                 <div className="flex gap-1.5">
                   <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-rose-500"></div>
@@ -224,11 +328,9 @@ const PopularEditor = () => {
                 </div>
               </div>
 
-              {/* Website Content */}
               <div className="flex-1 overflow-y-auto custom-scrollbar relative bg-white">
                 <div className={`min-h-full flex flex-col items-center py-8 px-4 md:px-12 ${viewMode === 'split' ? 'md:py-12 md:px-8' : 'md:py-20'}`}>
                    
-                   {/* Header Section */}
                    <div className={`text-center max-w-3xl mb-8 ${viewMode === 'split' ? 'md:mb-10' : 'md:mb-16'}`}>
                       <span className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-[0.2em] shadow-sm ring-1 ring-emerald-100">{headerSettings.badgeText}</span>
                       <h2 className={`font-black text-slate-900 mt-6 tracking-tight leading-[1] text-3xl md:text-5xl lg:${viewMode === 'split' ? 'text-4xl' : 'text-6xl'}`}>
@@ -237,10 +339,8 @@ const PopularEditor = () => {
                       <p className={`text-slate-500 mt-4 md:mt-6 leading-relaxed font-medium text-sm md:text-lg lg:${viewMode === 'split' ? 'text-base' : 'text-xl'}`}>{headerSettings.description}</p>
                    </div>
 
-                   {/* Layout Grid */}
                    <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch max-w-[1200px]">
                       
-                      {/* Left Side List */}
                       <div className={`order-2 lg:order-1 ${viewMode === 'split' ? 'lg:col-span-5' : 'lg:col-span-4'} space-y-3`}>
                         {services.map((s, i) => (
                           <div 
@@ -260,12 +360,11 @@ const PopularEditor = () => {
                         ))}
                       </div>
 
-                      {/* Right Side Visual */}
                       <div className={`order-1 lg:order-2 ${viewMode === 'split' ? 'lg:col-span-7' : 'lg:col-span-8'} relative min-h-[250px] md:min-h-[400px] rounded-3xl md:rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white bg-slate-50`}>
                         {services.map((s, i) => (
                            <div key={s.id} className={`absolute inset-0 transition-all duration-700 ease-in-out ${previewIndex === i ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-110 z-0'}`}>
                               {s.image ? (
-                                <img src={s.image} className="w-full h-full object-cover" />
+                                <img src={getImageUrl(s.image)} className="w-full h-full object-cover" alt="Service" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-slate-100">
                                    <ImageIcon size={viewMode === 'split' ? 60 : 80} className="md:w-20 md:h-20 lg:w-32 lg:h-32" strokeWidth={1} />

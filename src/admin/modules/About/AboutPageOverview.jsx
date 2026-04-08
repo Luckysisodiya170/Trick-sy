@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchSections, updateSubsection } from '../../../store/index'; 
 import PageManager from '../../components/PageManager'; 
 import { 
   LayoutTemplate, Target, Heart, Milestone, Users, 
@@ -13,24 +15,52 @@ const iconLibrary = {
   zap: Zap, play: PlayCircle, code: Code
 };
 
-const defaultSections = [
-  { id: 'about-hero', name: 'About Hero', status: 'Live', iconKey: 'hero', path: '/admin/pages/about/hero', color: 'text-blue-500', bg: 'bg-blue-50', theme: 'blue' },
-  { id: 'about-mission', name: 'Our Mission', status: 'Live', iconKey: 'mission', path: '/admin/pages/about/mission', color: 'text-indigo-500', bg: 'bg-indigo-50', theme: 'indigo' },
-  { id: 'about-values', name: 'Core Values', status: 'Live', iconKey: 'values', path: '/admin/pages/about/values', color: 'text-rose-500', bg: 'bg-rose-50', theme: 'rose' },
-  { id: 'about-timeline', name: 'History Timeline', status: 'Live', iconKey: 'timeline', path: '/admin/pages/about/timeline', color: 'text-amber-500', bg: 'bg-amber-50', theme: 'amber' },
-  { id: 'about-team', name: 'Our Team', status: 'Live', iconKey: 'team', path: '/admin/pages/about/team', color: 'text-emerald-500', bg: 'bg-emerald-50', theme: 'emerald' },
-  { id: 'about-why-us', name: 'Why Choose Us', status: 'Live', iconKey: 'whyus', path: '/admin/pages/about/why-us', color: 'text-sky-500', bg: 'bg-sky-50', theme: 'sky' },
-];
-
 const AboutPageOverview = () => {
+  const dispatch = useDispatch();
+  
+  // 1. Get data from Redux Store
+  const sections = useSelector((state) => state.sections.items);
+  const status = useSelector((state) => state.sections.status);
+
+  // 2. Fetch About Page Sections 
+  useEffect(() => {
+    dispatch(fetchSections(2));
+  }, [dispatch]);
+
+  // 3. Reusable Update Handler
+  const handleUpdateModule = (dbId, currentSlug, updatedFields) => {
+    dispatch(updateSubsection({ dbId, updatedFields }));
+  };
+
+  // 4. Map DB data to PageManager format
+  const formattedSections = sections.map((item) => ({
+    id: item.slug,                
+    dbId: item.id,
+    sectionId: item.sectionId,
+    name: item.subsectionName,    
+    status: item.isActive ? 'Live' : 'Draft', 
+    iconKey: item.icon,  
+    isSystem: item.isSystem,        
+    path: `/admin/pages/about/${item.slug}`,  
+    theme: item.theme,
+    color: `text-${item.theme}-500`,         
+    bg: `bg-${item.theme}-50`                
+  }));
+
+  if (status === 'loading' && sections.length === 0) {
+    return <div className="p-8 text-center text-slate-400 font-bold uppercase tracking-widest">Loading About Modules...</div>;
+  }
+
   return (
     <PageManager 
       title={<>ABOUT <span className="text-brand-primary">SECTIONS.</span></>}
       storageKey="tricksy_about_modules"
-      defaultSections={defaultSections}
+      sectionId={2} 
+      defaultSections={formattedSections}
       iconLibrary={iconLibrary}
       baseRoute="/admin/pages/about"
       itemLabel="Block"
+      onUpdate={handleUpdateModule}
     />
   );
 };

@@ -70,7 +70,8 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 { to: "/admin/pages/services", icon: Briefcase, label: "Services" },
                 { to: "/admin/pages/technical", icon: Layout, label: "Technical" },
                 { to: "/admin/pages/blog", icon: FileText, label: "Blog" },
-                { to: "/admin/pages/contact", icon: Layers, label: "Contact" }
+                { to: "/admin/pages/contact", icon: Layers, label: "Contact" },
+
               ].map((item) => (
                 <NavLink key={item.to} to={item.to} className={linkClass}>
                   <item.icon size={18} />
