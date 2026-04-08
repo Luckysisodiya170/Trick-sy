@@ -102,7 +102,7 @@ const AdminLogin = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-11 pr-3 py-3 border border-white/10 rounded-2xl bg-zinc-900/50 text-white placeholder-slate-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                  placeholder="Enter your password"
+                  placeholder="mySecurePassword123"
                 />
               </div>
             </div>
