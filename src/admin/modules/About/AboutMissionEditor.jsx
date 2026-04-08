@@ -1,14 +1,26 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent } from '../../../store/index'; 
 import { 
   ArrowLeft, Save, Target, Users, ShieldCheck, Heart, 
-  CheckCircle2, Edit3, Columns, Eye, Settings2, Type, Upload, Sparkles, ImageIcon
+  CheckCircle2, Edit3, Columns, Eye, Settings2, Type, Upload, Sparkles, ImageIcon, Loader2
 } from 'lucide-react';
 
 const AboutMissionEditor = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const fileInputRef = useRef(null);
+  const { id } = useParams();
+  
+  const subsectionId = id || 11; 
+
+  const content = useSelector((state) => state.content.activeSubsection);
+  const status = useSelector((state) => state.content.status);
+
   const [viewMode, setViewMode] = useState('split'); 
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
   
   const [missionData, setMissionData] = useState({
     title: "Quality You Can",
@@ -23,23 +35,115 @@ const AboutMissionEditor = () => {
     ]
   });
 
-  const handleStatChange = (id, field, value) => {
-    const updatedStats = missionData.stats.map(s => s.id === id ? { ...s, [field]: value } : s);
+  useEffect(() => {
+    dispatch(fetchSingleSubsectionContent(subsectionId));
+  }, [dispatch, subsectionId]);
+
+  useEffect(() => {
+    if (content && Object.keys(content).length > 0) {
+      setMissionData({
+        title: content.title || "Quality You Can",
+        highlight: content.highlight || "Trust Blindly.",
+        description: content.description || "To provide the most reliable, high-tech, and professional home services through a team of certified experts.",
+        mainImage: content.images?.[0] || null,
+        stats: content.stats || [
+          { label: "Founded", value: "2014", id: 1 },
+          { label: "Team Size", value: "150+", id: 2 },
+          { label: "Projects", value: "5k+", id: 3 },
+          { label: "Cities", value: "12+", id: 4 },
+        ]
+      });
+    }
+  }, [content]);
+
+  const handleStatChange = (statId, field, value) => {
+    const updatedStats = missionData.stats.map(s => s.id === statId ? { ...s, [field]: value } : s);
     setMissionData({ ...missionData, stats: updatedStats });
+  };
+
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return "";
+    if (imagePath.startsWith('http') || imagePath.startsWith('blob:') || imagePath.startsWith('data:')) {
+      return imagePath;
+    }
+    return `http://localhost:5000${imagePath}`;
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (missionData.mainImage && missionData.mainImage.startsWith('blob:')) {
+        URL.revokeObjectURL(missionData.mainImage);
+      }
+      setImageFile(file);
       setMissionData({ ...missionData, mainImage: URL.createObjectURL(file) });
+    }
+  };
+
+  const handleSave = async () => {
+    setIsDeploying(true);
+    try {
+      let finalImageUrl = missionData.mainImage;
+
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append('heroImage', imageFile); 
+        
+        const token = localStorage.getItem('tricksyAdminToken');
+
+        const uploadRes = await fetch('http://localhost:5000/api/upload/upload-hero', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}` 
+          },
+          body: formData,
+        });
+        
+        const uploadData = await uploadRes.json();
+        
+        if (uploadData.success) {
+          finalImageUrl = uploadData.imageUrl; 
+        } else {
+          throw new Error(uploadData.message || "Upload Failed");
+        }
+      }
+
+      const payload = {
+        title: missionData.title,
+        highlight: missionData.highlight,
+        description: missionData.description,
+        stats: missionData.stats,
+        images: finalImageUrl?.startsWith('blob:') ? content.images : [finalImageUrl].filter(Boolean)
+      };
+
+      await dispatch(updateSingleSubsectionContent({ 
+        subsectionId: subsectionId, 
+        updateData: payload 
+      })).unwrap();
+
+      alert("Mission Section Deployed Successfully! ✅");
+      setImageFile(null);
+      
+    } catch (error) {
+      console.error("Update failed:", error);
+      alert(`Error: ${error.message || "Failed to deploy to database."}`);
+    } finally {
+      setIsDeploying(false);
     }
   };
 
   const statIcons = [<Target size={20}/>, <Users size={20}/>, <Heart size={20}/>, <ShieldCheck size={20}/>];
 
+  if (status === 'loading' && !content) {
+    return (
+      <div className="h-screen flex items-center justify-center font-bold text-slate-400 uppercase tracking-widest text-xs">
+        <Loader2 className="animate-spin mr-2" size={16} /> Loading Mission Lab...
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans pb-20 selection:bg-indigo-100">
-      {/* --- NAVBAR --- */}
       <nav className="sticky top-0 z-[50] bg-white border-b border-slate-200 px-3 lg:px-6 py-3 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-xl transition-all">
@@ -58,14 +162,18 @@ const AboutMissionEditor = () => {
           ))}
         </div>
 
-        <button className="bg-slate-900 text-white px-5 py-2 rounded-full font-extrabold text-xs flex items-center gap-2 hover:bg-indigo-600 transition-all shadow-lg active:scale-95 hover:-translate-y-0.5">
-          <Save size={14} /> <span>Deploy</span>
+        <button 
+          onClick={handleSave}
+          disabled={isDeploying}
+          className="bg-slate-900 text-white px-5 py-2 rounded-full font-extrabold text-xs flex items-center gap-2 hover:bg-indigo-600 transition-all shadow-lg active:scale-95 hover:-translate-y-0.5 disabled:opacity-50"
+        >
+          {isDeploying ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} 
+          <span>{isDeploying ? "DEPLOYING..." : "DEPLOY"}</span>
         </button>
       </nav>
 
       <div className={`mx-auto transition-all duration-500 ${viewMode === 'split' ? 'max-w-[1800px] p-6 grid grid-cols-1 lg:grid-cols-12 gap-10' : 'max-w-4xl p-6'}`}>
         
-        {/* --- EDITOR SIDE --- */}
         {(viewMode === 'edit' || viewMode === 'split') && (
           <div className={`${viewMode === 'split' ? 'lg:col-span-5' : ''} space-y-6 animate-in fade-in zoom-in-95 duration-300`}>
             
@@ -105,7 +213,7 @@ const AboutMissionEditor = () => {
                 >
                   {missionData.mainImage ? (
                     <>
-                      <img src={missionData.mainImage} className="w-full h-full object-cover" alt="preview" />
+                      <img src={getImageUrl(missionData.mainImage)} className="w-full h-full object-cover" alt="preview" />
                       <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200">
                         <span className="text-white text-[10px] font-black uppercase tracking-widest bg-white/10 px-4 py-2 rounded-full backdrop-blur-md border border-white/20">Change Image</span>
                       </div>
@@ -122,18 +230,16 @@ const AboutMissionEditor = () => {
           </div>
         )}
 
-        {/* --- LIVE PREVIEW --- */}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'split' ? 'lg:col-span-7' : 'w-full'} h-fit animate-in fade-in`}>
             <div className="w-full bg-white rounded-[2.5rem] border-[6px] border-slate-950 shadow-2xl overflow-hidden relative">
               <section className="py-16 lg:py-24 bg-white px-6">
                 <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-center">
                   
-                  {/* Left Side: Image */}
                   <div className="w-full lg:w-1/2 relative flex justify-center lg:justify-start">
                     <div className="relative rounded-[2rem] overflow-hidden border-4 border-zinc-950 bg-zinc-100 z-10 w-[280px] h-[350px] sm:w-[350px] sm:h-[450px]">
                       {missionData.mainImage ? (
-                         <img src={missionData.mainImage} className="w-full h-full object-cover" alt="Mission" />
+                         <img src={getImageUrl(missionData.mainImage)} className="w-full h-full object-cover" alt="Mission" />
                       ) : (
                          <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-zinc-300 font-bold uppercase tracking-widest text-sm">No Image</div>
                       )}
@@ -148,7 +254,6 @@ const AboutMissionEditor = () => {
                     </div>
                   </div>
 
-                  {/* Right Side: Content */}
                   <div className="w-full lg:w-1/2 text-center lg:text-left">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 border border-zinc-200 mb-6">
                       <span className="w-1.5 h-1.5 rounded-full bg-zinc-950"></span>

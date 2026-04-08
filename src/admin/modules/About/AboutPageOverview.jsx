@@ -32,20 +32,24 @@ const AboutPageOverview = () => {
     dispatch(updateSubsection({ dbId, updatedFields }));
   };
 
-  // 4. Map DB data to PageManager format
-  const formattedSections = sections.map((item) => ({
-    id: item.slug,                
-    dbId: item.id,
-    sectionId: item.sectionId,
-    name: item.subsectionName,    
-    status: item.isActive ? 'Live' : 'Draft', 
-    iconKey: item.icon,  
-    isSystem: item.isSystem,        
-    path: `/admin/pages/about/${item.slug}`,  
-    theme: item.theme,
-    color: `text-${item.theme}-500`,         
-    bg: `bg-${item.theme}-50`                
-  }));
+  
+
+const formattedSections = sections.map((item) => ({
+  id: item.slug,                
+  dbId: item.id,                
+  name: item.subsectionName,    
+  status: item.isActive ? 'Live' : 'Draft', 
+  iconKey: item.icon,  
+  isSystem: item.isSystem,        
+  
+  path: item.isSystem 
+    ? `/admin/pages/about/${item.slug}` 
+    : `/admin/pages/about/${item.slug}/${item.id}`,
+  
+  theme: item.theme,
+  color: `text-${item.theme}-500`,         
+  bg: `bg-${item.theme}-50`                
+}));
 
   if (status === 'loading' && sections.length === 0) {
     return <div className="p-8 text-center text-slate-400 font-bold uppercase tracking-widest">Loading About Modules...</div>;

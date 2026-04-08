@@ -1,13 +1,25 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent } from '../../../store/index';
 import { 
   ArrowLeft, Save, Edit3, Columns, Eye, Settings2, Type, 
-  Linkedin, Mail, ArrowUpRight, CheckCircle2, Upload, Trash2, Plus, Users, Sparkles, Twitter
+  Linkedin, Mail, ArrowUpRight, Upload, Trash2, Plus, Users, Sparkles, Twitter, Loader2
 } from 'lucide-react';
 
 const AboutTeamEditor = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { id } = useParams();
+  
+  const subsectionId = id ? parseInt(id, 10) : 14; 
+
+  const content = useSelector((state) => state.content.activeSubsection);
+  const status = useSelector((state) => state.content.status);
+
   const [viewMode, setViewMode] = useState('split');
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [imageFiles, setImageFiles] = useState({});
   
   const [teamData, setTeamData] = useState({
     teamTitle: "Meet The",
@@ -31,15 +43,48 @@ const AboutTeamEditor = () => {
     ]
   });
 
+  useEffect(() => {
+    dispatch(fetchSingleSubsectionContent(subsectionId));
+  }, [dispatch, subsectionId]);
+
+  useEffect(() => {
+    if (content && Object.keys(content).length > 0) {
+      setTeamData({
+        teamTitle: content.teamTitle || "Meet The",
+        teamHighlight: content.teamHighlight || "Masterminds",
+        teamDescription: content.teamDescription || "A world-class team of certified professionals dedicated to bringing perfection to your space.",
+        members: content.members || [
+          { 
+            name: "Saurabh Sharma", 
+            role: "Founder & CEO", 
+            bio: "Visionary leader with 10+ years in home maintenance tech.",
+            img: null,
+            socials: { linkedin: "#", twitter: "#", mail: "saurabh@tricksy.com" }
+          },
+          { 
+            name: "John Doe", 
+            role: "Head of Operations", 
+            bio: "Ensuring flawless execution and extreme customer satisfaction.",
+            img: null,
+            socials: { linkedin: "#", twitter: "#", mail: "john@tricksy.com" }
+          }
+        ]
+      });
+    }
+  }, [content]);
+
   const handleMemberChange = (index, field, value) => {
     const updated = [...teamData.members];
-    updated[index][field] = value;
+    updated[index] = { ...updated[index], [field]: value };
     setTeamData({ ...teamData, members: updated });
   };
 
   const handleSocialChange = (index, platform, value) => {
     const updated = [...teamData.members];
-    updated[index].socials[platform] = value;
+    updated[index] = { 
+        ...updated[index], 
+        socials: { ...updated[index].socials, [platform]: value } 
+    };
     setTeamData({ ...teamData, members: updated });
   };
 
@@ -57,20 +102,97 @@ const AboutTeamEditor = () => {
   const deleteMember = (index) => {
     if (window.confirm("Are you sure you want to remove this member?")) {
       const updatedMembers = teamData.members.filter((_, i) => i !== index);
+      const newImageFiles = { ...imageFiles };
+      delete newImageFiles[index];
+      setImageFiles(newImageFiles);
       setTeamData({ ...teamData, members: updatedMembers });
     }
+  };
+
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return "";
+    if (imagePath.startsWith('http') || imagePath.startsWith('blob:') || imagePath.startsWith('data:')) {
+      return imagePath;
+    }
+    return `http://localhost:5000${imagePath}`;
   };
 
   const handleImageUpload = (index, e) => {
     const file = e.target.files[0];
     if (file) {
+      if (teamData.members[index].img && teamData.members[index].img.startsWith('blob:')) {
+        URL.revokeObjectURL(teamData.members[index].img);
+      }
+      
+      setImageFiles(prev => ({ ...prev, [index]: file }));
       handleMemberChange(index, 'img', URL.createObjectURL(file));
     }
   };
 
+  const handleSave = async () => {
+    setIsDeploying(true);
+    try {
+      const token = localStorage.getItem('tricksyAdminToken');
+      const finalMembers = teamData.members.map(member => ({...member}));
+
+      const uploadFile = async (file) => {
+        const formData = new FormData();
+        formData.append('heroImage', file); 
+        const res = await fetch('http://localhost:5000/api/upload/upload-hero', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData,
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || "Upload Failed");
+        return data.imageUrl;
+      };
+
+      for (let i = 0; i < finalMembers.length; i++) {
+        if (imageFiles[i]) {
+          finalMembers[i].img = await uploadFile(imageFiles[i]);
+        } else if (finalMembers[i].img && finalMembers[i].img.startsWith('blob:')) {
+          finalMembers[i].img = content.members?.[i]?.img || null;
+        }
+      }
+
+    
+      const finalImagesArray = finalMembers.map(member => member.img).filter(Boolean);
+
+      const payload = {
+        teamTitle: teamData.teamTitle,
+        teamHighlight: teamData.teamHighlight,
+        teamDescription: teamData.teamDescription,
+        members: finalMembers,
+        images: finalImagesArray 
+      };
+
+      await dispatch(updateSingleSubsectionContent({ 
+        subsectionId: subsectionId, 
+        updateData: payload 
+      })).unwrap();
+
+      alert("Team Section Deployed Successfully! ✅");
+      setImageFiles({});
+      
+    } catch (error) {
+      console.error("Update failed:", error);
+      alert(`Error: ${error.message || "Failed to deploy to database."}`);
+    } finally {
+      setIsDeploying(false);
+    }
+  };
+
+  if (status === 'loading' && !content) {
+    return (
+      <div className="h-screen flex items-center justify-center font-bold text-slate-400 uppercase tracking-widest text-xs">
+        <Loader2 className="animate-spin mr-2" size={16} /> Loading Team Lab...
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans pb-20">
-      {/* --- NAVBAR --- */}
       <nav className="sticky top-0 z-[50] bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-xl transition-all"><ArrowLeft size={18} /></button>
@@ -87,14 +209,18 @@ const AboutTeamEditor = () => {
           ))}
         </div>
 
-        <button className="bg-slate-900 text-white px-5 py-2 rounded-full font-extrabold text-xs flex items-center gap-2 hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100">
-          <Save size={14} /> <span className="hidden md:inline">Publish Team</span>
+        <button 
+          onClick={handleSave}
+          disabled={isDeploying}
+          className="bg-slate-900 text-white px-5 py-2 rounded-full font-extrabold text-xs flex items-center gap-2 hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100 disabled:opacity-50"
+        >
+          {isDeploying ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} 
+          <span className="hidden md:inline">{isDeploying ? "DEPLOYING..." : "Publish Team"}</span>
         </button>
       </nav>
 
       <div className={`mx-auto transition-all duration-500 ${viewMode === 'split' ? 'max-w-[1800px] p-6 grid grid-cols-1 lg:grid-cols-12 gap-10' : 'max-w-4xl p-6'}`}>
         
-        {/* --- EDITOR SIDE --- */}
         {(viewMode === 'edit' || viewMode === 'split') && (
           <div className={`${viewMode === 'split' ? 'lg:col-span-4' : ''} space-y-6`}>
             <section className="bg-white rounded-[2rem] border border-slate-200 p-8 shadow-sm space-y-4">
@@ -116,11 +242,13 @@ const AboutTeamEditor = () => {
 
                   <div className="flex gap-4">
                     <div className="w-16 h-16 rounded-2xl bg-slate-100 flex-shrink-0 relative overflow-hidden group/img border border-slate-100">
-                      {member.img ? <img src={member.img} className="w-full h-full object-cover" /> : <Users className="m-auto mt-4 text-slate-300" size={24}/>}
-                      <label className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex cursor-pointer">
-                        <Upload className="m-auto text-white" size={14} />
-                        <input type="file" className="hidden" onChange={(e) => handleImageUpload(i, e)} />
+                      {member.img ? <img src={getImageUrl(member.img)} className="w-full h-full object-cover" /> : <Users className="m-auto mt-4 text-slate-300" size={24}/>}
+                      
+                      <label htmlFor={`img-upload-${i}`} className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center cursor-pointer z-10">
+                        <Upload className="text-white" size={16} />
                       </label>
+                      <input id={`img-upload-${i}`} type="file" className="hidden" onChange={(e) => handleImageUpload(i, e)} accept="image/*" />
+                    
                     </div>
                     <div className="flex-1 space-y-1">
                       <input value={member.name} onChange={(e) => handleMemberChange(i, 'name', e.target.value)} className="w-full font-black text-slate-900 outline-none text-sm" placeholder="Full Name" />
@@ -157,7 +285,6 @@ const AboutTeamEditor = () => {
           </div>
         )}
 
-        {/* --- LIVE PREVIEW --- */}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'split' ? 'lg:col-span-8' : 'w-full'} h-fit sticky top-24`}>
             <div className="w-full bg-white rounded-[3.5rem] border-[10px] border-slate-950 shadow-2xl overflow-hidden relative pb-16">
@@ -178,15 +305,13 @@ const AboutTeamEditor = () => {
                   </p>
                 </div>
 
-                {/* Team Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   {teamData.members.map((member, i) => (
                     <div key={i} className="group bg-slate-50 rounded-[2.5rem] border border-slate-100 hover:bg-white hover:shadow-xl transition-all duration-500 overflow-hidden">
                       
-                    
                       <div className="relative h-[150px] overflow-hidden">
                         {member.img ? (
-                          <img src={member.img} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                          <img src={getImageUrl(member.img)} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                         ) : (
                           <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400"><Users size={32}/></div>
                         )}
@@ -212,7 +337,6 @@ const AboutTeamEditor = () => {
                   ))}
                 </div>
 
-                {/* Compact Hiring Banner */}
                 <div className="mt-12 bg-slate-900 rounded-[2rem] p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border border-slate-800">
                    <div>
                       <h3 className="text-lg font-black text-white">We're hiring!</h3>

@@ -1,13 +1,24 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent } from '../../../store/index';
 import { 
   ArrowLeft, Save, Edit3, Columns, Eye, Settings2, Type, 
-  Rocket, Star, ShieldCheck, Trophy, Plus, Trash2, Calendar
+  Rocket, Star, ShieldCheck, Trophy, Plus, Trash2, Calendar, Loader2
 } from 'lucide-react';
 
 const AboutTimelineEditor = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { id } = useParams();
+  
+  const subsectionId = id ? parseInt(id, 10) : 13; 
+
+  const content = useSelector((state) => state.content.activeSubsection);
+  const status = useSelector((state) => state.content.status);
+
   const [viewMode, setViewMode] = useState('split');
+  const [isDeploying, setIsDeploying] = useState(false);
   
   const [timelineData, setTimelineData] = useState({
     sectionTitle: "Our",
@@ -22,6 +33,26 @@ const AboutTimelineEditor = () => {
   });
 
   const iconLibrary = [<Rocket size={18}/>, <Star size={18}/>, <ShieldCheck size={18}/>, <Trophy size={18}/>, <Calendar size={18}/>];
+
+  useEffect(() => {
+    dispatch(fetchSingleSubsectionContent(subsectionId));
+  }, [dispatch, subsectionId]);
+
+  useEffect(() => {
+    if (content && Object.keys(content).length > 0) {
+      setTimelineData({
+        sectionTitle: content.sectionTitle || "Our",
+        sectionHighlight: content.sectionHighlight || "Journey",
+        sectionSubtext: content.sectionSubtext || "A decade of perfecting homes and building trust through innovation and relentless dedication.",
+        steps: content.steps || [
+          { year: "2014", title: "The Humble Start", desc: "Founded with a vision to simplify home maintenance." },
+          { year: "2018", title: "1,000+ Homes Served", desc: "Hit our first major milestone, becoming the favorite." },
+          { year: "2022", title: "Tech-First Approach", desc: "Launched our AI booking platform for real-time tracking." },
+          { year: "2026", title: "Future of Services", desc: "Scaling globally with eco-friendly smart solutions." }
+        ]
+      });
+    }
+  }, [content]);
 
   const handleStepUpdate = (index, field, val) => {
     const updated = [...timelineData.steps];
@@ -45,9 +76,40 @@ const AboutTimelineEditor = () => {
     }
   };
 
+  const handleSave = async () => {
+    setIsDeploying(true);
+    try {
+      const payload = {
+        sectionTitle: timelineData.sectionTitle,
+        sectionHighlight: timelineData.sectionHighlight,
+        sectionSubtext: timelineData.sectionSubtext,
+        steps: timelineData.steps
+      };
+
+      await dispatch(updateSingleSubsectionContent({ 
+        subsectionId: subsectionId, 
+        updateData: payload 
+      })).unwrap();
+
+      alert("Journey Section Deployed Successfully! ✅");
+    } catch (error) {
+      console.error("Update failed:", error);
+      alert(`Error: ${error.message || "Failed to deploy to database."}`);
+    } finally {
+      setIsDeploying(false);
+    }
+  };
+
+  if (status === 'loading' && !content) {
+    return (
+      <div className="h-screen flex items-center justify-center font-bold text-slate-400 uppercase tracking-widest text-xs">
+        <Loader2 className="animate-spin mr-2" size={16} /> Loading Journey Lab...
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans pb-20">
-      {/* --- NAVBAR --- */}
       <nav className="sticky top-0 z-[50] bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-xl transition-all"><ArrowLeft size={18} /></button>
@@ -64,17 +126,20 @@ const AboutTimelineEditor = () => {
           ))}
         </div>
 
-        <button className="bg-slate-900 text-white px-5 py-2 rounded-full font-extrabold text-xs flex items-center gap-2 hover:bg-emerald-600 transition-all active:scale-95">
-          <Save size={14} /> <span className="hidden md:inline">Save Journey</span>
+        <button 
+          onClick={handleSave}
+          disabled={isDeploying}
+          className="bg-slate-900 text-white px-5 py-2 rounded-full font-extrabold text-xs flex items-center gap-2 hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-50"
+        >
+          {isDeploying ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} 
+          <span className="hidden md:inline">{isDeploying ? "SAVING..." : "Save Journey"}</span>
         </button>
       </nav>
 
       <div className={`mx-auto transition-all duration-500 ${viewMode === 'split' ? 'max-w-[1800px] p-6 grid grid-cols-1 lg:grid-cols-12 gap-10' : 'max-w-4xl p-6'}`}>
         
-        {/* --- EDITOR SIDE --- */}
         {(viewMode === 'edit' || viewMode === 'split') && (
           <div className={`${viewMode === 'split' ? 'lg:col-span-4' : ''} space-y-6`}>
-            {/* Section Header Editor */}
             <section className="bg-white rounded-[2rem] border border-slate-200 p-8 shadow-sm space-y-6">
               <h3 className="font-black text-slate-900 flex items-center gap-2 text-xs uppercase tracking-widest border-b pb-4">
                 <Type size={16} className="text-emerald-500" /> Section Header
@@ -88,7 +153,6 @@ const AboutTimelineEditor = () => {
               </div>
             </section>
 
-            {/* Milestones List */}
             <div className="space-y-4">
               <div className="flex items-center justify-between px-2">
                 <h3 className="font-black text-slate-900 text-xs uppercase tracking-widest">Milestones</h3>
@@ -118,7 +182,6 @@ const AboutTimelineEditor = () => {
           </div>
         )}
 
-        {/* --- PREVIEW SIDE --- */}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'split' ? 'lg:col-span-8' : 'w-full'} h-fit sticky top-24`}>
             <div className="w-full bg-white rounded-[3rem] border-[8px] border-slate-950 shadow-2xl overflow-hidden relative pb-16">
@@ -145,10 +208,8 @@ const AboutTimelineEditor = () => {
                            )}
                         </div>
 
-                        {/* Timeline Dot */}
                         <div className="hidden lg:flex absolute top-[20px] left-0 z-20 w-5 h-5 rounded-full bg-white border-4 border-slate-200 group-hover:border-emerald-500 transition-all"></div>
                         
-                        {/* Floating Icon Card */}
                         <div className="relative mt-10 p-6 rounded-[2.5rem] bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 h-full z-10">
                           
                           <div className="absolute -top-6 left-8 w-12 h-12 rounded-2xl bg-white shadow-xl flex items-center justify-center text-emerald-500 border border-slate-50 group-hover:bg-emerald-500 group-hover:text-white group-hover:scale-110 transition-all duration-500 z-30">
@@ -161,7 +222,6 @@ const AboutTimelineEditor = () => {
                             <p className="text-[10px] text-slate-500 font-medium leading-relaxed">{step.desc}</p>
                           </div>
 
-                          {/* Year Watermark */}
                           <span className="absolute bottom-4 right-6 text-4xl font-black text-slate-900/[0.03] group-hover:text-emerald-500/[0.05] transition-colors select-none">
                             {step.year.slice(-2)}
                           </span>
@@ -176,7 +236,6 @@ const AboutTimelineEditor = () => {
                   </div>
                 </div>
 
-                {/* Footer Banner */}
                 <div className="mt-16 rounded-[2.5rem] bg-slate-900 p-8 flex flex-col md:flex-row items-center justify-between gap-6 border border-slate-800">
                    <div className="text-center md:text-left">
                       <h3 className="text-xl lg:text-2xl font-black text-white">The journey doesn't <span className="text-emerald-500">stop here.</span></h3>

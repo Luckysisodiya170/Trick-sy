@@ -85,6 +85,7 @@ import AdminSettings from './admin/pages/AdminSettings';
 import AdminProfile from './admin/modules/profile/AdminProfile';
 import TestPageOverview from './admin/modules/test/testPageOverview';
 import TestHeroEditor from './admin/modules/test/testhero';
+import AboutWhyChooseEditor from './admin/modules/About/AboutWhyChooseEditor';
 
 // Dummy Auth Pages
 const Login = () => <div className="flex h-screen items-center justify-center bg-slate-50 font-bold text-xl">Login Page (User)</div>;
@@ -139,13 +140,13 @@ function App() {
 
               {/* ABOUT CMS */}
               <Route path="pages/about" element={<AboutPageOverview />} />
-              <Route path="pages/about/hero" element={<AboutHeroEditor />} />
-              <Route path="pages/about/mission" element={<AboutMissionEditor />} />
-              <Route path="pages/about/values" element={<AboutValuesEditor />} />
-              <Route path="pages/about/timeline" element={<AboutTimelineEditor />} />
-              <Route path="pages/about/team" element={<AboutTeamEditor />} />
-              <Route path="pages/about/why-us" element={<WhyChooseEditor />} />
-              <Route path="pages/about/:moduleName" element={<DynamicEditor />} />
+              <Route path="pages/about/about-hero" element={<AboutHeroEditor />} />
+              <Route path="pages/about/about-mission" element={<AboutMissionEditor />} />
+              <Route path="pages/about/about-values" element={<AboutValuesEditor />} />
+              <Route path="pages/about/about-timeline" element={<AboutTimelineEditor />} />
+              <Route path="pages/about/about-team" element={<AboutTeamEditor />} />
+              <Route path="pages/about/about-why-us" element={<AboutWhyChooseEditor />} />
+              <Route path="pages/about/:slug/:id" element={<DynamicEditor />} />
 
               {/* CONTACT CMS */}
               <Route path="pages/contact" element={<ContactPageOverview />} />
