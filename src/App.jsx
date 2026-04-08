@@ -83,8 +83,8 @@ import ServiceBookings from './admin/pages/ServiceBookings';
 import NewsletterSubscribers from './admin/pages/NewsletterSubscribers';
 import AdminSettings from './admin/pages/AdminSettings';
 import AdminProfile from './admin/modules/profile/AdminProfile';
-import TestPageOverview from './admin/modules/test/testPageOverview';
-import TestHeroEditor from './admin/modules/test/testhero';
+// import TestPageOverview from './admin/modules/test/testPageOverview';
+// import TestHeroEditor from './admin/modules/test/testhero';
 import AboutWhyChooseEditor from './admin/modules/About/AboutWhyChooseEditor';
 
 // Dummy Auth Pages
@@ -193,9 +193,9 @@ function App() {
               <Route path='settings' element={<AdminSettings />} />
 
               {/* test */}
-
+{/* 
               <Route path="pages/test/:sectionId" element={<TestPageOverview />} />
-              <Route path="pages/test/hero" element={<TestHeroEditor />} />
+              <Route path="pages/test/hero" element={<TestHeroEditor />} /> */}
 
 
               {/* profile page */}
