@@ -175,7 +175,7 @@ function App() {
 
               {/* TECHNICAL CMS */}
               <Route path="pages/technical" element={<TechnicalPageOverview />} />
-              <Route path="pages/technical/hero" element={<TechnicalHeroEditor />} />
+              <Route path="pages/technical/tech-hero" element={<TechnicalHeroEditor />} />
               <Route path="pages/technical/domains" element={<TechnicalDomainsEditor />} />
               <Route path="pages/technical/specs" element={<HardwareSpecsEditor />} />
               <Route path="pages/technical/process" element={<TechnicalProcessEditor />} />

@@ -1,28 +1,70 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent, fetchSections } from '../../../store/index'; 
 import { 
   ArrowLeft, Save, Settings2, Edit3, Columns, Eye,
-  Type, AlignLeft, Monitor, Undo, Upload 
+  Type, AlignLeft, Monitor, Undo, Upload, Loader2
 } from 'lucide-react';
 
 import TechnicalHero from '../../../pages/Technicalservice/TechnicalHero'; 
 
 const TechnicalHeroEditor = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { id } = useParams();
   const fileInputRef = useRef(null);
   
+  const sections = useSelector((state) => state.sections.items);
+  const content = useSelector((state) => state.content.activeSubsection);
+  const status = useSelector((state) => state.content.status);
+
+  const currentSection = sections.find(s => s.slug === 'tech-hero');
+  const subsectionId = id || currentSection?.id || 22;
+
   const [viewMode, setViewMode] = useState('split'); 
   const [isSaving, setIsSaving] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
 
-  const defaultData = {
-    badgeText: 'Precision Squad',
-    titlePart1: 'TECHNICAL',
-    titleAccent: 'EXPERTS.',
-    description: 'From emergency repairs to bespoke installations, we handle the technical heavy lifting for your home.',
+  const [formData, setFormData] = useState({
+    badgeText: '',
+    titlePart1: '',
+    titleAccent: '',
+    description: '',
     bgImage: null 
-  };
+  });
 
-  const [formData, setFormData] = useState(defaultData);
+  useEffect(() => {
+    if (sections.length === 0) {
+      dispatch(fetchSections(4));
+    }
+  }, [dispatch, sections.length]);
+
+  useEffect(() => {
+    if (subsectionId) {
+      dispatch(fetchSingleSubsectionContent(subsectionId));
+    }
+  }, [dispatch, subsectionId]);
+
+  useEffect(() => {
+    if (content && Object.keys(content).length > 0) {
+      setFormData({
+        badgeText: content.badgeText || '',
+        titlePart1: content.titleLine1 || '',
+        titleAccent: content.titleHighlight || '',
+        description: content.description || '',
+        bgImage: content.images?.[0] || null
+      });
+    }
+  }, [content]);
+
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return "";
+    if (imagePath.startsWith('http') || imagePath.startsWith('blob:') || imagePath.startsWith('data:')) {
+      return imagePath;
+    }
+    return `http://localhost:5000${imagePath}`;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -32,29 +74,95 @@ const TechnicalHeroEditor = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (formData.bgImage && formData.bgImage.startsWith('blob:')) {
+        URL.revokeObjectURL(formData.bgImage);
+      }
+      setImageFile(file);
       const imageUrl = URL.createObjectURL(file);
       setFormData(prev => ({ ...prev, bgImage: imageUrl }));
     }
   };
 
   const handleReset = () => {
-    if(window.confirm('Reset to default values?')) {
-      setFormData(defaultData);
+    if(window.confirm('Reset to saved values?')) {
+      setFormData({
+        badgeText: content.badgeText || '',
+        titlePart1: content.titleLine1 || '',
+        titleAccent: content.titleHighlight || '',
+        description: content.description || '',
+        bgImage: content.images?.[0] || null
+      });
+      setImageFile(null);
     }
   };
 
   const handleSave = async () => {
+    if (!subsectionId) {
+      alert("Error: Missing Subsection ID. Please check routing.");
+      return;
+    }
+
     setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 800));
-    console.log('Saved Technical Hero Data:', formData);
-    setIsSaving(false);
-    alert('Technical Hero section updated successfully!');
+    try {
+      let finalImageUrl = formData.bgImage;
+
+      if (imageFile) {
+        const formDataUpload = new FormData();
+        formDataUpload.append('heroImage', imageFile); 
+        
+        const token = localStorage.getItem('tricksyAdminToken');
+
+        const uploadRes = await fetch('http://localhost:5000/api/upload/upload-hero', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}` 
+          },
+          body: formDataUpload,
+        });
+        
+        const uploadData = await uploadRes.json();
+        
+        if (uploadData.success) {
+          finalImageUrl = uploadData.imageUrl; 
+        } else {
+          throw new Error(uploadData.message || "Upload Failed");
+        }
+      }
+
+      const payload = {
+        badgeText: formData.badgeText,
+        titleLine1: formData.titlePart1,
+        titleHighlight: formData.titleAccent,
+        description: formData.description,
+        images: finalImageUrl?.startsWith('blob:') ? content.images : [finalImageUrl].filter(Boolean)
+      };
+
+      await dispatch(updateSingleSubsectionContent({ 
+        subsectionId: subsectionId, 
+        updateData: payload 
+      })).unwrap();
+
+      setImageFile(null);
+      alert("Technical Hero Content Updated Successfully!");
+      
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (status === 'loading' && !content) {
+    return (
+      <div className="h-screen flex items-center justify-center font-bold text-slate-400 uppercase tracking-widest text-xs">
+        <Loader2 className="animate-spin mr-2" size={16} /> Loading Technical Hero...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FDFDFD] font-sans h-screen overflow-hidden">
       
-      {/* NAVBAR */}
       <nav className="sticky top-0 z-[50] bg-white border-b border-slate-200 px-3 lg:px-6 py-3 flex items-center justify-between shadow-sm gap-2 shrink-0">
         <div className="flex items-center gap-1.5 lg:gap-3 flex-shrink-0">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-xl transition-all">
@@ -89,14 +197,13 @@ const TechnicalHeroEditor = () => {
           onClick={handleSave} disabled={isSaving}
           className="bg-slate-900 text-white p-2.5 lg:px-6 lg:py-2.5 rounded-full font-extrabold text-[10px] lg:text-xs flex items-center gap-2 shadow-lg hover:bg-emerald-600 transition-all flex-shrink-0 disabled:opacity-70 disabled:hover:bg-slate-900 active:scale-95"
         >
-          {isSaving ? <span className="animate-pulse">Saving...</span> : <><Save size={16} className="lg:w-[14px] lg:h-[14px]" /> <span className="hidden md:inline">Save Changes</span></>}
+          {isSaving ? <Loader2 size={16} className="animate-spin lg:w-[14px] lg:h-[14px]" /> : <Save size={16} className="lg:w-[14px] lg:h-[14px]" />}
+          {isSaving ? <span className="hidden md:inline">Saving...</span> : <span className="hidden md:inline">Save Changes</span>}
         </button>
       </nav>
 
-      {/* MAIN WORKSPACE */}
       <div className="flex-1 flex overflow-hidden relative">
         
-        {/* LEFT SIDE: FORM */}
         {(viewMode === 'edit' || viewMode === 'split') && (
           <div className={`${viewMode === 'edit' ? 'w-full max-w-3xl mx-auto border-x' : 'w-full lg:w-[420px] border-r'} bg-white border-slate-200 flex flex-col h-full relative z-20 shadow-2xl shadow-slate-200/50 transition-all duration-300 shrink-0`}>
             
@@ -147,7 +254,6 @@ const TechnicalHeroEditor = () => {
                   ></textarea>
                 </div>
 
-                {/* --- IMAGE UPLOAD SECTION --- */}
                 <div className="pt-2">
                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
                     <Upload size={12} /> Background Image (Optional)
@@ -156,7 +262,7 @@ const TechnicalHeroEditor = () => {
                   <div onClick={() => fileInputRef.current.click()} className="w-full h-32 border-2 border-dashed border-slate-200 bg-slate-50 rounded-2xl flex flex-col items-center justify-center group hover:bg-emerald-50 hover:border-emerald-200 transition-all cursor-pointer overflow-hidden relative">
                     {formData.bgImage ? (
                       <>
-                        <img src={formData.bgImage} className="w-full h-full object-cover opacity-60" alt="bg" />
+                        <img src={getImageUrl(formData.bgImage)} className="w-full h-full object-cover opacity-60" alt="bg" />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-xs opacity-0 group-hover:opacity-100 transition-opacity">Change Image</div>
                       </>
                     ) : (
@@ -179,21 +285,17 @@ const TechnicalHeroEditor = () => {
           </div>
         )}
 
-        {/* RIGHT SIDE: PREVIEW */}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'preview' ? 'w-full' : 'hidden lg:flex flex-1'} flex-col h-full bg-slate-100/50 relative transition-all duration-300`}>
             
-            {/* Fake Browser Top Bar */}
             <div className="h-12 flex items-center justify-center gap-2 bg-white border-b border-slate-200 shadow-sm shrink-0">
               <Monitor size={14} className="text-slate-400" />
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Live Output</span>
             </div>
 
-            {/* Scrollable Preview Area */}
             <div className="flex-1 overflow-y-auto w-full flex items-start justify-center p-4 lg:p-8 custom-scrollbar">
               <div className="w-full max-w-[1400px] rounded-[2rem] overflow-hidden shadow-2xl shadow-slate-300/50 border-4 border-white/50 bg-zinc-950 origin-top animate-in zoom-in-95 duration-300 relative group">
                 
-                {/* --- FLOATING INTERACTIVE BADGES --- */}
                 <div className="absolute top-6 right-6 z-[100] flex gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-[-10px] group-hover:translate-y-0">
                   <button 
                     onClick={() => setViewMode('edit')} 
@@ -213,8 +315,7 @@ const TechnicalHeroEditor = () => {
                   )}
                 </div>
 
-                {/* --- LIVE RENDER --- */}
-                <TechnicalHero {...formData} />
+                <TechnicalHero {...formData} bgImage={getImageUrl(formData.bgImage)} />
 
               </div>
             </div>

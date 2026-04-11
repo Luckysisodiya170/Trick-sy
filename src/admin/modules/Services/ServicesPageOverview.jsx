@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchSections, updateSubsection } from '../../../store/index';
 import PageManager from '../../components/PageManager';
 import { 
   Sparkles, Wind, Building2, Armchair, Paintbrush, 
@@ -15,25 +17,57 @@ const iconLibrary = {
   file: FileText, play: PlayCircle, code: Code
 };
 
-const defaultServices = [
-  { id: 'srv-deep-cleaning', name: 'Deep Cleaning', status: 'Live', iconKey: 'sparkles', path: '/admin/pages/services/deep-cleaning', color: 'text-emerald-500', bg: 'bg-emerald-50', theme: 'emerald' },
-  { id: 'srv-ac-duct', name: 'AC Duct Cleaning', status: 'Live', iconKey: 'wind', path: '/admin/pages/services/ac-duct-cleaning', color: 'text-blue-500', bg: 'bg-blue-50', theme: 'blue' },
-  { id: 'srv-commercial', name: 'Commercial Cleaning', status: 'Live', iconKey: 'building', path: '/admin/pages/services/commercial-cleaning', color: 'text-amber-500', bg: 'bg-amber-50', theme: 'amber' },
-  { id: 'srv-upholstery', name: 'Upholstery Cleaning', status: 'Live', iconKey: 'armchair', path: '/admin/pages/services/upholstery-cleaning', color: 'text-rose-500', bg: 'bg-rose-50', theme: 'rose' },
-  { id: 'srv-painting', name: 'Painting Services', status: 'Live', iconKey: 'brush', path: '/admin/pages/services/painting-services', color: 'text-violet-500', bg: 'bg-violet-50', theme: 'violet' },
-  { id: 'srv-handyman', name: 'Handyman Services', status: 'Live', iconKey: 'wrench', path: '/admin/pages/services/handyman-services', color: 'text-orange-500', bg: 'bg-orange-50', theme: 'amber' }, 
-];
-
 const ServicesPageOverview = () => {
+  const dispatch = useDispatch();
+  
+  const sections = useSelector((state) => state.sections.items);
+  const status = useSelector((state) => state.sections.status);
+
+  useEffect(() => {
+    dispatch(fetchSections(3));
+  }, [dispatch]);
+
+  const handleUpdateModule = (dbId, currentSlug, updatedFields) => {
+    dispatch(updateSubsection({ dbId, updatedFields }));
+  };
+
+  const formattedSections = sections.map((item) => ({
+    id: item.slug,
+    dbId: item.id,
+    name: item.subsectionName,
+    status: item.isActive ? 'Live' : 'Draft',
+    iconKey: item.icon,
+    isSystem: item.isSystem,
+    path: item.isSystem 
+      ? `/admin/pages/services/${item.slug}` 
+      : `/admin/pages/services/${item.slug}/${item.id}`,
+    theme: item.theme,
+    color: `text-${item.theme}-500`,
+    bg: `bg-${item.theme}-50`
+  }));
+
+  if (status === 'loading' && sections.length === 0) {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+        <span className="ml-3 text-slate-400 font-medium">Loading Services...</span>
+      </div>
+    );
+  }
+
   return (
-    <PageManager 
-      title="SERVICE MANAGER"
-      storageKey="tricksy_services_manager"
-      defaultSections={defaultServices}
-      iconLibrary={iconLibrary}
-      baseRoute="/admin/pages/services"
-      itemLabel="Service"
-    />
+    <div className="relative">
+      <PageManager 
+        sectionId={3}
+        title="SERVICE MANAGER"
+        storageKey="tricksy_services_manager"
+        defaultSections={formattedSections}
+        iconLibrary={iconLibrary}
+        baseRoute="/admin/pages/services"
+        itemLabel="Service"
+        onUpdate={handleUpdateModule}
+      />
+    </div>
   );
 };
 

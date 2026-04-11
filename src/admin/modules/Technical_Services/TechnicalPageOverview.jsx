@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchSections, updateSubsection } from '../../../store/index';
 import PageManager from '../../components/PageManager';
 import { 
   LayoutTemplate, PenTool, FileText, Activity, Layers, ListChecks,
@@ -14,26 +16,57 @@ const iconLibrary = {
   scissors: Scissors, ruler: Ruler
 };
 
-const defaultSections = [
-  { id: 'tech-hero', name: 'Technical Hero', status: 'Live', iconKey: 'hero', path: '/admin/pages/technical/hero', color: 'text-blue-500', bg: 'bg-blue-50', theme: 'blue' },
-  { id: 'tech-domains', name: 'Expertise Domains', status: 'Live', iconKey: 'cards', path: '/admin/pages/technical/domains', color: 'text-indigo-500', bg: 'bg-indigo-50', theme: 'indigo' },
-  { id: 'tech-specs', name: 'Technical Specs', status: 'Live', iconKey: 'specs', path: '/admin/pages/technical/specs', color: 'text-emerald-500', bg: 'bg-emerald-50', theme: 'emerald' },
-  { id: 'tech-process', name: 'Service Process', status: 'Live', iconKey: 'process', path: '/admin/pages/technical/process', color: 'text-amber-500', bg: 'bg-amber-50', theme: 'amber' },
-  { id: 'tech-pricing', name: 'Pricing Packages', status: 'Live', iconKey: 'pricing', path: '/admin/pages/technical/pricing', color: 'text-rose-500', bg: 'bg-rose-50', theme: 'rose' },
-  { id: 'tech-faq', name: 'Tech FAQs', status: 'Live', iconKey: 'faq', path: '/admin/pages/technical/faq', color: 'text-violet-500', bg: 'bg-violet-50', theme: 'violet' },
-  { id: 'tech-footer', name: 'Trust Footer', status: 'Live', iconKey: 'footer', path: '/admin/pages/technical/footer', color: 'text-sky-500', bg: 'bg-sky-50', theme: 'sky' },
-];
-
 const TechnicalPageOverview = () => {
+  const dispatch = useDispatch();
+  
+  const sections = useSelector((state) => state.sections.items);
+  const status = useSelector((state) => state.sections.status);
+
+  useEffect(() => {
+    dispatch(fetchSections(4));
+  }, [dispatch]);
+
+  const handleUpdateModule = (dbId, currentSlug, updatedFields) => {
+    dispatch(updateSubsection({ dbId, updatedFields }));
+  };
+
+  const formattedSections = sections.map((item) => ({
+    id: item.slug,
+    dbId: item.id,
+    name: item.subsectionName,
+    status: item.isActive ? 'Live' : 'Draft',
+    iconKey: item.icon,
+    isSystem: item.isSystem,
+    path: item.isSystem 
+      ? `/admin/pages/technical/${item.slug}` 
+      : `/admin/pages/technical/${item.slug}/${item.id}`,
+    theme: item.theme,
+    color: `text-${item.theme}-500`,
+    bg: `bg-${item.theme}-50`
+  }));
+
+  if (status === 'loading' && sections.length === 0) {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+        <span className="ml-3 text-slate-400 font-medium">Loading Technical Modules...</span>
+      </div>
+    );
+  }
+
   return (
-    <PageManager 
-      title="TECHNICAL SERVICES"
-      storageKey="tricksy_technical_modules"
-      defaultSections={defaultSections}
-      iconLibrary={iconLibrary}
-      baseRoute="/admin/pages/technical"
-      itemLabel="Block"
-    />
+    <div className="relative">
+      <PageManager 
+        sectionId={4}
+        title="TECHNICAL SERVICES"
+        storageKey="tricksy_technical_modules"
+        defaultSections={formattedSections} 
+        iconLibrary={iconLibrary}
+        baseRoute="/admin/pages/technical"
+        itemLabel="Block"
+        onUpdate={handleUpdateModule} 
+      />
+    </div>
   );
 };
 

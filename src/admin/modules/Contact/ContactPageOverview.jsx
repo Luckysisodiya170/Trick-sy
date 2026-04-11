@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchSections, updateSubsection } from '../../../store/index';
 import PageManager from '../../components/PageManager';
 import { 
   LayoutTemplate, Phone, MessageSquare, MapPin, Box, 
@@ -11,23 +13,57 @@ const iconLibrary = {
   whyus: ShieldCheck, box: Box, globe: Globe, image: ImageIcon
 };
 
-const defaultSections = [
-  { id: 'contact-hero', name: 'Contact Hero', status: 'Live', iconKey: 'hero', path: '/admin/pages/contact/hero', color: 'text-blue-500', bg: 'bg-blue-50', theme: 'blue' },
-  { id: 'contact-info', name: 'Contact Information', status: 'Live', iconKey: 'info', path: '/admin/pages/contact/info', color: 'text-emerald-500', bg: 'bg-emerald-50', theme: 'emerald' },
-  { id: 'contact-form', name: 'Contact Form', status: 'Live', iconKey: 'form', path: '/admin/pages/contact/form', color: 'text-indigo-500', bg: 'bg-indigo-50', theme: 'indigo' },
-  { id: 'contact-map', name: 'Location Map', status: 'Live', iconKey: 'map', path: '/admin/pages/contact/map', color: 'text-rose-500', bg: 'bg-rose-50', theme: 'rose' },
-];
-
 const ContactPageOverview = () => {
+  const dispatch = useDispatch();
+  
+  const sections = useSelector((state) => state.sections.items);
+  const status = useSelector((state) => state.sections.status);
+
+  useEffect(() => {
+    dispatch(fetchSections(6));
+  }, [dispatch]);
+
+  const handleUpdateModule = (dbId, currentSlug, updatedFields) => {
+    dispatch(updateSubsection({ dbId, updatedFields }));
+  };
+
+  const formattedSections = sections.map((item) => ({
+    id: item.slug,
+    dbId: item.id,
+    name: item.subsectionName,
+    status: item.isActive ? 'Live' : 'Draft',
+    iconKey: item.icon,
+    isSystem: item.isSystem,
+    path: item.isSystem 
+      ? `/admin/pages/contact/${item.slug}` 
+      : `/admin/pages/contact/${item.slug}/${item.id}`,
+    theme: item.theme,
+    color: `text-${item.theme}-500`,
+    bg: `bg-${item.theme}-50`
+  }));
+
+  if (status === 'loading' && sections.length === 0) {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+        <span className="ml-3 text-slate-400 font-medium">Loading Contact Modules...</span>
+      </div>
+    );
+  }
+
   return (
-    <PageManager 
-      title="CONTACT SECTIONS"
-      storageKey="tricksy_contact_modules"
-      defaultSections={defaultSections}
-      iconLibrary={iconLibrary}
-      baseRoute="/admin/pages/contact"
-      itemLabel="Block"
-    />
+    <div className="relative">
+      <PageManager 
+        sectionId={6}
+        title="CONTACT SECTIONS"
+        storageKey="tricksy_contact_modules"
+        defaultSections={formattedSections}
+        iconLibrary={iconLibrary}
+        baseRoute="/admin/pages/contact"
+        itemLabel="Block"
+        onUpdate={handleUpdateModule}
+      />
+    </div>
   );
 };
 
