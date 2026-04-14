@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent, fetchSections } from '../../../store/index'; 
 import { 
   ArrowLeft, Save, Settings2, Edit3, Columns, Eye,
-  Monitor, LayoutTemplate, FileText, Plus, Search,
-  Trash2, Globe, Lock, Info, Type
+  Monitor, LayoutTemplate, FileText, Search,
+  Trash2, Globe, Lock, Type, Loader2
 } from 'lucide-react';
 
 import BlogHero from '../../../pages/Blog/BlogHero'; 
@@ -11,21 +13,56 @@ import BlogCard from '../../../pages/Blog/BlogCard';
 
 const BlogManagerEditor = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { id } = useParams();
+
+  // Redux Selectors
+  const sections = useSelector((state) => state.sections.items);
+  const content = useSelector((state) => state.content.activeSubsection);
+  const status = useSelector((state) => state.content.status);
+
+  const currentSection = sections.find(s => s.slug === 'blog-hero');
+  const subsectionId = id || currentSection?.id; 
+
   const [isSaving, setIsSaving] = useState(false);
   const [viewMode, setViewMode] = useState('split');
   const [activeTab, setActiveTab] = useState('posts'); 
 
-  const [posts, setPosts] = useState([
-    { id: 1, title: 'The Future of Premium Maintenance Care', status: 'Published', date: 'Oct 12, 2026', views: '1.2k', image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1000', category: 'News' },
-    { id: 2, title: '5 Signs Your Space Needs Deep Sanitization', status: 'Published', date: 'Oct 05, 2026', views: '840', image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=1000', category: 'Tips' },
-  ]);
+  const [posts, setPosts] = useState([]);
 
   const [heroData, setHeroData] = useState({
-    badgeText: 'Latest Updates',
-    mainTitle: 'Insights &',
-    highlightTitle: 'Expertise.',
-    subtitle: 'Stay updated with the latest trends, maintenance tips, and company news from the TRICKSY team.'
+    badgeText: '',
+    mainTitle: '',
+    highlightTitle: '',
+    subtitle: ''
   });
+
+  useEffect(() => {
+    if (sections.length === 0) {
+      dispatch(fetchSections(5));
+    }
+  }, [dispatch, sections.length]);
+
+  useEffect(() => {
+    if (subsectionId) {
+      dispatch(fetchSingleSubsectionContent(subsectionId));
+    }
+  }, [dispatch, subsectionId]);
+
+  useEffect(() => {
+    if (content && Object.keys(content).length > 0) {
+      setHeroData({
+        badgeText: content.badgeText || '',
+        mainTitle: content.titleLine1 || '',
+        highlightTitle: content.titleHighlight || '',
+        subtitle: content.description || ''
+      });
+      
+      if (content.posts) {
+        setPosts(content.posts);
+      }
+    }
+  }, [content]);
 
   const handleHeroChange = (e) => {
     const { name, value } = e.target;
@@ -33,22 +70,53 @@ const BlogManagerEditor = () => {
   };
 
   const handleSave = async () => {
-    setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 800));
-    setIsSaving(false);
-    alert('Blog settings updated successfully!');
-  };
+    if (!subsectionId) {
+      alert("Error: Missing Subsection ID. Please check routing.");
+      return;
+    }
 
-  const handleDeletePost = (id) => {
-    if(window.confirm('Move this post to trash?')) {
-      setPosts(posts.filter(p => p.id !== id));
+    setIsSaving(true);
+    try {
+      const payload = {
+        badgeText: heroData.badgeText,
+        titleLine1: heroData.mainTitle,
+        titleHighlight: heroData.highlightTitle,
+        description: heroData.subtitle,
+        posts: posts 
+      };
+
+      await dispatch(updateSingleSubsectionContent({ 
+        subsectionId: subsectionId, 
+        updateData: payload 
+      })).unwrap();
+
+      alert("Blog Manager settings updated successfully!");
+    } catch (error) {
+      console.error(error);
+      alert("An error occurred while saving.");
+    } finally {
+      setIsSaving(false);
     }
   };
+
+  const handleDeletePost = (postId) => {
+    if(window.confirm('Move this post to trash?')) {
+      setPosts(posts.filter(p => p.id !== postId));
+    }
+  };
+
+  if (status === 'loading' && !content) {
+    return (
+      <div className="h-screen flex items-center justify-center font-bold text-slate-400 uppercase tracking-widest text-xs">
+        <Loader2 className="animate-spin mr-2" size={16} /> Loading Blog Manager...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FDFDFD] font-sans h-screen overflow-hidden">
       
-   {/* navbar */}
+      {/* NAVBAR */}
       <nav className="sticky top-0 z-[50] bg-white border-b border-slate-200 px-3 lg:px-6 py-3 flex items-center justify-between shadow-sm gap-2 shrink-0">
         <div className="flex items-center gap-1.5 lg:gap-3 flex-shrink-0">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-xl transition-all">
@@ -78,14 +146,19 @@ const BlogManagerEditor = () => {
           ))}
         </div>
 
-        <button onClick={handleSave} disabled={isSaving} className="bg-slate-900 text-white p-2.5 lg:px-6 lg:py-2.5 rounded-full font-extrabold text-[10px] lg:text-xs flex items-center gap-2 shadow-lg hover:bg-indigo-600 transition-all">
-          {isSaving ? <span className="animate-pulse">Saving...</span> : <><Save size={16} /> <span className="hidden md:inline">Save Changes</span></>}
+        <button 
+          onClick={handleSave} 
+          disabled={isSaving} 
+          className="bg-slate-900 text-white p-2.5 lg:px-6 lg:py-2.5 rounded-full font-extrabold text-[10px] lg:text-xs flex items-center gap-2 shadow-lg hover:bg-indigo-600 transition-all flex-shrink-0 disabled:opacity-70 disabled:hover:bg-slate-900 active:scale-95"
+        >
+          {isSaving ? <Loader2 size={16} className="animate-spin lg:w-[14px] lg:h-[14px]" /> : <Save size={16} className="lg:w-[14px] lg:h-[14px]" />}
+          {isSaving ? <span className="hidden md:inline">Saving...</span> : <span className="hidden md:inline">Save Changes</span>}
         </button>
       </nav>
 
       <div className="flex-1 flex overflow-hidden relative">
         
-        {/* LEFT */}
+        {/* LEFT PANEL */}
         {(viewMode === 'edit' || viewMode === 'split') && (
           <div className={`${viewMode === 'edit' ? 'w-full max-w-4xl mx-auto border-x' : 'w-full lg:w-[480px] border-r'} bg-white border-slate-200 flex flex-col h-full relative z-20 shadow-2xl shadow-slate-200/50 transition-all duration-300`}>
             
@@ -128,6 +201,12 @@ const BlogManagerEditor = () => {
                         <button onClick={() => handleDeletePost(post.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={14} /></button>
                       </div>
                     ))}
+                    
+                    {posts.length === 0 && (
+                       <div className="text-center p-8 border-2 border-dashed border-slate-200 rounded-2xl">
+                         <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">No Articles Found</p>
+                       </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -148,6 +227,10 @@ const BlogManagerEditor = () => {
                       <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2"><Type size={12} /> Highlighted Word</label>
                       <input type="text" name="highlightTitle" value={heroData.highlightTitle} onChange={handleHeroChange} className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-800 outline-none focus:ring-2 ring-emerald-100 focus:bg-white transition-all shadow-inner" />
                     </div>
+                    <div>
+                      <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2"><Type size={12} /> Subtitle Description</label>
+                      <textarea name="subtitle" value={heroData.subtitle} onChange={handleHeroChange} rows="3" className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-800 outline-none focus:ring-2 ring-indigo-100 focus:bg-white transition-all shadow-inner resize-none"></textarea>
+                    </div>
                   </div>
                 </div>
               )}
@@ -155,7 +238,7 @@ const BlogManagerEditor = () => {
           </div>
         )}
 
-        {/* RIGHT PANEL*/}
+        {/* RIGHT PANEL: PREVIEW */}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'preview' ? 'w-full' : 'hidden lg:flex flex-1'} flex-col h-full bg-slate-100/50 relative transition-all duration-300`}>
             

@@ -205,82 +205,85 @@ const TechnicalHeroEditor = () => {
       <div className="flex-1 flex overflow-hidden relative">
         
         {(viewMode === 'edit' || viewMode === 'split') && (
-          <div className={`${viewMode === 'edit' ? 'w-full max-w-3xl mx-auto border-x' : 'w-full lg:w-[420px] border-r'} bg-white border-slate-200 flex flex-col h-full relative z-20 shadow-2xl shadow-slate-200/50 transition-all duration-300 shrink-0`}>
+          <div className={`${viewMode === 'edit' ? 'flex-1 bg-[#F1F3F5] flex items-center justify-center p-6 lg:p-10' : 'w-full lg:w-[420px] border-r bg-white'} flex flex-col h-full shrink-0 z-20 transition-all duration-300`}>
             
-            <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-8 scrollbar-hide">
-              <div>
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-1">Technical Hero</h2>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Manage banner details</p>
-              </div>
-
-              <div className="space-y-6">
+            <div className={`${viewMode === 'edit' ? 'w-full max-w-3xl bg-white rounded-[2.5rem] shadow-2xl flex flex-col h-full overflow-hidden border border-slate-200' : 'w-full h-full flex flex-col shadow-inner'}`}>
+              <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-8 custom-scrollbar">
+                
                 <div>
-                  <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
-                    <Type size={12} /> Badge Text
-                  </label>
-                  <input 
-                    type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} 
-                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-emerald-100 focus:bg-white transition-all shadow-inner" 
-                  />
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-1">Technical Hero</h2>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Manage banner details</p>
                 </div>
 
-                <div>
-                  <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
-                    <Type size={12} /> Main Title (White Text)
-                  </label>
-                  <input 
-                    type="text" name="titlePart1" value={formData.titlePart1} onChange={handleChange} 
-                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-emerald-100 focus:bg-white transition-all shadow-inner uppercase" 
-                  />
-                </div>
-
-                <div>
-                  <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
-                    <Type size={12} /> Highlighted Title (Emerald)
-                  </label>
-                  <input 
-                    type="text" name="titleAccent" value={formData.titleAccent} onChange={handleChange} 
-                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-emerald-100 focus:bg-white transition-all shadow-inner uppercase" 
-                  />
-                </div>
-
-                <div>
-                  <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
-                    <AlignLeft size={12} /> Description Paragraph
-                  </label>
-                  <textarea 
-                    name="description" value={formData.description} onChange={handleChange} rows="4" 
-                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-emerald-100 focus:bg-white transition-all shadow-inner resize-none leading-relaxed"
-                  ></textarea>
-                </div>
-
-                <div className="pt-2">
-                   <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
-                    <Upload size={12} /> Background Image (Optional)
-                  </label>
-                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
-                  <div onClick={() => fileInputRef.current.click()} className="w-full h-32 border-2 border-dashed border-slate-200 bg-slate-50 rounded-2xl flex flex-col items-center justify-center group hover:bg-emerald-50 hover:border-emerald-200 transition-all cursor-pointer overflow-hidden relative">
-                    {formData.bgImage ? (
-                      <>
-                        <img src={getImageUrl(formData.bgImage)} className="w-full h-full object-cover opacity-60" alt="bg" />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-xs opacity-0 group-hover:opacity-100 transition-opacity">Change Image</div>
-                      </>
-                    ) : (
-                      <div className="text-center">
-                        <Upload className="mx-auto text-slate-300 mb-2 group-hover:text-emerald-400 transition-colors" />
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-emerald-600 transition-colors">Upload Custom Cover</p>
-                      </div>
-                    )}
+                <div className="space-y-6">
+                  <div>
+                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
+                      <Type size={12} /> Badge Text
+                    </label>
+                    <input 
+                      type="text" name="badgeText" value={formData.badgeText} onChange={handleChange} 
+                      className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-emerald-100 focus:bg-white transition-all shadow-inner" 
+                    />
                   </div>
+
+                  <div>
+                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
+                      <Type size={12} /> Main Title (White Text)
+                    </label>
+                    <input 
+                      type="text" name="titlePart1" value={formData.titlePart1} onChange={handleChange} 
+                      className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-emerald-100 focus:bg-white transition-all shadow-inner uppercase" 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
+                      <Type size={12} /> Highlighted Title (Emerald)
+                    </label>
+                    <input 
+                      type="text" name="titleAccent" value={formData.titleAccent} onChange={handleChange} 
+                      className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-emerald-100 focus:bg-white transition-all shadow-inner uppercase" 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
+                      <AlignLeft size={12} /> Description Paragraph
+                    </label>
+                    <textarea 
+                      name="description" value={formData.description} onChange={handleChange} rows="4" 
+                      className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-emerald-100 focus:bg-white transition-all shadow-inner resize-none leading-relaxed"
+                    ></textarea>
+                  </div>
+
+                  <div className="pt-2">
+                     <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2">
+                      <Upload size={12} /> Background Image (Optional)
+                    </label>
+                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
+                    <div onClick={() => fileInputRef.current.click()} className="w-full h-32 border-2 border-dashed border-slate-200 bg-slate-50 rounded-2xl flex flex-col items-center justify-center group hover:bg-emerald-50 hover:border-emerald-200 transition-all cursor-pointer overflow-hidden relative">
+                      {formData.bgImage ? (
+                        <>
+                          <img src={getImageUrl(formData.bgImage)} className="w-full h-full object-cover opacity-60" alt="bg" />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-xs opacity-0 group-hover:opacity-100 transition-opacity">Change Image</div>
+                        </>
+                      ) : (
+                        <div className="text-center">
+                          <Upload className="mx-auto text-slate-300 mb-2 group-hover:text-emerald-400 transition-colors" />
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-emerald-600 transition-colors">Upload Custom Cover</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                 </div>
-
               </div>
-            </div>
 
-            <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end">
-              <button onClick={handleReset} className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all">
-                <Undo size={14} /> Reset Form
-              </button>
+              <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end shrink-0">
+                <button onClick={handleReset} className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all">
+                  <Undo size={14} /> Reset Form
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -288,34 +291,42 @@ const TechnicalHeroEditor = () => {
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'preview' ? 'w-full' : 'hidden lg:flex flex-1'} flex-col h-full bg-slate-100/50 relative transition-all duration-300`}>
             
-            <div className="h-12 flex items-center justify-center gap-2 bg-white border-b border-slate-200 shadow-sm shrink-0">
+            <div className="h-12 flex items-center justify-center gap-2 bg-white border-b border-slate-200 shadow-sm shrink-0 z-10">
               <Monitor size={14} className="text-slate-400" />
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Live Output</span>
             </div>
 
             <div className="flex-1 overflow-y-auto w-full flex items-start justify-center p-4 lg:p-8 custom-scrollbar">
-              <div className="w-full max-w-[1400px] rounded-[2rem] overflow-hidden shadow-2xl shadow-slate-300/50 border-4 border-white/50 bg-zinc-950 origin-top animate-in zoom-in-95 duration-300 relative group">
+              <div className={`w-full max-w-[1400px] bg-slate-900 rounded-[2.5rem] border-[10px] border-slate-900 shadow-2xl overflow-hidden relative transition-all duration-500 transform ${viewMode === 'preview' ? 'scale-100' : 'scale-[0.85] origin-top'}`}>
                 
-                <div className="absolute top-6 right-6 z-[100] flex gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-[-10px] group-hover:translate-y-0">
-                  <button 
-                    onClick={() => setViewMode('edit')} 
-                    className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full shadow-lg transition-all"
-                  >
-                    <Edit3 size={14} />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Edit Content</span>
-                  </button>
-                  {viewMode !== 'split' && (
-                    <button 
-                      onClick={() => setViewMode('split')} 
-                      className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white px-4 py-2 rounded-full shadow-lg shadow-emerald-500/30 transition-all"
-                    >
-                      <Columns size={14} />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Split View</span>
-                    </button>
-                  )}
+                {/* BLACK BROWSER BAR */}
+                <div className="h-10 bg-slate-800 flex items-center px-6 gap-2">
+                  <div className="flex gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-red-400"></div><div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div><div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div></div>
+                  <div className="mx-auto w-64 h-5 bg-slate-700 rounded-md text-[9px] text-slate-500 flex items-center justify-center font-bold uppercase tracking-widest">tricksy-preview.io</div>
                 </div>
 
-                <TechnicalHero {...formData} bgImage={getImageUrl(formData.bgImage)} />
+                <div className="relative overflow-y-auto max-h-[80vh] bg-white custom-scrollbar">
+                  <div className="absolute top-6 right-6 z-[100] flex gap-3 opacity-0 hover:opacity-100 transition-all duration-300">
+                    <button 
+                      onClick={() => setViewMode('edit')} 
+                      className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full shadow-lg transition-all"
+                    >
+                      <Edit3 size={14} />
+                      <span className="text-[10px] font-black uppercase tracking-widest">Edit Content</span>
+                    </button>
+                    {viewMode !== 'split' && (
+                      <button 
+                        onClick={() => setViewMode('split')} 
+                        className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white px-4 py-2 rounded-full shadow-lg shadow-emerald-500/30 transition-all"
+                      >
+                        <Columns size={14} />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Split View</span>
+                      </button>
+                    )}
+                  </div>
+
+                  <TechnicalHero {...formData} bgImage={getImageUrl(formData.bgImage)} />
+                </div>
 
               </div>
             </div>

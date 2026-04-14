@@ -1,10 +1,12 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent, fetchSections } from '../../../store/index';
 import { 
   ArrowLeft, Save, Settings2, Edit3, Columns, Eye, Plus, Trash2, 
   Type, ChevronRight, Upload, AlignLeft, Wand2, Wrench, Zap, 
   Droplets, LayoutGrid, Scissors, Ruler, Star, Hammer, Lightbulb, 
-  ShieldCheck, PenTool, Smartphone, Monitor
+  ShieldCheck, PenTool, Smartphone, Monitor, Loader2
 } from 'lucide-react';
 
 const availableIcons = [
@@ -22,43 +24,83 @@ const availableIcons = [
 
 const MasterTechnicalEditor = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { id } = useParams();
   const fileInputRef = useRef(null);
+  
+  const sections = useSelector((state) => state.sections.items);
+  const content = useSelector((state) => state.content.activeSubsection);
+  const status = useSelector((state) => state.content.status);
+
+  const currentSection = sections.find(s => s.slug === 'tech-domains');
+  const subsectionId = id || currentSection?.id || 23;
+
   const [activeTab, setActiveTab] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [viewMode, setViewMode] = useState('split'); 
+  const [newImageFiles, setNewImageFiles] = useState({}); 
 
-  const [domains, setDomains] = useState([
-    { 
-      title: "Handyman Services", 
-      tag: "FURNITURE", 
-      desc: "Furniture assembly, TV mounting, drilling, and general home repairs.",
-      image: null,
-      iconId: 'wrench'
-    },
-    { 
-      title: "Electrical Services", 
-      tag: "WIRING", 
-      desc: "Complete electrical troubleshooting and panel upgrades.",
-      image: null,
-      iconId: 'zap'
+  const [domains, setDomains] = useState([]);
+
+  useEffect(() => {
+    if (sections.length === 0) {
+      dispatch(fetchSections(4));
     }
-  ]);
+  }, [dispatch, sections.length]);
+
+  useEffect(() => {
+    if (subsectionId) {
+      dispatch(fetchSingleSubsectionContent(subsectionId));
+    }
+  }, [dispatch, subsectionId]);
+
+  useEffect(() => {
+    if (content && content.listItems && content.listItems.length > 0) {
+      const formattedDomains = content.listItems.map(item => ({
+        id: item.id,
+        title: item.itemTitle || "New Service",
+        tag: item.itemSubtitle || "CATEGORY",
+        desc: item.itemDescription || "",
+        image: item.itemImage || null,
+        iconId: item.itemIcon || 'grid'
+      }));
+      setDomains(formattedDomains);
+    } else if (content && (!content.listItems || content.listItems.length === 0) && status === 'succeeded') {
+      setDomains([
+        { title: "Handyman Services", tag: "FURNITURE", desc: "Furniture assembly, TV mounting, drilling.", image: null, iconId: 'wrench' }
+      ]);
+    }
+  }, [content, status]);
+
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return "";
+    if (imagePath.startsWith('http') || imagePath.startsWith('blob:') || imagePath.startsWith('data:')) {
+      return imagePath;
+    }
+    return `http://localhost:5000${imagePath}`;
+  };
 
   const handleUpdate = (field, value) => {
     const newDomains = [...domains];
-    newDomains[activeTab][field] = value;
+    newDomains[activeTab] = { ...newDomains[activeTab], [field]: value };
     setDomains(newDomains);
   };
 
   const handleImage = (e) => {
     const file = e.target.files[0];
     if (file) {
+      const currentDomain = domains[activeTab];
+      if (currentDomain.image && currentDomain.image.startsWith('blob:')) {
+        URL.revokeObjectURL(currentDomain.image);
+      }
+      
+      setNewImageFiles(prev => ({ ...prev, [activeTab]: file }));
       handleUpdate('image', URL.createObjectURL(file));
     }
   };
 
   const addSection = () => {
-    const newSection = { title: "New Service", tag: "CATEGORY", desc: "", image: null, iconId: 'grid' };
+    const newSection = { title: "New Service", tag: "CATEGORY", desc: "", image: null, iconId: 'grid', isNew: true };
     setDomains([...domains, newSection]);
     setActiveTab(domains.length);
   };
@@ -68,16 +110,98 @@ const MasterTechnicalEditor = () => {
     if (domains.length > 1) {
       const filtered = domains.filter((_, i) => i !== index);
       setDomains(filtered);
+      
+      const newFiles = { ...newImageFiles };
+      delete newFiles[index];
+      const reindexedFiles = {};
+      Object.keys(newFiles).forEach(key => {
+        const numKey = parseInt(key);
+        if (numKey > index) {
+          reindexedFiles[numKey - 1] = newFiles[key];
+        } else {
+          reindexedFiles[numKey] = newFiles[key];
+        }
+      });
+      setNewImageFiles(reindexedFiles);
+
       setActiveTab(0);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!subsectionId) {
+      alert("Error: Missing Subsection ID. Please check routing.");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const token = localStorage.getItem('tricksyAdminToken');
+      const processedDomains = [...domains];
+
+      for (const [indexStr, file] of Object.entries(newImageFiles)) {
+        const index = parseInt(indexStr);
+        const formDataUpload = new FormData();
+        formDataUpload.append('heroImage', file); 
+
+        const uploadRes = await fetch('http://localhost:5000/api/upload/upload-hero', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formDataUpload,
+        });
+        
+        const uploadData = await uploadRes.json();
+        
+        if (uploadData.success) {
+          processedDomains[index].image = uploadData.imageUrl;
+        } else {
+          throw new Error(`Upload failed for item ${index + 1}`);
+        }
+      }
+
+      const listItemsPayload = processedDomains.map((domain, index) => ({
+        id: domain.isNew ? undefined : domain.id,
+        itemTitle: domain.title,
+        itemSubtitle: domain.tag,
+        itemDescription: domain.desc,
+        itemIcon: domain.iconId,
+        itemImage: domain.image,
+        itemOrder: index + 1
+      }));
+
+      const payload = {
+        listItems: listItemsPayload
+      };
+
+      await dispatch(updateSingleSubsectionContent({ 
+        subsectionId: subsectionId, 
+        updateData: payload 
+      })).unwrap();
+
+      setNewImageFiles({});
+      alert("Expertise Domains Updated Successfully!");
+      
+    } catch (error) {
+      console.error(error);
+      alert("Failed to save changes.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const getIcon = (id) => availableIcons.find(icon => icon.id === id)?.component || <LayoutGrid size={18} />;
 
+  if (status === 'loading' && domains.length === 0) {
+    return (
+      <div className="h-screen flex items-center justify-center font-bold text-slate-400 uppercase tracking-widest text-xs bg-[#F8FAFC]">
+        <Loader2 className="animate-spin mr-2" size={16} /> Loading Domains...
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col h-screen overflow-hidden font-sans text-slate-900">
       
-      {/* NAVBAR */}
       <nav className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0 z-50">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-xl transition-all">
@@ -94,7 +218,7 @@ const MasterTechnicalEditor = () => {
               key={mode} 
               onClick={() => setViewMode(mode)} 
               className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all capitalize ${
-                viewMode === mode ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500'
+                viewMode === mode ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               {mode}
@@ -102,50 +226,24 @@ const MasterTechnicalEditor = () => {
           ))}
         </div>
 
-        <button onClick={() => { setIsSaving(true); setTimeout(() => setIsSaving(false), 1000); }} className="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-indigo-600 transition-all">
+        <button 
+          onClick={handleSave} 
+          disabled={isSaving} 
+          className="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-indigo-600 transition-all flex items-center gap-2 disabled:opacity-50"
+        >
+          {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
           {isSaving ? 'Saving...' : 'Save All'}
         </button>
       </nav>
 
       <div className="flex-1 flex overflow-hidden p-4 gap-4">
         
-        {/* SIDEBAR */}
-        {(viewMode === 'split' || viewMode === 'preview') && (
-          <div className="w-[320px] flex flex-col shrink-0 animate-in slide-in-from-left duration-300">
-             <div className="px-2 mb-4 flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Expertise Domains</span>
-                <Plus size={16} onClick={addSection} className="cursor-pointer text-slate-400 hover:text-indigo-600" />
-             </div>
-             <div className="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar">
-                {domains.map((item, idx) => (
-                  <div 
-                    key={idx} 
-                    onClick={() => setActiveTab(idx)}
-                    className={`relative flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all border ${
-                      activeTab === idx ? 'bg-black border-black text-white shadow-xl' : 'bg-white border-slate-100 text-slate-900 shadow-sm'
-                    }`}
-                  >
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${activeTab === idx ? 'bg-[#1DB954] text-black' : 'bg-slate-50 text-slate-400'}`}>
-                      {getIcon(item.iconId)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-sm truncate">{item.title || "New Service"}</h3>
-                      <p className={`text-[9px] font-bold tracking-widest uppercase ${activeTab === idx ? 'text-[#1DB954]' : 'text-slate-400'}`}>{item.tag || "N/A"}</p>
-                    </div>
-                    {activeTab === idx && <ChevronRight size={14} className="text-[#1DB954]" />}
-                  </div>
-                ))}
-             </div>
-          </div>
-        )}
-
-        {/* EDITOR */}
-        {(viewMode === 'edit' || viewMode === 'split') && (
+        {/* 1. LEFT SIDE: EDITOR */}
+        {(viewMode === 'edit' || viewMode === 'split') && domains.length > 0 && domains[activeTab] && (
           <div className={`flex-1 bg-white rounded-[2rem] overflow-y-auto custom-scrollbar border border-slate-200 shadow-sm ${viewMode === 'edit' ? 'max-w-4xl mx-auto' : ''}`}>
             <div className="p-10 space-y-8">
               <h2 className="text-xl font-black uppercase italic border-b border-slate-100 pb-4">Configure Content</h2>
 
-              {/* Icon Selector Section */}
               <div className="space-y-3">
                 <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Select Domain Icon</label>
                 <div className="flex flex-wrap gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
@@ -186,7 +284,7 @@ const MasterTechnicalEditor = () => {
                 <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Image</label>
                 <input type="file" ref={fileInputRef} className="hidden" onChange={handleImage} accept="image/*" />
                 <div onClick={() => fileInputRef.current.click()} className="w-full h-32 border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center hover:bg-slate-50 transition-all cursor-pointer overflow-hidden">
-                  {domains[activeTab].image ? <img src={domains[activeTab].image} className="w-full h-full object-cover" alt="preview" /> : <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Update Photo</p>}
+                  {domains[activeTab].image ? <img src={getImageUrl(domains[activeTab].image)} className="w-full h-full object-cover" alt="preview" /> : <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Update Photo</p>}
                 </div>
               </div>
               
@@ -197,11 +295,41 @@ const MasterTechnicalEditor = () => {
           </div>
         )}
 
-        {/* VISUAL PREVIEW */}
+        {/* 2. MIDDLE SIDE: DOMAIN LIST (SIDEBAR) */}
         {(viewMode === 'split' || viewMode === 'preview') && (
+          <div className="w-[320px] flex flex-col shrink-0 animate-in slide-in-from-left duration-300">
+             <div className="px-2 mb-4 flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Expertise Domains</span>
+                <Plus size={16} onClick={addSection} className="cursor-pointer text-slate-400 hover:text-indigo-600" />
+             </div>
+             <div className="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar">
+                {domains.map((item, idx) => (
+                  <div 
+                    key={idx} 
+                    onClick={() => setActiveTab(idx)}
+                    className={`relative flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all border ${
+                      activeTab === idx ? 'bg-black border-black text-white shadow-xl' : 'bg-white border-slate-100 text-slate-900 shadow-sm'
+                    }`}
+                  >
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${activeTab === idx ? 'bg-[#1DB954] text-black' : 'bg-slate-50 text-slate-400'}`}>
+                      {getIcon(item.iconId)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-sm truncate">{item.title || "New Service"}</h3>
+                      <p className={`text-[9px] font-bold tracking-widest uppercase ${activeTab === idx ? 'text-[#1DB954]' : 'text-slate-400'}`}>{item.tag || "N/A"}</p>
+                    </div>
+                    {activeTab === idx && <ChevronRight size={14} className="text-[#1DB954]" />}
+                  </div>
+                ))}
+             </div>
+          </div>
+        )}
+
+        {/* 3. RIGHT SIDE: PREVIEW */}
+        {(viewMode === 'split' || viewMode === 'preview') && domains.length > 0 && domains[activeTab] && (
           <div className="flex-1 flex flex-col animate-in fade-in duration-500">
             <div className="flex-1 rounded-[2.5rem] overflow-hidden relative shadow-2xl bg-zinc-900 border border-white/5">
-              {domains[activeTab].image && <img src={domains[activeTab].image} className="w-full h-full object-cover opacity-70" alt="bg" />}
+              {domains[activeTab].image && <img src={getImageUrl(domains[activeTab].image)} className="w-full h-full object-cover opacity-70" alt="bg" />}
               
               <div className="absolute top-6 right-8 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 flex items-center gap-2">
                 <Star size={12} className="text-yellow-400 fill-yellow-400" />

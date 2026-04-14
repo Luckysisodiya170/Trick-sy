@@ -1,12 +1,19 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { 
+  fetchSingleSubsectionContent, 
+  updateSingleSubsectionContent, 
+  fetchSections 
+} from '../../../store/index'; 
 import { 
   ArrowLeft, Save, Settings2, Edit3, Columns, Eye,
   Type, AlignLeft, Monitor, Undo, Plus, Trash2,
-  Phone, MessageSquare, Mail, Clock, MapPin, Globe, Link2
+  Phone, MessageSquare, Mail, Clock, MapPin, Globe, Link2, Loader2
 } from 'lucide-react';
 import ContactInfo from '../../../pages/Contact/ContactInfo'; 
 
+// Library of available icons for the user to choose from
 const iconOptions = {
   Phone: Phone,
   MessageSquare: MessageSquare,
@@ -19,17 +26,43 @@ const iconOptions = {
 
 const ContactInfoEditor = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { id } = useParams();
+
+  // 1. Redux Selectors
+  const sections = useSelector((state) => state.sections.items);
+  const content = useSelector((state) => state.content.activeSubsection);
+  const status = useSelector((state) => state.content.status);
+
+  // Dynamically find 'contact-info' slug (ID 35 in your DB)
+  const currentSection = sections.find(s => s.slug === 'contact-info');
+  const subsectionId = id || currentSection?.id; 
+
   const [isSaving, setIsSaving] = useState(false);
   const [viewMode, setViewMode] = useState('split'); 
+  const [formData, setFormData] = useState([]);
 
-  const defaultData = [
-    { id: 1, iconKey: "Phone", title: "Phone Support", info: "+971 50 123 4567", sub: "Toll-Free UAE" },
-    { id: 2, iconKey: "MessageSquare", title: "Chat on WhatsApp", info: "+971 50 123 4567", sub: "Instant Reply" },
-    { id: 3, iconKey: "Mail", title: "Email Address", info: "support@tricksy.com", sub: "Reply within 2 hours" },
-    { id: 4, iconKey: "Clock", title: "Working Hours", info: "08:00 AM - 08:00 PM", sub: "Mon - Sat" }
-  ];
+  // 2. Initial Fetching
+  useEffect(() => {
+    if (sections.length === 0) dispatch(fetchSections(6)); // Section 6 is Contact
+  }, [dispatch, sections.length]);
 
-  const [formData, setFormData] = useState(defaultData);
+  useEffect(() => {
+    if (subsectionId) dispatch(fetchSingleSubsectionContent(subsectionId));
+  }, [dispatch, subsectionId]);
+
+  // 3. Map Content to Form State
+  useEffect(() => {
+    if (content?.infoItems) {
+      setFormData(content.infoItems);
+    } else if (content) {
+      // If the table exists but infoItems key is missing, initialize with defaults
+      setFormData([
+        { id: 1, iconKey: "Phone", title: "Phone Support", info: "+971 50 123 4567", sub: "Toll-Free UAE" },
+        { id: 2, iconKey: "Mail", title: "Email", info: "support@tricksy.com", sub: "24/7 Support" }
+      ]);
+    }
+  }, [content]);
 
   const handleChange = (id, field, value) => {
     setFormData(prev => prev.map(item => 
@@ -40,35 +73,63 @@ const ContactInfoEditor = () => {
   const handleAddItem = () => {
     const newItem = {
       id: Date.now(),
-      iconKey: "MapPin",
-      title: "New Contact Method",
-      info: "Details",
+      iconKey: "Phone",
+      title: "New Label",
+      info: "Enter details",
       sub: "Subtext"
     };
     setFormData(prev => [...prev, newItem]);
   };
 
   const handleRemoveItem = (id) => {
-    setFormData(prev => prev.filter(item => item.id !== id));
-  };
-
-  const handleReset = () => {
-    if(window.confirm('Reset all contact info to default values?')) {
-      setFormData(defaultData);
+    if(window.confirm('Remove this contact method?')) {
+        setFormData(prev => prev.filter(item => item.id !== id));
     }
   };
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 800));
-    setIsSaving(false);
-    alert('Contact information saved successfully!');
+  const handleReset = () => {
+    if(window.confirm('Reset all contact info to saved values?')) {
+      setFormData(content.infoItems || []);
+    }
   };
 
+  // 4. Save Logic
+  const handleSave = async () => {
+    if (!subsectionId) return alert("Error: Missing Subsection ID.");
+
+    setIsSaving(true);
+    try {
+      const payload = {
+        infoItems: formData // Entire array saved into JSON column
+      };
+
+      await dispatch(updateSingleSubsectionContent({ 
+        subsectionId: subsectionId, 
+        updateData: payload 
+      })).unwrap();
+
+      alert('Contact information saved successfully!');
+    } catch (error) {
+      console.error(error);
+      alert('An error occurred while saving.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // 5. Prepare data for Component Preview
   const previewData = formData.map(item => ({
     ...item,
     icon: iconOptions[item.iconKey] || Phone
   }));
+
+  if (status === 'loading' && formData.length === 0) {
+    return (
+      <div className="h-screen flex items-center justify-center font-bold text-slate-400 uppercase tracking-widest text-xs">
+        <Loader2 className="animate-spin mr-2" size={16} /> Loading Contact Methods...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FDFDFD] font-sans h-screen overflow-hidden">
@@ -85,18 +146,8 @@ const ContactInfoEditor = () => {
         </div>
 
         <div className="flex bg-slate-100 p-1 rounded-full flex-shrink-1 mx-2">
-          {[
-            { id: 'edit', icon: Edit3, label: 'Edit' }, 
-            { id: 'split', icon: Columns, label: 'Split' }, 
-            { id: 'preview', icon: Eye, label: 'Preview' }
-          ].map((mode) => (
-            <button 
-              key={mode.id} 
-              onClick={() => setViewMode(mode.id)} 
-              className={`flex items-center gap-1.5 px-3 lg:px-5 py-1.5 lg:py-2 rounded-full text-[10px] lg:text-xs font-bold transition-all whitespace-nowrap ${
-                viewMode === mode.id ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
+          {[{ id: 'edit', icon: Edit3, label: 'Edit' }, { id: 'split', icon: Columns, label: 'Split' }, { id: 'preview', icon: Eye, label: 'Preview' }].map((mode) => (
+            <button key={mode.id} onClick={() => setViewMode(mode.id)} className={`flex items-center gap-1.5 px-3 lg:px-5 py-1.5 lg:py-2 rounded-full text-[10px] lg:text-xs font-bold transition-all whitespace-nowrap ${viewMode === mode.id ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}>
               <mode.icon size={12} className="lg:w-[14px] lg:h-[14px]" /> 
               <span className={`${viewMode === mode.id ? 'inline' : 'hidden sm:inline'}`}>{mode.label}</span>
             </button>
@@ -104,11 +155,11 @@ const ContactInfoEditor = () => {
         </div>
 
         <button 
-          onClick={handleSave}
-          disabled={isSaving}
+          onClick={handleSave} disabled={isSaving}
           className="bg-slate-900 text-white p-2.5 lg:px-6 lg:py-2.5 rounded-full font-extrabold text-[10px] lg:text-xs flex items-center gap-2 shadow-lg hover:bg-indigo-600 transition-all flex-shrink-0 disabled:opacity-70"
         >
-          {isSaving ? <span className="animate-pulse">Saving...</span> : <><Save size={16} className="lg:w-[14px] lg:h-[14px]" /> <span className="hidden md:inline">Save Changes</span></>}
+          {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} className="lg:w-[14px] lg:h-[14px]" />}
+          <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
         </button>
       </nav>
 
@@ -143,7 +194,7 @@ const ContactInfoEditor = () => {
                          <label className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1.5">
                             <IconComponent size={10} /> Select Icon
                          </label>
-                         <select value={item.iconKey} onChange={(e) => handleChange(item.id, 'iconKey', e.target.value)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:ring-2 ring-indigo-100 transition-all">
+                         <select value={item.iconKey} onChange={(e) => handleChange(item.id, 'iconKey', e.target.value)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:ring-2 ring-indigo-100">
                             {Object.keys(iconOptions).map(key => (
                                <option key={key} value={key}>{key} Icon</option>
                              ))}
@@ -153,17 +204,17 @@ const ContactInfoEditor = () => {
                       <div className="space-y-4">
                         <div>
                           <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1.5"><Type size={10} /> Label</label>
-                          <input type="text" value={item.title} onChange={(e) => handleChange(item.id, 'title', e.target.value)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-800 outline-none focus:ring-2 ring-indigo-100 transition-all" />
+                          <input type="text" value={item.title} onChange={(e) => handleChange(item.id, 'title', e.target.value)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-800 outline-none focus:ring-2 ring-indigo-100" />
                         </div>
 
                         <div>
                           <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1.5"><AlignLeft size={10} /> Information</label>
-                          <input type="text" value={item.info} onChange={(e) => handleChange(item.id, 'info', e.target.value)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-800 outline-none focus:ring-2 ring-indigo-100 transition-all" />
+                          <input type="text" value={item.info} onChange={(e) => handleChange(item.id, 'info', e.target.value)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-800 outline-none focus:ring-2 ring-indigo-100" />
                         </div>
 
                         <div>
                           <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1.5"><Type size={10} /> Status / Subtext</label>
-                          <input type="text" value={item.sub} onChange={(e) => handleChange(item.id, 'sub', e.target.value)} className="w-full px-4 py-2.5 bg-emerald-50/50 border border-emerald-100 rounded-xl text-xs font-bold text-emerald-600 outline-none focus:ring-2 ring-emerald-200 transition-all" />
+                          <input type="text" value={item.sub} onChange={(e) => handleChange(item.id, 'sub', e.target.value)} className="w-full px-4 py-2.5 bg-emerald-50/50 border border-emerald-100 rounded-xl text-xs font-bold text-emerald-600 outline-none focus:ring-2 ring-emerald-200" />
                         </div>
                       </div>
 
@@ -174,7 +225,7 @@ const ContactInfoEditor = () => {
             </div>
             
             <div className="p-4 border-t border-slate-100 bg-white flex justify-end shrink-0">
-              <button onClick={handleReset} className="flex items-center gap-1.5 px-4 py-2 text-[10px] uppercase tracking-widest font-bold text-slate-400 hover:text-amber-600 transition-all"><Undo size={12} /> Reset Defaults</button>
+              <button onClick={handleReset} className="flex items-center gap-1.5 px-4 py-2 text-[10px] uppercase tracking-widest font-bold text-slate-400 hover:text-amber-600 transition-all"><Undo size={12} /> Reset to Saved</button>
             </div>
           </div>
         )}
@@ -188,6 +239,7 @@ const ContactInfoEditor = () => {
             </div>
             <div className="flex-1 overflow-y-auto w-full flex items-start justify-center p-6 lg:p-12">
               <div className="w-full max-w-[500px]">
+                {/* Note: Ensure ContactInfo component handles the mapped icons properly */}
                 <ContactInfo infoData={previewData} />
               </div>
             </div>

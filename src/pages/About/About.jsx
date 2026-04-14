@@ -6,6 +6,7 @@ import AboutTimeline from './AboutTimeline';
 import AboutTeam from './AboutTeam';
 import SEO from '../../components/SEO';
 import WhyChooseUs from '../Home/WhyChooseUs';
+import AboutChooseUs from './Aboutchooseus';
 
 const AboutPage = () => {
   return (
@@ -16,10 +17,15 @@ const AboutPage = () => {
       />
       <AboutHero />
       <AboutMission />
+   
+  
+
       <AboutValues />
+      
       <AboutTimeline />
       <AboutTeam />
-      <WhyChooseUs />
+        <AboutChooseUs />
+    
     </div>
   );
 };

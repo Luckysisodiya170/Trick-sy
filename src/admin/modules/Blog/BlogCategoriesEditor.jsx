@@ -1,38 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { 
+  fetchSingleSubsectionContent, 
+  updateSingleSubsectionContent, 
+  fetchSections 
+} from '../../../store/index'; 
 import { 
   ArrowLeft, Save, Settings2, Edit3, Columns, Eye,
-  Plus, Trash2, Folder, Monitor, Info
+  Plus, Trash2, Folder, Monitor, Info, Loader2
 } from 'lucide-react';
 
 import BlogCategories from '../../../pages/Blog/BlogCategories'; 
 
 const BlogCategoriesEditor = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  
+  const sections = useSelector((state) => state.sections.items);
+  const content = useSelector((state) => state.content.activeSubsection);
+  const status = useSelector((state) => state.content.status);
+
+  const currentSection = sections.find(s => s.slug === 'blog-categories');
+  const subsectionId = currentSection?.id;
+
   const [isSaving, setIsSaving] = useState(false);
   const [viewMode, setViewMode] = useState('split'); 
 
-  const defaultCategories = [
-    { id: '1', name: 'Villa Care' },
-    { id: '2', name: 'Office Maintenance' },
-    { id: '3', name: 'Apartment Life' },
-    { id: '4', name: 'Commercial' },
-    { id: '5', name: 'Fitness Centers' },
-    { id: '6', name: 'Industrial' }
-  ];
-
-  const [categories, setCategories] = useState(defaultCategories);
+  const [categories, setCategories] = useState([]);
   const [newInput, setNewInput] = useState('');
   const [activePreviewCat, setActivePreviewCat] = useState('All');
+
+  useEffect(() => {
+    if (sections.length === 0) dispatch(fetchSections(5));
+  }, [dispatch, sections.length]);
+
+  useEffect(() => {
+    if (subsectionId) dispatch(fetchSingleSubsectionContent(subsectionId));
+  }, [dispatch, subsectionId]);
+
+  useEffect(() => {
+    if (content?.categories) {
+      setCategories(content.categories);
+    }
+  }, [content]);
 
   const handleAdd = (e) => {
     e.preventDefault();
     if (!newInput.trim()) return;
 
     const newCat = {
-      id: Date.now().toString(),
+      id: `new-${Date.now()}`, 
       name: newInput.trim()
     };
+    
     setCategories([...categories, newCat]);
     setNewInput('');
   };
@@ -44,12 +65,35 @@ const BlogCategoriesEditor = () => {
   };
 
   const handleSave = async () => {
+    if (!subsectionId) return alert("Error: Missing Subsection ID.");
+
     setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 800));
-    console.log('Saved Categories to DB:', categories);
-    setIsSaving(false);
-    alert('Categories updated successfully!');
+    try {
+      const payload = {
+        categories: categories 
+      };
+
+      await dispatch(updateSingleSubsectionContent({ 
+        subsectionId: subsectionId, 
+        updateData: payload 
+      })).unwrap();
+      
+      alert('Categories synced successfully!');
+    } catch (error) {
+      console.error("Failed to sync categories:", error);
+      alert('An error occurred while saving.');
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (status === 'loading' && categories.length === 0) {
+    return (
+      <div className="h-screen flex items-center justify-center font-bold text-slate-400 uppercase tracking-widest text-xs">
+        <Loader2 className="animate-spin mr-2" size={16} /> Loading Categories...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FDFDFD] font-sans h-screen overflow-hidden">
@@ -85,8 +129,13 @@ const BlogCategoriesEditor = () => {
           ))}
         </div>
 
-        <button onClick={handleSave} disabled={isSaving} className="bg-slate-900 text-white p-2.5 lg:px-6 lg:py-2.5 rounded-full font-extrabold text-[10px] lg:text-xs flex items-center gap-2 shadow-lg hover:bg-indigo-600 transition-all flex-shrink-0 disabled:opacity-70">
-          {isSaving ? <span className="animate-pulse">Saving...</span> : <><Save size={16} className="lg:w-[14px] lg:h-[14px]" /> <span className="hidden md:inline">Sync Data</span></>}
+        <button 
+          onClick={handleSave} 
+          disabled={isSaving} 
+          className="bg-slate-900 text-white p-2.5 lg:px-6 lg:py-2.5 rounded-full font-extrabold text-[10px] lg:text-xs flex items-center gap-2 shadow-lg hover:bg-indigo-600 transition-all flex-shrink-0 disabled:opacity-70 active:scale-95"
+        >
+          {isSaving ? <Loader2 size={16} className="animate-spin lg:w-[14px] lg:h-[14px]" /> : <Save size={16} className="lg:w-[14px] lg:h-[14px]" />}
+          {isSaving ? <span className="hidden md:inline">Syncing...</span> : <span className="hidden md:inline">Sync Data</span>}
         </button>
       </nav>
 
@@ -121,9 +170,9 @@ const BlogCategoriesEditor = () => {
 
               <div className="space-y-3">
                 {categories.map(cat => (
-                  <div key={cat.id} className="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex items-center justify-between group">
+                  <div key={cat.id} className="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm flex items-center justify-between group hover:border-indigo-200 transition-colors">
                     <div className="flex items-center gap-3">
-                      <Folder size={16} className="text-slate-400" />
+                      <Folder size={16} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
                       <h4 className="text-sm font-bold text-slate-900 leading-tight truncate">{cat.name}</h4>
                     </div>
                     <button onClick={() => handleDelete(cat.id)} className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all opacity-0 group-hover:opacity-100 shrink-0">
@@ -131,6 +180,12 @@ const BlogCategoriesEditor = () => {
                     </button>
                   </div>
                 ))}
+                
+                {categories.length === 0 && (
+                  <div className="text-center p-8 border-2 border-dashed border-slate-200 rounded-2xl">
+                    <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">No Categories Found</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -150,7 +205,6 @@ const BlogCategoriesEditor = () => {
             <div className="flex-1 overflow-y-auto w-full p-4 lg:p-10 flex flex-col items-center">
               <div className="w-full max-w-[1000px] space-y-4">
                 <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest mb-4">How it looks on your website</h3>
-                
                 
                 <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-zinc-100">
                    <BlogCategories 

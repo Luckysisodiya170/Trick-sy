@@ -13,12 +13,10 @@ export const fetchSections = createAsyncThunk('sections/fetch', async (sectionId
     }
 });
 
-
 export const updateSingleSubsectionContent = createAsyncThunk(
     'content/updateOne',
     async ({ subsectionId, updateData }, { rejectWithValue }) => {
         try {
-        
             const response = await apiRequest(`/test/UpdateSubsectionContent/${subsectionId}`, {
                 method: 'PATCH',
                 body: JSON.stringify(updateData),
@@ -31,6 +29,7 @@ export const updateSingleSubsectionContent = createAsyncThunk(
         }
     }
 );
+
 export const fetchFullPageContent = createAsyncThunk('content/fetchAll', async (sectionId, { rejectWithValue }) => {
     try {
         const response = await apiRequest(`/test/Getallcontent/${sectionId}`);
@@ -52,7 +51,6 @@ export const fetchSingleSubsectionContent = createAsyncThunk('content/fetchOne',
         return rejectWithValue(error.message);
     }
 });
-
 
 export const updateSubsection = createAsyncThunk('sections/update', async ({ dbId, updatedFields }, { rejectWithValue }) => {
     try {
@@ -153,7 +151,6 @@ const contentSlice = createSlice({
                     console.error("Redux Error:", action.payload);
                 }
             );
-            
     }
 });
 

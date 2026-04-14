@@ -25,7 +25,7 @@ const BlogCard = ({ post }) => {
         <div className="flex items-center gap-4 text-xs font-bold text-zinc-500 mb-4">
           <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4"/> {post.date}</span>
           <span className="w-1 h-1 rounded-full bg-zinc-300"></span>
-          <span className="flex items-center gap-1.5"><Clock className="w-4 h-4"/> {post.readTime}</span>
+          {/* <span className="flex items-center gap-1.5"><Clock className="w-4 h-4"/> {post.readTime}</span> */}
         </div>
 
         <h3 className="text-2xl font-black text-zinc-950 mb-3 leading-tight group-hover:text-emerald-600 transition-colors">

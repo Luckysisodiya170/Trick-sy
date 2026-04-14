@@ -73,7 +73,7 @@ const PopularServices = ({ servicesData }) => {
             <span className="uppercase tracking-wide">Categories</span>
           </div>
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 leading-tight tracking-tight">
-            Popular <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-emerald-500">Services</span>
+            Popular <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-emerald-600">Services</span>
           </h2>
           <p className="mt-4 text-slate-500 font-medium text-sm md:text-base max-w-xl mx-auto">
             Choose from our highly-rated maintenance and cleaning categories tailored for your specific property needs.

@@ -148,20 +148,20 @@ function App() {
 
               {/* CONTACT CMS */}
               <Route path="pages/contact" element={<ContactPageOverview />} />
-              <Route path="pages/contact/hero" element={<ContactHeroEditor />} />
-              <Route path="pages/contact/info" element={<ContactInfoEditor />} />
-              <Route path="pages/contact/form" element={<ContactFormEditor />} />
-              <Route path="pages/contact/map" element={<ContactMapEditor />} />
-              <Route path="pages/contact/:moduleName" element={<DynamicEditor />} />
+              <Route path="pages/contact/contact-hero" element={<ContactHeroEditor />} />
+              <Route path="pages/contact/contact-info" element={<ContactInfoEditor />} />
+              <Route path="pages/contact/contact-form" element={<ContactFormEditor />} />
+              <Route path="pages/contact/contact-map" element={<ContactMapEditor />} />
+              <Route path="pages/contact/:slug/:id" element={<DynamicEditor />} />
 
               {/* BLOG CMS */}
               <Route path="pages/blog" element={<BlogPageOverview />} />
-              <Route path="pages/blog/hero" element={<BlogHeroEditor />} />
-              <Route path="pages/blog/posts" element={<BlogPostsEditor />} />
-              <Route path="pages/blog/categories" element={<BlogCategoriesEditor />} />
-              <Route path="pages/blog/seo" element={<BlogSEOEditor />} />
-              <Route path="pages/blog/detail" element={<BlogDetailEditor />} />
-              <Route path="pages/blog/:moduleName" element={<DynamicEditor />} />
+              <Route path="pages/blog/blog-hero" element={<BlogHeroEditor />} />
+              <Route path="pages/blog/blog-posts" element={<BlogPostsEditor />} />
+              <Route path="pages/blog/blog-categories" element={<BlogCategoriesEditor />} />
+              <Route path="pages/blog/blog-seo" element={<BlogSEOEditor />} />
+              <Route path="pages/blog/blog-content" element={<BlogDetailEditor />} />
+              <Route path="pages/blog/:slug/:id" element={<DynamicEditor />} />
 
               {/* SERVICES CMS */}
               <Route path="pages/services" element={<ServicesPageOverview />} />
@@ -176,12 +176,12 @@ function App() {
               {/* TECHNICAL CMS */}
               <Route path="pages/technical" element={<TechnicalPageOverview />} />
               <Route path="pages/technical/tech-hero" element={<TechnicalHeroEditor />} />
-              <Route path="pages/technical/domains" element={<TechnicalDomainsEditor />} />
-              <Route path="pages/technical/specs" element={<HardwareSpecsEditor />} />
-              <Route path="pages/technical/process" element={<TechnicalProcessEditor />} />
-              <Route path="pages/technical/pricing" element={<TechnicalPricingEditor />} />
-              <Route path="pages/technical/faq" element={<TechnicalFAQEditor />} />
-              <Route path="pages/technical/footer" element={<TechnicalTrustEditor />} />
+              <Route path="pages/technical/tech-domains" element={<TechnicalDomainsEditor />} />
+              <Route path="pages/technical/tech-specs" element={<HardwareSpecsEditor />} />
+              <Route path="pages/technical/tech-process" element={<TechnicalProcessEditor />} />
+              <Route path="pages/technical/tech-pricing" element={<TechnicalPricingEditor />} />
+              <Route path="pages/technical/tech-faq" element={<TechnicalFAQEditor />} />
+              <Route path="pages/technical/tech-footer" element={<TechnicalTrustEditor />} />
 
 
               {/* interaction pages */}
