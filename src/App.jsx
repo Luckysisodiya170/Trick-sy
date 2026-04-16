@@ -171,7 +171,7 @@ function App() {
               <Route path="pages/services/:serviceId/faq" element={<ServiceFaqEditor />} />
               <Route path="pages/services/:serviceId/process" element={<ServiceProcessEditor />} />
               <Route path="pages/services/:serviceId/pricing" element={<ServicePricingEditor />} />
-              <Route path="pages/services/:moduleName" element={<DynamicEditor />} />
+              <Route path="pages/services/:slug/:id" element={<ServiceWizard />} />
 
               {/* TECHNICAL CMS */}
               <Route path="pages/technical" element={<TechnicalPageOverview />} />
@@ -190,8 +190,8 @@ function App() {
               <Route path='newsletter' element={<NewsletterSubscribers />} />
               <Route path='settings' element={<AdminSettings />} />
 
-              {/* test */}
-{/* 
+
+
              
 
 

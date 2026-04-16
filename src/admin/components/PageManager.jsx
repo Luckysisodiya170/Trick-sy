@@ -149,20 +149,59 @@ const PageManager = ({ title, defaultSections, iconLibrary, baseRoute, itemLabel
           <p className="page-subtitle italic">{defaultSections.length} Active {itemLabel}s Configured</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-brand-primary transition-colors" size={16} />
-            <input 
-              type="text" placeholder="Search..." 
-              className="pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl w-full md:w-[220px] outline-none focus:ring-4 focus:ring-brand-primary/5 transition-all font-bold text-xs shadow-sm"
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <button onClick={handleRestore} className="p-3 text-slate-400 bg-white border border-slate-200 rounded-2xl hover:text-brand-primary hover:border-brand-primary transition-all active:scale-95 shadow-sm">
+          <div className="flex items-center gap-3 flex-wrap">
+  <div className="relative group min-w-[240px]">
+    {/* Search Icon with Animation */}
+    <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+      <Search 
+        className={`transition-all duration-300 ${
+          search 
+          ? 'text-brand-primary scale-110 shadow-emerald-500' 
+          : 'text-slate-300 group-focus-within:text-brand-primary'
+        }`} 
+        size={18} 
+      />
+    </div>
+
+    {/* Enhanced Input Box */}
+    <input 
+      type="text" 
+      placeholder="Filter modules..." 
+      value={search}
+      className={`
+        pl-12 pr-10 py-3.5 bg-white border border-slate-200 rounded-2xl w-full 
+        outline-none transition-all duration-500 font-bold text-[13px] shadow-sm
+        placeholder:text-slate-300 placeholder:font-medium
+        focus:ring-[6px] focus:ring-brand-primary/5 focus:border-brand-primary focus:w-[300px]
+        ${search ? 'border-brand-primary/40 bg-emerald-50/5' : ''}
+      `}
+      onChange={(e) => setSearch(e.target.value)}
+    />
+
+    {/* Dynamic Result Counter & Clear Button */}
+    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+      {search && (
+        <>
+          <span className="text-[9px] font-black text-brand-primary bg-brand-primary/10 px-2 py-1 rounded-lg uppercase tracking-tighter">
+            {filteredSections.length} Found
+          </span>
+          <button 
+            onClick={() => setSearch('')}
+            className="w-7 h-7 flex items-center justify-center bg-slate-100 text-slate-400 hover:text-white hover:bg-rose-500 rounded-xl transition-all active:scale-90 shadow-sm"
+          >
+            <X size={14} strokeWidth={3} />
+          </button>
+        </>
+      )}
+    </div>
+  </div>
+</div>
+          {/* <button onClick={handleRestore} className="p-3 text-slate-400 bg-white border border-slate-200 rounded-2xl hover:text-brand-primary hover:border-brand-primary transition-all active:scale-95 shadow-sm">
             <RotateCcw size={18} />
           </button>
           <button className="px-8 py-3.5 text-[11px] font-black uppercase tracking-widest text-white bg-brand-dark rounded-2xl hover:bg-brand-primary hover:shadow-lg transition-all active:scale-95">
             Publish Changes
-          </button>
+          </button> */}
         </div>
       </div>
 
