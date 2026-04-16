@@ -101,7 +101,7 @@ const WhyChooseEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
-
+navigate('/admin/pages/home');
       alert("Why Choose Us Section Deployed Successfully! 🚀");
     } catch (error) {
       console.error(error);

@@ -136,6 +136,7 @@ const BlogPostsEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/blog');
 
       alert('Posts synced successfully!');
     } catch (error) {

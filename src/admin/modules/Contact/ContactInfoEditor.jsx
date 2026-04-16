@@ -100,13 +100,14 @@ const ContactInfoEditor = () => {
     setIsSaving(true);
     try {
       const payload = {
-        infoItems: formData // Entire array saved into JSON column
+        infoItems: formData 
       };
 
       await dispatch(updateSingleSubsectionContent({ 
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/contact');
 
       alert('Contact information saved successfully!');
     } catch (error) {

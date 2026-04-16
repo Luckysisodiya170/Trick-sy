@@ -113,7 +113,7 @@ const HeroEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
-
+navigate('/admin/pages/home');
       alert("Hero Section Updated Successfully! ✅");
       setImageFile(null);
       

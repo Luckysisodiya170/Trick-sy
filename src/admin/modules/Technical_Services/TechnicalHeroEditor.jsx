@@ -141,6 +141,7 @@ const TechnicalHeroEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/technical');
 
       setImageFile(null);
       alert("Technical Hero Content Updated Successfully!");

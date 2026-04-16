@@ -72,6 +72,7 @@ const AboutValuesEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/about');
 
       alert("Values Section Deployed Successfully! ✅");
     } catch (error) {

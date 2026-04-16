@@ -178,6 +178,7 @@ const TechnicalTrustEditor = () => {
         subsectionId: subsectionId,
         updateData: payload
       })).unwrap();
+navigate('/admin/pages/technical');
 
       setNewImageFiles({});
       alert("Trust Section Updated Successfully!");

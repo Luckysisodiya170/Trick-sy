@@ -131,13 +131,14 @@ const ContactHeroEditor = () => {
         titleLine1: formData.titlePart1,
         titleHighlight: formData.titleAccent,
         description: formData.paragraphText,
-        images: formData.bgImage ? [formData.bgImage] : [] // Relative path goes to DB
+        images: formData.bgImage ? [formData.bgImage] : [] 
       };
 
       await dispatch(updateSingleSubsectionContent({ 
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/contact');
 
       alert('Contact Hero updated successfully!');
     } catch (error) {

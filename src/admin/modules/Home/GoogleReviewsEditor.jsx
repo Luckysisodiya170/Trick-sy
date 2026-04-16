@@ -94,6 +94,7 @@ const GoogleReviewsEditor = () => {
       };
 
       await dispatch(updateSingleSubsectionContent({ subsectionId, updateData: payload })).unwrap();
+      navigate("/admin/pages/home");
       alert("Google Reviews Deployed Successfully! 🚀");
     } catch (error) {
       console.error("Deploy Error:", error);

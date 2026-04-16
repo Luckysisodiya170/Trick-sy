@@ -177,6 +177,7 @@ const MasterTechnicalEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/technical');
 
       setNewImageFiles({});
       alert("Expertise Domains Updated Successfully!");

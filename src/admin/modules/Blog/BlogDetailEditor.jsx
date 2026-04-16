@@ -114,6 +114,7 @@ const BlogDetailEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/blog');
 
       alert("Article Updated Successfully!");
     } catch (error) {

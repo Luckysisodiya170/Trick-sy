@@ -16,9 +16,7 @@ const ServiceFaqEditor = forwardRef(({ numericId }, ref) => {
   const [faqs, setFaqs] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
   
-  // Preview Accordion State
   const [openFaq, setOpenFaq] = useState(0); 
-  // Editor Focus State
   const [activeIdx, setActiveIdx] = useState(null);
 
   useImperativeHandle(ref, () => ({
@@ -49,7 +47,7 @@ const ServiceFaqEditor = forwardRef(({ numericId }, ref) => {
 
   const handleAddFaq = () => {
     setFaqs([...faqs, { q: "New Question?", a: "Enter detailed answer here." }]);
-    setOpenFaq(faqs.length); // Naye add hue question ko turant open karega
+    setOpenFaq(faqs.length);  
   };
 
   const handleRemoveFaq = (index) => {

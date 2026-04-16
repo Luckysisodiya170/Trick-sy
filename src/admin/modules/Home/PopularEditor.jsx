@@ -152,6 +152,7 @@ const PopularEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/home');
 
       alert("Popular Section Deployed Successfully! 🚀");
       

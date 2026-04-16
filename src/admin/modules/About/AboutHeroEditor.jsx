@@ -162,7 +162,7 @@ const AboutHeroEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
-
+navigate('/admin/pages/about');
       alert("About Section Updated Successfully! ✅");
       setBgImageFile(null);
       setAvatarFiles([null, null, null]);

@@ -74,6 +74,7 @@ const CtaEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/home');
 
       alert("CTA Section Deployed Successfully! 🚀");
     } catch (error) {

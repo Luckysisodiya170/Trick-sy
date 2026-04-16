@@ -94,6 +94,8 @@ const AboutWhyChooseEditor = () => {
       };
 
       await dispatch(updateSingleSubsectionContent({ subsectionId: subsectionId, updateData: payload })).unwrap();
+      navigate('/admin/pages/about');
+
       alert("Philosophy Section Deployed Successfully! 🚀");
     } catch (error) {
       console.error(error);

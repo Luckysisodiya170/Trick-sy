@@ -153,6 +153,7 @@ const ServiceEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/home');
 
       alert("Services Deployed Successfully! 🚀");
       

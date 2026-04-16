@@ -98,6 +98,7 @@ const HardwareSpecsEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/technical');
 
       alert("Hardware Specs Updated Successfully!");
     } catch (error) {

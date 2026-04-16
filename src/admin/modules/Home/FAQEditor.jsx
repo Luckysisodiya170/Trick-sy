@@ -96,6 +96,7 @@ const FAQEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/home');
 
       alert("FAQ Section Deployed Successfully! 🚀");
     } catch (error) {

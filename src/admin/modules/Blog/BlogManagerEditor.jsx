@@ -89,6 +89,7 @@ const BlogManagerEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/blog');
 
       alert("Blog Manager settings updated successfully!");
     } catch (error) {

@@ -129,6 +129,7 @@ const TechnicalFAQEditor = () => {
         subsectionId: subsectionId,
         updateData: payload
       })).unwrap();
+navigate('/admin/pages/technical');
 
       alert("FAQ Module Updated Successfully!");
     } catch (error) {

@@ -77,7 +77,8 @@ const BlogCategoriesEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
-      
+navigate('/admin/pages/blog');
+
       alert('Categories synced successfully!');
     } catch (error) {
       console.error("Failed to sync categories:", error);

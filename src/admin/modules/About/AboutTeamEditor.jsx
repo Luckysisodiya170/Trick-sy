@@ -171,6 +171,7 @@ const AboutTeamEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/about');
 
       alert("Team Section Deployed Successfully! ✅");
       setImageFiles({});

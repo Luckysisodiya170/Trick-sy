@@ -36,7 +36,6 @@ const ServiceIncludesEditor = forwardRef(({ numericId }, ref) => {
   const [isSaving, setIsSaving] = useState(false);
   const [activeField, setActiveField] = useState(null);
 
-  // WIZARD AUTO-SAVE CONNECT
   useImperativeHandle(ref, () => ({
     handleAutoSave: async () => {
       return await handleSave();

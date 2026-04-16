@@ -91,6 +91,7 @@ const BlogHeroEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/blog');
 
       alert("Blog Hero Content Updated Successfully!");
       

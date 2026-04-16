@@ -156,6 +156,7 @@ const AboutEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/home');
 
       alert("About Section Deployed! 🚀");
       setMainFile(null);

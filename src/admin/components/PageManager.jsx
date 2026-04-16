@@ -10,7 +10,6 @@ import { arrayMove, SortableContext, rectSortingStrategy } from '@dnd-kit/sortab
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-// Import your Redux actions
 import { createSubsection, deleteSubsection } from '../../store/index'; 
 
 const themeOptions = {
@@ -92,7 +91,6 @@ const PageManager = ({ title, defaultSections, iconLibrary, baseRoute, itemLabel
         });
       }
     } else {
-      // Create new dynamically
       dispatch(createSubsection({
         subsectionName: formData.name,
         section_id: sectionId, 

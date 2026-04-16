@@ -120,6 +120,7 @@ const AboutMissionEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/about');
 
       alert("Mission Section Deployed Successfully! ✅");
       setImageFile(null);

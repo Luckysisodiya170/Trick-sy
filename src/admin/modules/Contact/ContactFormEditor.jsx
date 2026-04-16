@@ -134,6 +134,7 @@ const ContactFormEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/contact');
 
       alert('Form settings updated successfully!');
     } catch (error) {

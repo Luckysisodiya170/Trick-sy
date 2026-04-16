@@ -23,7 +23,6 @@ const TechnicalPricingEditor = () => {
   const [viewMode, setViewMode] = useState('split'); 
   const [isSaving, setIsSaving] = useState(false);
 
-  // Data with buttonText added
   const defaultPlans = [
     { id: 1, name: "Basic Fix", currency: "AED", price: "199", desc: "One-time technical visit for minor repairs.", buttonText: "Select Plan", features: ["1 Hour Service", "Basic Tools Required", "No Materials Included", "Standard Response (24h)"], popular: false },
     { id: 2, name: "Pro AMC", currency: "AED", price: "899", desc: "Annual maintenance for complete peace of mind.", buttonText: "Select Plan", features: ["Unlimited Emergency Visits", "Priority Response (45m)", "Free Consumables", "Quarterly Deep Checks"], popular: true },
@@ -197,6 +196,7 @@ const TechnicalPricingEditor = () => {
         subsectionId: subsectionId,
         updateData: payload
       })).unwrap();
+navigate('/admin/pages/technical');
 
       alert("Pricing Plans Updated Successfully!");
     } catch (error) {

@@ -135,7 +135,7 @@ const TestimonialsEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
-
+navigate('/admin/pages/home');
       alert("Testimonials Deployed Successfully! 🚀");
       
       setTestimonials(testimonials.map((t, idx) => ({ ...t, file: null, image: finalImages[idx] })));

@@ -78,6 +78,7 @@ const ContactMapEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/contact');
 
       alert('Map location updated successfully!');
     } catch (error) {

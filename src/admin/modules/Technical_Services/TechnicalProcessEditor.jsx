@@ -167,6 +167,7 @@ const TechnicalProcessEditor = () => {
         subsectionId: subsectionId,
         updateData: payload
       })).unwrap();
+navigate('/admin/pages/technical');
 
       alert("Process Flow Updated Successfully!");
     } catch (error) {

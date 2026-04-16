@@ -134,6 +134,7 @@ const BlogSEOEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
+navigate('/admin/pages/blog');
 
       alert('Blog SEO settings updated successfully!');
     } catch (error) {
