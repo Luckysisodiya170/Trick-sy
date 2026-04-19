@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2, Award, ArrowRight, Sparkles } from 'lucide-react';
+import { useMemo } from 'react';
+
 import propic from "../../assets/aboutsectionimg/profileabout.jpeg"
 import propic1 from "../../assets/aboutsectionimg/profileabout2.jpeg"
 import propic2 from "../../assets/aboutsectionimg/profileabout3.jpeg"
@@ -8,12 +10,14 @@ import aboutmain from "../../assets/aboutsectionimg/aboutmain.png"
 import aboutmain2 from "../../assets/aboutsectionimg/aboutmain2.png"
 
 const AboutSection = ({ aboutData }) => {
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+
   const defaultContent = {
     badge: "About TRICKSY",
     title: "We Provide The Best",
     highlightText: "Home Maintenance",
     titleSuffix: "Solutions",
-    description: "TRICKSY is your premium destination for home and office maintenance. From deep cleaning to expert repairs, our certified professionals ensure your space remains pristine.",
+    description: "TRICKSY is your premium destination.",
     mainImage: aboutmain,
     secondaryImage: aboutmain2,
     features: ["100% Satisfaction", "Verified Professionals", "Transparent Pricing", "24/7 Support"],
@@ -22,7 +26,31 @@ const AboutSection = ({ aboutData }) => {
     customerAvatars: [propic, propic1, propic2]
   };
 
-  const content = aboutData ? { ...defaultContent, ...aboutData } : defaultContent;
+  const content = useMemo(() => {
+    if (!aboutData) return defaultContent;
+
+    return {
+      badge: aboutData.textContent?.badge || defaultContent.badge,
+      title: aboutData.textContent?.title || defaultContent.title,
+      highlightText: aboutData.textContent?.highlightText || defaultContent.highlightText,
+      titleSuffix: aboutData.textContent?.titleSuffix || defaultContent.titleSuffix,
+      description: aboutData.textContent?.description || defaultContent.description,
+      features: aboutData.textContent?.features || defaultContent.features,
+      yearsExp: aboutData.textContent?.yearsExp || aboutData.textContent?.legacyYears || defaultContent.yearsExp,
+      customersText: aboutData.textContent?.customersText || defaultContent.customersText,
+      
+      // Dynamic Images from JSON
+      mainImage: aboutData.images?.[0] ? `${BACKEND_URL}${aboutData.images[0]}` : defaultContent.mainImage,
+      secondaryImage: aboutData.images?.[1] ? `${BACKEND_URL}${aboutData.images[1]}` : defaultContent.secondaryImage,
+      
+      // Profile Images (3, 4, 5)
+      customerAvatars: aboutData.images?.length >= 3 
+        ? aboutData.images.slice(2, 5).map(img => `${BACKEND_URL}${img}`)
+        : defaultContent.customerAvatars
+    };
+  }, [aboutData, BACKEND_URL]);
+
+  if (!aboutData && !content) return null;
 
   return (
     <section className="py-16 lg:py-20 bg-slate-50 overflow-hidden relative">
@@ -31,6 +59,7 @@ const AboutSection = ({ aboutData }) => {
       <div className="w-full max-w-[1500px] mx-auto px-4 sm:px-6 md:px-10 lg:px-12 2xl:px-16">
         <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
 
+          {/* Left Side: Images */}
           <div className="w-full lg:w-1/2 relative px-4 sm:px-8 lg:px-0 mt-6 lg:mt-0">
             <div className="relative max-w-lg mx-auto lg:max-w-none lg:ml-auto lg:mr-8">
               <div className="absolute -top-4 -left-4 sm:-top-6 sm:-left-6 w-3/4 h-3/4 bg-slate-900 rounded-[2rem] z-0 opacity-95"></div>
@@ -38,8 +67,7 @@ const AboutSection = ({ aboutData }) => {
               <div className="rounded-[2rem] overflow-hidden shadow-xl border-4 border-white relative z-10 w-full bg-slate-100">
                 <img
                   src={content.mainImage}
-                  alt="Professional Service Team"
-                  loading="lazy"
+                  alt="Main Service"
                   className="w-full h-[350px] sm:h-[450px] object-cover"
                 />
               </div>
@@ -47,8 +75,7 @@ const AboutSection = ({ aboutData }) => {
               <div className="absolute -bottom-8 -right-4 sm:-right-8 w-1/2 rounded-[1.5rem] overflow-hidden shadow-2xl border-[4px] sm:border-[6px] border-white z-20 bg-slate-100">
                 <img
                   src={content.secondaryImage}
-                  alt="Service Detail Close-up"
-                  loading="lazy"
+                  alt="Secondary Service"
                   className="w-full h-40 sm:h-48 object-cover"
                 />
               </div>
@@ -65,6 +92,7 @@ const AboutSection = ({ aboutData }) => {
             </div>
           </div>
 
+          {/* Right Side: Content */}
           <div className="w-full lg:w-1/2 mt-16 lg:mt-0 relative z-10">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white font-semibold text-xs sm:text-sm mb-5 shadow-md">
               <Sparkles className="w-4 h-4 text-emerald-400" />
@@ -103,8 +131,14 @@ const AboutSection = ({ aboutData }) => {
 
               <div className="flex items-center gap-3">
                 <div className="flex -space-x-3">
-                  {content.customerAvatars.slice(0, 3).map((avatarSrc, idx) => (
-                    <img key={idx} src={avatarSrc} alt="Customer" loading="lazy" className="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover" />
+                  {/* Dynamic Profile Avatars From JSON */}
+                  {content.customerAvatars.map((avatarSrc, idx) => (
+                    <img 
+                      key={idx} 
+                      src={avatarSrc} 
+                      alt="Customer" 
+                      className="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover bg-gray-200" 
+                    />
                   ))}
                   <div className="w-10 h-10 rounded-full border-2 border-white bg-slate-900 flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
                     {content.customersText}

@@ -84,6 +84,12 @@ import NewsletterSubscribers from './admin/pages/NewsletterSubscribers';
 import AdminSettings from './admin/pages/AdminSettings';
 import AdminProfile from './admin/modules/profile/AdminProfile';
 import AboutWhyChooseEditor from './admin/modules/About/AboutWhyChooseEditor';
+import ContactTermsEditor from './admin/modules/Contact/Contacttermscondition';
+import ContactPrivacyEditor from './admin/modules/Contact/ContactPrivacyPolicy';
+import TermsAndConditions from './pages/Contact/TermsAndConditions';
+import PrivacyPolicy from './pages/Contact/PrivacyPolicy';
+import ScrollToTop from './components/Shared/ScrollToTop';
+import CustomerPolicy from './pages/Contact/CustomerPolicy';
 
 // Dummy Auth Pages
 const Login = () => <div className="flex h-screen items-center justify-center bg-slate-50 font-bold text-xl">Login Page (User)</div>;
@@ -93,6 +99,7 @@ function App() {
   return (
     <HelmetProvider>
       <Router>
+        <ScrollToTop/>
         <Routes>
 
           {/* USER ROUTES */}
@@ -109,6 +116,9 @@ function App() {
           <Route path="/blog/:slug" element={<MainLayout><BlogDetail /></MainLayout>} />
 
           <Route path="/contact" element={<MainLayout><Contact /></MainLayout>} />
+          <Route path="/terms" element={<TermsAndConditions />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/customer-policy" element={<CustomerPolicy />} />
 
           {/* AUTH ROUTES */}
           <Route path="/login" element={<Login />} />
@@ -125,7 +135,7 @@ function App() {
 
               {/* HOME CMS */}
               <Route path="pages/home" element={<HomePageOverview />} />
-              <Route path="pages/home/hero" element={<HeroEditor />} />
+              <Route path="pages/home/:id" element={<HeroEditor />} />
               <Route path="pages/home/about" element={<AboutEditor />} />
               <Route path="pages/home/services" element={<ServiceEditor />} />
               <Route path="pages/home/popular" element={<PopularEditor />} />
@@ -152,6 +162,8 @@ function App() {
               <Route path="pages/contact/contact-info" element={<ContactInfoEditor />} />
               <Route path="pages/contact/contact-form" element={<ContactFormEditor />} />
               <Route path="pages/contact/contact-map" element={<ContactMapEditor />} />
+              <Route path="pages/contact/terms-and-conditions" element={<ContactTermsEditor />} />
+              <Route path="pages/contact/privacy-policy" element={<ContactPrivacyEditor />} />
               <Route path="pages/contact/:slug/:id" element={<DynamicEditor />} />
 
               {/* BLOG CMS */}

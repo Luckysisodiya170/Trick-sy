@@ -27,20 +27,34 @@ const ContactPageOverview = () => {
     dispatch(updateSubsection({ dbId, updatedFields }));
   };
 
-  const formattedSections = sections.map((item) => ({
-    id: item.slug,
-    dbId: item.id,
-    name: item.subsectionName,
-    status: item.isActive ? 'Live' : 'Draft',
-    iconKey: item.icon,
-    isSystem: item.isSystem,
-    path: item.isSystem 
-      ? `/admin/pages/contact/${item.slug}` 
-      : `/admin/pages/contact/${item.slug}/${item.id}`,
-    theme: item.theme,
-    color: `text-${item.theme}-500`,
-    bg: `bg-${item.theme}-50`
-  }));
+  const formattedSections = (sections || []).map((item) => {
+    const isTerms = item.slug === 'terms-and-conditions';
+    const isPrivacy = item.slug === 'privacy-policy';
+
+    let finalPath;
+    if (isTerms) {
+      finalPath = `/admin/pages/contact/terms-and-conditions`;
+    } else if (isPrivacy) {
+      finalPath = `/admin/pages/contact/privacy-policy`;
+    } else {
+      finalPath = item.isSystem 
+        ? `/admin/pages/contact/${item.slug}` 
+        : `/admin/pages/contact/${item.slug}/${item.id}`;
+    }
+
+    return {
+      id: item.slug,
+      dbId: item.id,
+      name: item.subsectionName,
+      status: item.isActive ? 'Live' : 'Draft',
+      iconKey: item.icon,
+      isSystem: item.isSystem,
+      path: finalPath,
+      theme: item.theme,
+      color: `text-${item.theme}-500`,
+      bg: `bg-${item.theme}-50`
+    };
+  });
 
   if (status === 'loading' && sections.length === 0) {
     return (

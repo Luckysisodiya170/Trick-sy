@@ -21,7 +21,7 @@ const Footer = ({ footerData }) => {
     legalLinks: [
       { name: "Privacy Policy", path: "/privacy-policy" },
       { name: "Terms of Service", path: "/terms" },
-      { name: "Cookie Policy", path: "/cookie-policy" }
+      { name: "Customer Policy", path: "/customer-policy" }
     ]
   };
 
@@ -49,7 +49,7 @@ const Footer = ({ footerData }) => {
             <p className="text-sm lg:text-[15px] leading-relaxed text-slate-400 max-w-md">
               {content.companyDesc}
             </p>
-            <div className="flex gap-3 pt-2">
+            {/* <div className="flex gap-3 pt-2">
               <a href={content.socialLinks?.facebook || '#'} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all hover:-translate-y-1">
                 <Facebook className="w-4 h-4" />
               </a>
@@ -62,7 +62,7 @@ const Footer = ({ footerData }) => {
               <a href={content.socialLinks?.linkedin || '#'} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all hover:-translate-y-1">
                 <Linkedin className="w-4 h-4" />
               </a>
-            </div>
+            </div> */}
           </div>
 
           <div className="lg:col-span-2">
@@ -134,10 +134,13 @@ const Footer = ({ footerData }) => {
 
         <div className="pt-6 lg:pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
           <div className="flex flex-col gap-1 order-2 md:order-1">
-            <p className="text-sm text-slate-500">
-              &copy; {new Date().getFullYear()} TRICKSY Services. All rights reserved.
-            </p>
-          </div>
+  <p className="text-sm text-slate-500">
+    &copy; {new Date().getFullYear()} TRICKSY Services. All rights reserved.
+  </p>
+  <p className="text-sm text-slate-500">
+    Developed by <span className="font-semibold text-slate-400">BlackCubeSolutions</span>
+  </p>
+</div>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm order-1 md:order-2 text-slate-500">
             {content.legalLinks?.map((link, idx) => (
               <Link key={idx} to={link?.path || '/'} className="hover:text-white transition-colors">

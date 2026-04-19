@@ -27,7 +27,7 @@ const HomePageOverview = () => {
   const status = useSelector((state) => state.sections.status);
 
   useEffect(() => {
-    // Fetching Home Page Sections (ID: 1)
+    
     dispatch(fetchSections(1));
   }, [dispatch]);
 
