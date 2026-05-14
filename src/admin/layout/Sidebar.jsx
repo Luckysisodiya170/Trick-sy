@@ -5,13 +5,15 @@ import {
   Briefcase, FileText, Layout, Layers, MessageSquare,
   Inbox, Mail, Settings, LogOut, ChevronLeft, AlertTriangle
 } from 'lucide-react';
-
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
+  const currentRole = localStorage.getItem('tricksyAdminRole');
+
   const handleLogout = () => {
     localStorage.removeItem('tricksyAdminToken');
+    localStorage.removeItem('tricksyAdminRole'); 
     navigate('/admin-login');
   };
 
@@ -103,10 +105,12 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
         {/* --- FOOTER  --- */}
         <div className="p-4 border-t border-white/5 space-y-1 shrink-0 mt-auto bg-[#0a0a0a] relative z-10">
-          {/* <NavLink to="/admin/settings" className={linkClass}>
-            <Settings size={18} />
-            <span className={`ml-3.5 transition-all ${isSidebarOpen ? 'opacity-100' : 'hidden'}`}>Settings</span>
-          </NavLink> */}
+  {currentRole === 'superadmin' && (
+    <NavLink to="/admin/settings" className={linkClass}>
+      <Settings size={18} />
+      <span className={`ml-3.5 transition-all ${isSidebarOpen ? 'opacity-100' : 'hidden'}`}>Settings</span>
+    </NavLink>
+  )}
 
           <button
             onClick={() => setShowLogoutModal(true)}

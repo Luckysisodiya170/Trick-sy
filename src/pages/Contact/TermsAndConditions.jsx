@@ -36,10 +36,9 @@ const TermsAndConditions = () => {
     <div className="min-h-screen bg-slate-50 py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden relative">
         
-        {/* Header Section with Back Button */}
+        {/* Header Section */}
         <div className="bg-indigo-600 px-8 py-16 text-center relative">
           
-          {/* BACK BUTTON YAHAN HAI */}
           <button 
             onClick={() => navigate(-1)} 
             className="absolute top-6 left-6 md:top-8 md:left-8 flex items-center gap-2 text-indigo-100 hover:text-white bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-all text-sm font-semibold"

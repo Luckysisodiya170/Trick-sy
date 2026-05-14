@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles, Droplets, Snowflake, Wrench, Zap, Home, Shield } from 'lucide-react';
 
-// Default assets imports (Fallbacks)
 import deepclean from "../../assets/serviceimage/Deep-cleaning.png";
 import acmaintain from "../../assets/serviceimage/ac-maintainance.png";
 import plumbing from "../../assets/serviceimage/plumbing.png";

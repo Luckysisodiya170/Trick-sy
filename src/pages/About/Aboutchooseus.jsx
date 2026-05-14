@@ -48,7 +48,7 @@ const AboutChooseUs = () => {
     <section className="w-full py-20 bg-[#FDFDFD] font-sans">
       <div className="w-full max-w-[1400px] mx-auto px-6 lg:px-12">
         
-        {/* --- CENTERED HEADER (MATCHING SCREENSHOT) --- */}
+        {/* --- HEADER--- */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 text-[10px] font-black tracking-widest uppercase rounded-full mb-6 bg-white border border-slate-200 shadow-sm text-emerald-600">
             <Star size={12} className="fill-emerald-500 text-emerald-500" /> {data.badge}
@@ -61,10 +61,9 @@ const AboutChooseUs = () => {
           </p>
         </div>
 
-        {/* --- INTERACTIVE LAYOUT --- */}
         <div className="flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-24">
           
-          {/* LEFT: TABS (MATCHING SCREENSHOT) */}
+          {/* LEFT: TABS */}
           <div className="w-full lg:w-[420px] flex flex-col gap-6">
             {data.features.map((f, index) => {
               const isActive = activeTab === index;
@@ -101,11 +100,10 @@ const AboutChooseUs = () => {
             })}
           </div>
 
-          {/* RIGHT: DARK CARD (MATCHING SCREENSHOT) */}
+          {/* RIGHT: DARK CARD */}
           <div className="w-full lg:w-[650px] aspect-[1/0.75] relative group">
             <div className="absolute inset-0 bg-[#0F172A] rounded-[3.5rem] shadow-2xl overflow-hidden flex flex-col justify-center p-12 lg:p-20">
               
-              {/* Background Watermark Icon */}
               <div className="absolute -right-16 -bottom-16 opacity-[0.04] text-white pointer-events-none transform rotate-12 transition-transform duration-1000">
                  {React.createElement(iconOptions[data.features[activeTab].iconName] || CheckCircle2, { size: 450 })}
               </div>

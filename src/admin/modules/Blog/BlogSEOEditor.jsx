@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchSingleSubsectionContent, updateSingleSubsectionContent, fetchSections } from '../../../store/index'; 
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent } from '../../redux/slices/adminSlice'; 
+import { AdminService } from '../../services/adminService';
 import { 
   ArrowLeft, Save, Settings2, Edit3, Columns, Eye,
   Globe, Type, AlignLeft, Image as ImageIcon,
@@ -15,13 +16,10 @@ const BlogSEOEditor = () => {
   const dispatch = useDispatch();
   const { id } = useParams();
 
-  // Redux Selectors
-  const sections = useSelector((state) => state.sections.items);
-  const content = useSelector((state) => state.content.activeSubsection);
-  const status = useSelector((state) => state.content.status);
+  const content = useSelector((state) => state.adminData.activeSubsection);
+  const status = useSelector((state) => state.adminData.status);
 
-  const currentSection = sections.find(s => s.slug === 'blog-seo');
-  const subsectionId = id || currentSection?.id; 
+  const subsectionId = parseInt(id, 10);
 
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false); 
@@ -35,12 +33,6 @@ const BlogSEOEditor = () => {
   });
 
   useEffect(() => {
-    if (sections.length === 0) {
-      dispatch(fetchSections(5)); 
-    }
-  }, [dispatch, sections.length]);
-
-  useEffect(() => {
     if (subsectionId) {
       dispatch(fetchSingleSubsectionContent(subsectionId));
     }
@@ -52,17 +44,14 @@ const BlogSEOEditor = () => {
         metaTitle: content.titleLine1 || '',
         metaDescription: content.description || '',
         metaKeywords: content.badgeText || '', 
-        ogImage: content.images?.[0] || '' // Stores only the relative path
+        ogImage: content.images?.[0] || ''
       });
     }
   }, [content]);
 
-  // Helper to resolve the correct URL for UI rendering
   const getImageUrl = (path) => {
     if (!path) return "";
     if (path.startsWith('http') || path.startsWith('data:')) return path;
-    
-    // Convert http://localhost:5000/api to http://localhost:5000/
     const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
     const domain = apiBase.replace('/api', ''); 
     return `${domain}${path.startsWith('/') ? '' : '/'}${path}`;
@@ -80,25 +69,17 @@ const BlogSEOEditor = () => {
     setIsUploading(true);
     try {
       const formDataUpload = new FormData();
-      formDataUpload.append('heroImage', file); 
+      formDataUpload.append('image', file); 
 
-      const uploadRes = await fetch('http://localhost:5000/api/upload/upload-hero', {
-        method: 'POST',
-        body: formDataUpload,
-      });
-      
-      const uploadData = await uploadRes.json();
+      const uploadData = await AdminService.uploadHeroImage(formDataUpload);
       
       if (uploadData.success) {
-        // Save ONLY the relative path to state (and eventually DB)
-        const relativePath = uploadData.imageUrl; 
-        setFormData(prev => ({ ...prev, ogImage: relativePath }));
+        setFormData(prev => ({ ...prev, ogImage: uploadData.imageUrl }));
       } else {
-        alert("Upload Failed: " + uploadData.message);
+        alert("Upload Failed");
       }
     } catch (error) {
       console.error("Upload error:", error);
-      alert("Error uploading image.");
     } finally {
       setIsUploading(false);
     }
@@ -116,10 +97,7 @@ const BlogSEOEditor = () => {
   };
 
   const handleSave = async () => {
-    if (!subsectionId) {
-      alert("Error: Missing Subsection ID.");
-      return;
-    }
+    if (!subsectionId || isNaN(subsectionId)) return alert("Error: Missing Subsection ID.");
 
     setIsSaving(true);
     try {
@@ -127,18 +105,17 @@ const BlogSEOEditor = () => {
         titleLine1: formData.metaTitle,
         description: formData.metaDescription,
         badgeText: formData.metaKeywords,
-        images: formData.ogImage ? [formData.ogImage] : [] // Relative path saved to DB
+        images: formData.ogImage ? [formData.ogImage] : []
       };
 
       await dispatch(updateSingleSubsectionContent({ 
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
-navigate('/admin/pages/blog');
-
-      alert('Blog SEO settings updated successfully!');
+      
+      navigate('/admin/pages/blog');
+      alert('Blog SEO settings updated successfully! 🚀');
     } catch (error) {
-      console.error("Failed to update SEO:", error);
       alert("An error occurred while saving.");
     } finally {
       setIsSaving(false);
@@ -147,8 +124,8 @@ navigate('/admin/pages/blog');
 
   if (status === 'loading' && !content) {
     return (
-      <div className="h-screen flex items-center justify-center font-bold text-slate-400 uppercase tracking-widest text-xs">
-        <Loader2 className="animate-spin mr-2" size={16} /> Loading SEO Settings...
+      <div className="h-screen flex items-center justify-center font-black text-slate-400 uppercase tracking-widest text-xs">
+        <Loader2 className="animate-spin mr-2" size={16} /> SYNCING SEO LAB...
       </div>
     );
   }
@@ -157,29 +134,22 @@ navigate('/admin/pages/blog');
   const descColor = formData.metaDescription.length > 160 ? 'text-rose-500' : 'text-emerald-500';
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FDFDFD] font-sans h-screen overflow-hidden">
+    <div className="min-h-screen bg-[#FDFDFD] font-sans overflow-hidden selection:bg-indigo-100">
       
-      {/* NAVBAR */}
-      <nav className="sticky top-0 z-[50] bg-white border-b border-slate-200 px-3 lg:px-6 py-3 flex items-center justify-between shadow-sm gap-2 shrink-0">
-        <div className="flex items-center gap-1.5 lg:gap-3 flex-shrink-0">
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-xl transition-all">
+      <nav className="h-16 sticky top-0 z-[100] bg-white/80 backdrop-blur-md border-b border-slate-100 px-6 py-3 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-50 rounded-full transition-all text-slate-400 hover:text-slate-900">
             <ArrowLeft size={18} />
           </button>
-          <h1 className="text-sm lg:text-lg font-black tracking-tighter italic flex items-center gap-1.5">
-            <Settings2 size={18} className="text-indigo-600 lg:w-5 lg:h-5" /> 
-            <span className="tracking-tight uppercase">SEO EDITOR</span> 
+          <h1 className="text-[12px] font-black italic flex items-center gap-2 uppercase tracking-[0.2em] text-slate-800">
+            <Settings2 size={16} className="text-indigo-600" /> SEO <span className="text-indigo-400">Lab</span>
           </h1>
         </div>
 
-        <div className="flex bg-slate-100 p-1 rounded-full flex-shrink-1 mx-2">
-          {[
-            { id: 'edit', icon: Edit3, label: 'Edit' }, 
-            { id: 'split', icon: Columns, label: 'Split' }, 
-            { id: 'preview', icon: Eye, label: 'Preview' }
-          ].map((mode) => (
-            <button key={mode.id} onClick={() => setViewMode(mode.id)} className={`flex items-center gap-1.5 px-3 lg:px-5 py-1.5 lg:py-2 rounded-full text-[10px] lg:text-xs font-bold transition-all whitespace-nowrap ${viewMode === mode.id ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}>
-              <mode.icon size={12} className="lg:w-[14px] lg:h-[14px]" /> 
-              <span className={`${viewMode === mode.id ? 'inline' : 'hidden sm:inline'}`}>{mode.label}</span>
+        <div className="flex bg-slate-100/50 p-1 rounded-xl border border-slate-100">
+          {[{ id: 'edit', icon: Edit3, label: 'Edit' }, { id: 'split', icon: Columns, label: 'Split' }, { id: 'preview', icon: Eye, label: 'Preview' }].map((mode) => (
+            <button key={mode.id} onClick={() => setViewMode(mode.id)} className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${viewMode === mode.id ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400 hover:text-slate-600'}`}>
+              <mode.icon size={12} /> <span className="hidden sm:inline">{mode.label}</span>
             </button>
           ))}
         </div>
@@ -187,96 +157,92 @@ navigate('/admin/pages/blog');
         <button 
           onClick={handleSave} 
           disabled={isSaving || isUploading}
-          className="bg-slate-900 text-white p-2.5 lg:px-6 lg:py-2.5 rounded-full font-extrabold text-[10px] lg:text-xs flex items-center gap-2 shadow-lg hover:bg-indigo-600 transition-all flex-shrink-0 disabled:opacity-70 active:scale-95"
+          className="bg-slate-900 text-white px-8 py-2 rounded-xl font-black text-[10px] tracking-widest hover:bg-indigo-600 transition-all flex items-center gap-2 disabled:opacity-50"
         >
-          {(isSaving || isUploading) ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-          {isSaving ? "Publishing..." : isUploading ? "Uploading..." : "Publish SEO"}
+          {(isSaving || isUploading) ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+          <span>{isSaving ? "SAVING..." : "PUBLISH SEO"}</span>
         </button>
       </nav>
 
-      <div className="flex-1 flex overflow-hidden relative">
+      <div className={`mx-auto w-full transition-all duration-700 h-[calc(100vh-64px)] flex ${viewMode === 'split' ? 'flex-row' : 'flex-col'} overflow-hidden`}>
         
-        {/* LEFT PANEL */}
         {(viewMode === 'edit' || viewMode === 'split') && (
-          <div className={`${viewMode === 'edit' ? 'w-full max-w-4xl mx-auto border-x' : 'w-full lg:w-[460px] border-r'} bg-white border-slate-200 flex flex-col h-full relative z-20 shadow-2xl shadow-slate-200/50 transition-all duration-300`}>
+          <div className={`${viewMode === 'split' ? 'w-4/12 border-r border-slate-100' : 'w-full max-w-4xl mx-auto mt-8 border rounded-[2rem]'} bg-white flex flex-col h-full relative z-20 shadow-2xl shadow-slate-200/50 transition-all duration-300 overflow-hidden`}>
             
-            <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-8 scrollbar-hide">
+            <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6 custom-scrollbar">
               <div>
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-1">Global Blog SEO</h2>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Manage search engine visibility</p>
+                <h2 className="text-sm font-black text-slate-900 tracking-tight uppercase mb-1">Global Blog SEO</h2>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Search Engine Optimization</p>
               </div>
 
-              <div className="space-y-6">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1"><Type size={12} /> Meta Title</label>
-                    <span className={`text-[10px] font-black ${titleColor}`}>{formData.metaTitle.length} / 60</span>
+              <div className="space-y-5">
+                <div className="bg-slate-50/50 p-5 rounded-[2rem] border border-slate-100 space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Type size={12} className="text-indigo-500" /> Meta Title</label>
+                      <span className={`text-[9px] font-black ${titleColor}`}>{formData.metaTitle.length} / 60</span>
+                    </div>
+                    <input type="text" name="metaTitle" value={formData.metaTitle} onChange={handleChange} className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-xs font-bold text-slate-800 outline-none focus:border-indigo-400 transition-all shadow-inner" />
                   </div>
-                  <input type="text" name="metaTitle" value={formData.metaTitle} onChange={handleChange} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:ring-2 ring-indigo-100 focus:bg-white transition-all shadow-inner" />
-                </div>
 
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1"><AlignLeft size={12} /> Meta Description</label>
-                    <span className={`text-[10px] font-black ${descColor}`}>{formData.metaDescription.length} / 160</span>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><AlignLeft size={12} className="text-indigo-500" /> Meta Description</label>
+                      <span className={`text-[9px] font-black ${descColor}`}>{formData.metaDescription.length} / 160</span>
+                    </div>
+                    <textarea name="metaDescription" value={formData.metaDescription} onChange={handleChange} rows="4" className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-xs font-medium text-slate-800 outline-none focus:border-indigo-400 transition-all shadow-inner resize-none leading-relaxed" ></textarea>
                   </div>
-                  <textarea name="metaDescription" value={formData.metaDescription} onChange={handleChange} rows="4" className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium text-slate-800 outline-none focus:ring-2 ring-indigo-100 focus:bg-white transition-all shadow-inner resize-none leading-relaxed" ></textarea>
+
+                  <div>
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-2"><Hash size={12} className="text-indigo-500" /> Focus Keywords</label>
+                    <input type="text" name="metaKeywords" value={formData.metaKeywords} onChange={handleChange} className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-xs font-medium text-slate-800 outline-none focus:border-indigo-400 transition-all shadow-inner" placeholder="service, maintenance, hygiene..." />
+                  </div>
                 </div>
 
-                <div>
-                  <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2"><Hash size={12} /> Keywords</label>
-                  <input type="text" name="metaKeywords" value={formData.metaKeywords} onChange={handleChange} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium text-slate-800 outline-none focus:ring-2 ring-indigo-100 focus:bg-white transition-all shadow-inner" placeholder="cleaning, hygiene, facility management..." />
-                </div>
-
-                {/* IMAGE UPLOAD SECTION */}
-                <div>
-                  <label className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2"><ImageIcon size={12} /> Social Share Image</label>
-                  <div className="relative group h-40 rounded-2xl overflow-hidden bg-slate-100 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center">
+                <div className="bg-slate-50/50 p-5 rounded-[2rem] border border-slate-100 space-y-4">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-1"><ImageIcon size={12} className="text-indigo-500" /> Social Share Image (OG)</label>
+                  <div className="relative group aspect-video rounded-2xl overflow-hidden bg-white border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer">
                     <img src={getImageUrl(formData.ogImage)} alt="OG Cover" className="w-full h-full object-cover" />
-                    
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white font-bold text-xs pointer-events-none">
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white font-bold text-[10px] uppercase tracking-widest">
                        <UploadCloud size={20} className="mr-2"/> Replace Image
                     </div>
-
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handleImageUpload} 
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50" 
-                    />
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50" />
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end">
-              <button onClick={handleReset} className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all">
-                <Undo size={14} /> Reset Data
-              </button>
+              <div className="pt-4 flex justify-end pb-20">
+                <button onClick={handleReset} className="flex items-center gap-2 px-4 py-2 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all">
+                  <Undo size={14} /> Reset SEO Data
+                </button>
+              </div>
             </div>
           </div>
         )}
 
-        {/* RIGHT PANEL */}
         {(viewMode === 'preview' || viewMode === 'split') && (
-          <div className={`${viewMode === 'preview' ? 'w-full' : 'hidden lg:flex flex-1'} flex-col h-full bg-zinc-50 relative transition-all duration-300 min-w-0`}>
-            <div className="h-12 flex items-center justify-between px-6 bg-white border-b border-slate-200 shadow-sm shrink-0">
-              <div className="flex items-center gap-2">
-                <Monitor size={14} className="text-slate-400" />
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Live Previews</span>
+          <div className={`${viewMode === 'split' ? 'w-8/12' : 'w-full'} bg-slate-50 flex flex-col items-center justify-center p-8 relative overflow-hidden`}>
+            <div className="w-full max-w-[1000px] h-full flex flex-col items-center justify-center">
+              <div className="w-full pointer-events-none scale-95 origin-center animate-in fade-in duration-500">
+                <SEOPreview 
+                  title={formData.metaTitle} 
+                  description={formData.metaDescription} 
+                  image={getImageUrl(formData.ogImage)}
+                  pagePath="blog"
+                />
               </div>
-            </div>
-            <div className="flex-1 overflow-y-auto w-full p-6 lg:p-12 flex flex-col items-center">
-              <SEOPreview 
-                title={formData.metaTitle} 
-                description={formData.metaDescription} 
-                image={getImageUrl(formData.ogImage)}
-                pagePath="blog"
-              />
+              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-8 italic">
+                * Real-time search engine snippet simulation
+              </p>
             </div>
           </div>
         )}
       </div>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+      `}</style>
     </div>
   );
 };

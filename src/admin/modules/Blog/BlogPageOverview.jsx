@@ -1,10 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchSections, updateSubsection } from '../../../store/index';
-import PageManager from '../../components/PageManager';
-import {
-  LayoutTemplate, FileText, Tags, Search, Globe, Box,
-  Rss, MessageSquare, TrendingUp, Palette
+import { 
+  fetchPageSections, 
+  updateSubsectionConfig,
+  createSubsection,
+  deleteSubsection 
+} from '../../redux/slices/adminSlice'; 
+
+import PageManager from '../../components/PageManager'; 
+import { AdminService } from '../../services/adminService';
+import { 
+  LayoutTemplate, FileText, Tags, Search, Globe, Box, 
+  Rss, MessageSquare, TrendingUp, Palette 
 } from 'lucide-react';
 
 const iconLibrary = {
@@ -16,52 +23,94 @@ const iconLibrary = {
 const BlogPageOverview = () => {
   const dispatch = useDispatch();
   
-  const sections = useSelector((state) => state.sections.items);
-  const status = useSelector((state) => state.sections.status);
+  // 1. DYNAMIC ID LOGIC
+  const sidebarTree = useSelector((state) => state.adminData?.sidebarTree || []);
+  const blogSectionInfo = sidebarTree.find(sec => sec.slug === 'blog');
+  const dynamicSectionId = blogSectionInfo?.id || 5; 
+
+  // 2. REDUX SELECTORS
+  const sections = useSelector((state) => state.adminData?.pageSections || []);
+  const isLoading = useSelector((state) => state.adminData?.isSectionsLoading);
 
   useEffect(() => {
-    dispatch(fetchSections(5));
-  }, [dispatch]);
+    if (dynamicSectionId) {
+      dispatch(fetchPageSections(dynamicSectionId));
+    }
+  }, [dispatch, dynamicSectionId]);
 
-  const handleUpdateModule = (dbId, currentSlug, updatedFields) => {
-    dispatch(updateSubsection({ dbId, updatedFields }));
+  // --- Handlers) ---
+
+  const handleCreateModule = (newData) => {
+    dispatch(createSubsection({ ...newData, section_id: dynamicSectionId }));
   };
 
-  const formattedSections = sections.map((item) => ({
-    id: item.slug,
-    dbId: item.id,
-    name: item.subsectionName,
-    status: item.isActive ? 'Live' : 'Draft',
-    iconKey: item.icon,
-    isSystem: item.isSystem,
-    path: item.isSystem 
-      ? `/admin/pages/blog/${item.slug}` 
-      : `/admin/pages/blog/${item.slug}/${item.id}`,
-    theme: item.theme,
-    color: `text-${item.theme}-500`,
-    bg: `bg-${item.theme}-50`
-  }));
+  const handleUpdateModule = (dbId, currentSlug, updatedFields) => {
+    dispatch(updateSubsectionConfig({ dbId, updatedFields }));
+  };
 
-  if (status === 'loading' && sections.length === 0) {
+  const handleDeleteModule = (dbId) => {
+    if(window.confirm("Are you sure you want to delete this Blog module?")) {
+        dispatch(deleteSubsection(dbId));
+    }
+  };
+
+  const handleReorderModules = async (newOrderFromDnd) => {
+    try {
+      const orderedDbIds = newOrderFromDnd.map(item => Number(item.dbId));
+      await AdminService.reorderSubsections(orderedDbIds);
+      // Refresh to sync local state with new order
+      dispatch(fetchPageSections(dynamicSectionId)); 
+    } catch (error) {
+      console.error("Blog Reorder failed:", error);
+    }
+  };
+
+  // 3. DATA FORMATTING FOR PAGEMANAGER
+const formattedSections = useMemo(() => {
+    if (!Array.isArray(sections)) return [];
+    
+    const sortedSections = [...sections].sort((a, b) => a.order - b.order);
+    
+    return sortedSections.map((item) => ({
+      id: item.slug || `blog-sec-${item.id}`,
+      dbId: item.id,
+      name: item.subsectionName,
+      status: item.isActive ? 'Live' : 'Draft',
+      iconKey: item.icon || 'file',
+      isSystem: item.isSystem,
+      
+      path: item.isSystem 
+        ? `/admin/pages/blog/${item.slug}/${item.id}` 
+        : `/admin/pages/blog/custom/${item.slug}/${item.id}`,
+        
+      theme: item.theme || 'sky'
+    }));
+  }, [sections]);
+
+  // 4. LOADING STATE
+  if (isLoading && sections.length === 0) {
     return (
-      <div className="min-h-[400px] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
-        <span className="ml-3 text-slate-400 font-medium">Loading Blog Modules...</span>
+      <div className="min-h-[400px] flex flex-col items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-500"></div>
+        <span className="ml-3 mt-4 text-xs font-black uppercase tracking-widest text-slate-400">
+          Syncing Blog Modules...
+        </span>
       </div>
     );
   }
 
   return (
-    <div className="relative">
+    <div className="relative animate-in fade-in duration-500">
       <PageManager 
-        sectionId={5}
-        title="BLOG MODULES"
-        storageKey="tricksy_blog_modules"
+        sectionId={dynamicSectionId}
+        title={<>BLOG <span className="text-sky-500 italic uppercase">Modules.</span></>}
         defaultSections={formattedSections}
         iconLibrary={iconLibrary}
-        baseRoute="/admin/pages/blog"
         itemLabel="Module"
+        onCreate={handleCreateModule}
         onUpdate={handleUpdateModule}
+        onDelete={handleDeleteModule}
+        onReorder={handleReorderModules}
       />
     </div>
   );

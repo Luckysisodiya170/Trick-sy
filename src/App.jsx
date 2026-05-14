@@ -36,20 +36,23 @@ import TestimonialsEditor from './admin/modules/Home/TestimonialsEditor';
 import GoogleReviewsEditor from './admin/modules/Home/GoogleReviewsEditor';
 import CtaEditor from './admin/modules/Home/CtaEditor';
 
-// Admin Modules - About
+// // Admin Modules - About
 import AboutPageOverview from './admin/modules/About/AboutPageOverview';
 import AboutHeroEditor from './admin/modules/About/AboutHeroEditor';
 import AboutMissionEditor from './admin/modules/About/AboutMissionEditor';
 import AboutValuesEditor from './admin/modules/About/AboutValuesEditor';
 import AboutTimelineEditor from './admin/modules/About/AboutTimelineEditor';
 import AboutTeamEditor from './admin/modules/About/AboutTeamEditor';
+import AboutWhyChooseEditor from './admin/modules/About/AboutWhyChooseEditor';
 
-// Admin Modules - Contact
+// // Admin Modules - Contact
 import ContactPageOverview from './admin/modules/Contact/ContactPageOverview';
 import ContactHeroEditor from './admin/modules/Contact/ContactHeroEditor';
 import ContactFormEditor from './admin/modules/Contact/ContactFormEditor';
 import ContactInfoEditor from './admin/modules/Contact/ContactInfoEditor';
 import ContactMapEditor from './admin/modules/Contact/ContactMapEditor';
+import ContactTermsEditor from './admin/modules/Contact/Contacttermscondition';
+import ContactPrivacyEditor from './admin/modules/Contact/ContactPrivacyPolicy';
 
 // Admin Modules - Blog
 import BlogPageOverview from './admin/modules/Blog/BlogPageOverview';
@@ -59,7 +62,7 @@ import BlogCategoriesEditor from './admin/modules/Blog/BlogCategoriesEditor';
 import BlogSEOEditor from './admin/modules/Blog/BlogSEOEditor';
 import BlogDetailEditor from './admin/modules/Blog/BlogDetailEditor';
 
-// Admin Modules - Services
+// // Admin Modules - Services
 import ServicesPageOverview from './admin/modules/Services/ServicesPageOverview';
 import ServiceModulePicker from './admin/modules/Services/ServiceWizard';
 import ServicePricingEditor from './admin/modules/Services/ServicePricingEditor';
@@ -67,6 +70,7 @@ import ServiceHeroEditor from './admin/modules/Services/ServiceHeroEditor';
 import ServiceIncludesEditor from './admin/modules/Services/ServiceIncludesEditor';
 import ServiceFaqEditor from './admin/modules/Services/ServiceFaqEditor';
 import ServiceProcessEditor from './admin/modules/Services/ServiceProcessEditor';
+import ServiceWizard from './admin/modules/Services/ServiceWizard';
 
 // Admin Modules - Technical
 import TechnicalPageOverview from './admin/modules/Technical_Services/TechnicalPageOverview';
@@ -77,19 +81,21 @@ import TechnicalProcessEditor from './admin/modules/Technical_Services/Technical
 import TechnicalFAQEditor from './admin/modules/Technical_Services/TechnicalFAQEditor';
 import TechnicalPricingEditor from './admin/modules/Technical_Services/TechnicalPricingEditor';
 import TechnicalTrustEditor from './admin/modules/Technical_Services/TechnicalTrustEditor';
-import ServiceWizard from './admin/modules/Services/ServiceWizard';
+
+
+
+
 import ContactEnquiries from './admin/pages/ContactEnquiries';
 import ServiceBookings from './admin/pages/ServiceBookings';
 import NewsletterSubscribers from './admin/pages/NewsletterSubscribers';
 import AdminSettings from './admin/pages/AdminSettings';
 import AdminProfile from './admin/modules/profile/AdminProfile';
-import AboutWhyChooseEditor from './admin/modules/About/AboutWhyChooseEditor';
-import ContactTermsEditor from './admin/modules/Contact/Contacttermscondition';
-import ContactPrivacyEditor from './admin/modules/Contact/ContactPrivacyPolicy';
+
 import TermsAndConditions from './pages/Contact/TermsAndConditions';
 import PrivacyPolicy from './pages/Contact/PrivacyPolicy';
 import ScrollToTop from './components/Shared/ScrollToTop';
 import CustomerPolicy from './pages/Contact/CustomerPolicy';
+import ServicesSection from './pages/Home/ServicesSection';
 
 // Dummy Auth Pages
 const Login = () => <div className="flex h-screen items-center justify-center bg-slate-50 font-bold text-xl">Login Page (User)</div>;
@@ -101,6 +107,138 @@ function App() {
       <Router>
         <ScrollToTop/>
         <Routes>
+
+
+          /* {/* ADMIN ROUTES */} */
+
+          {/* 1. NORMAL PROTECTED ROUTE*/}
+<Route element={<ProtectedRoute />}>
+   <Route path="/admin" element={<AdminLayout />}>
+      <Route index element={<AdminDashboard />} />
+      <Route path="pages/home" element={<HomePageOverview />} />
+   </Route>
+</Route>
+
+{/* 2. SUPER ADMIN ONLY ROUTE*/}
+<Route element={<ProtectedRoute allowedRoles={['superadmin']} />}>
+   <Route path="/admin/settings" element={<AdminSettings />} />
+   {/* <Route path="/admin/staff" element={<ManageStaff />} /> */}
+</Route>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
           {/* USER ROUTES */}
           <Route path="/" element={<MainLayout><Home /></MainLayout>} />
@@ -135,65 +273,65 @@ function App() {
 
               {/* HOME CMS */}
               <Route path="pages/home" element={<HomePageOverview />} />
-              <Route path="pages/home/:id" element={<HeroEditor />} />
-              <Route path="pages/home/about" element={<AboutEditor />} />
-              <Route path="pages/home/services" element={<ServiceEditor />} />
-              <Route path="pages/home/popular" element={<PopularEditor />} />
-              <Route path="pages/home/why-us" element={<WhyChooseEditor />} />
-              <Route path="pages/home/faq" element={<FAQEditor />} />
-              <Route path="pages/home/testimonials" element={<TestimonialsEditor />} />
-              <Route path="pages/home/cta" element={<CtaEditor />} />
-              <Route path="pages/home/google" element={<GoogleReviewsEditor />} />
-              <Route path="pages/home/:slug/:id" element={<DynamicEditor />} />
+             <Route path="pages/home/hero/:id" element={<HeroEditor />} />
+<Route path="pages/home/about/:id" element={<AboutEditor />} />
+<Route path="pages/home/services/:id" element={<ServiceEditor />} />
+              <Route path="pages/home/popular/:id" element={<PopularEditor />} />
+              <Route path="pages/home/why-us/:id" element={<WhyChooseEditor />} />
+              <Route path="pages/home/faq/:id" element={<FAQEditor />} />
+              <Route path="pages/home/testimonials/:id" element={<TestimonialsEditor />} />
+              <Route path="pages/home/cta/:id" element={<CtaEditor />} />
+              <Route path="pages/home/google/:id" element={<GoogleReviewsEditor />} />
+              <Route path="pages/home/custom/:slug/:id" element={<DynamicEditor />} />
 
-              {/* ABOUT CMS */}
+              {/* ABOUT CMS*/}
               <Route path="pages/about" element={<AboutPageOverview />} />
-              <Route path="pages/about/about-hero" element={<AboutHeroEditor />} />
-              <Route path="pages/about/about-mission" element={<AboutMissionEditor />} />
-              <Route path="pages/about/about-values" element={<AboutValuesEditor />} />
-              <Route path="pages/about/about-timeline" element={<AboutTimelineEditor />} />
-              <Route path="pages/about/about-team" element={<AboutTeamEditor />} />
-              <Route path="pages/about/about-why-us" element={<AboutWhyChooseEditor />} />
-              <Route path="pages/about/:slug/:id" element={<DynamicEditor />} />
+              <Route path="pages/about/about-hero/:id" element={<AboutHeroEditor />} />
+               <Route path="pages/about/about-mission/:id" element={<AboutMissionEditor />} />
+             <Route path="pages/about/about-values/:id" element={<AboutValuesEditor />} />
+              <Route path="pages/about/about-timeline/:id" element={<AboutTimelineEditor />} />
+              <Route path="pages/about/about-team/:id" element={<AboutTeamEditor />} />
+              <Route path="pages/about/about-why-us/:id" element={<AboutWhyChooseEditor />} />
+              <Route path="pages/about/custom/:slug/:id" element={<DynamicEditor />} />
 
-              {/* CONTACT CMS */}
-              <Route path="pages/contact" element={<ContactPageOverview />} />
-              <Route path="pages/contact/contact-hero" element={<ContactHeroEditor />} />
-              <Route path="pages/contact/contact-info" element={<ContactInfoEditor />} />
-              <Route path="pages/contact/contact-form" element={<ContactFormEditor />} />
-              <Route path="pages/contact/contact-map" element={<ContactMapEditor />} />
-              <Route path="pages/contact/terms-and-conditions" element={<ContactTermsEditor />} />
-              <Route path="pages/contact/privacy-policy" element={<ContactPrivacyEditor />} />
-              <Route path="pages/contact/:slug/:id" element={<DynamicEditor />} />
+              {/* CONTACT CMS  */}
+             <Route path="pages/contact" element={<ContactPageOverview />} />
+              <Route path="pages/contact/contact-hero/:id" element={<ContactHeroEditor />} />
+              <Route path="pages/contact/contact-info/:id" element={<ContactInfoEditor />} />
+              <Route path="pages/contact/contact-form/:id" element={<ContactFormEditor />} />
+              <Route path="pages/contact/contact-map/:id" element={<ContactMapEditor />} />
+              <Route path="pages/contact/terms-and-conditions/:id" element={<ContactTermsEditor />} />
+              <Route path="pages/contact/privacy-policy/:id" element={<ContactPrivacyEditor />} />
+              <Route path="pages/contact/custom/:slug/:id" element={<DynamicEditor />} />
 
               {/* BLOG CMS */}
               <Route path="pages/blog" element={<BlogPageOverview />} />
-              <Route path="pages/blog/blog-hero" element={<BlogHeroEditor />} />
-              <Route path="pages/blog/blog-posts" element={<BlogPostsEditor />} />
-              <Route path="pages/blog/blog-categories" element={<BlogCategoriesEditor />} />
-              <Route path="pages/blog/blog-seo" element={<BlogSEOEditor />} />
-              <Route path="pages/blog/blog-content" element={<BlogDetailEditor />} />
-              <Route path="pages/blog/:slug/:id" element={<DynamicEditor />} />
+              <Route path="pages/blog/blog-hero/:id" element={<BlogHeroEditor />} />
+              <Route path="pages/blog/blog-posts/:id" element={<BlogPostsEditor />} />
+              <Route path="pages/blog/blog-categories/:id" element={<BlogCategoriesEditor />} />
+               <Route path="pages/blog/blog-seo/:id" element={<BlogSEOEditor />} />
+               <Route path="pages/blog/blog-content/:id" element={<BlogDetailEditor />} />
+               <Route path="pages/blog/custom/:slug/:id" element={<DynamicEditor />} /> 
 
               {/* SERVICES CMS */}
               <Route path="pages/services" element={<ServicesPageOverview />} />
-              <Route path="pages/services/:serviceId" element={<ServiceWizard />} />
+              {/* <Route path="pages/services/:serviceId" element={<ServiceWizard />} /> */}
               <Route path="pages/services/:serviceId/hero" element={<ServiceHeroEditor />} />
               <Route path="pages/services/:serviceId/includes" element={<ServiceIncludesEditor />} />
               <Route path="pages/services/:serviceId/faq" element={<ServiceFaqEditor />} />
               <Route path="pages/services/:serviceId/process" element={<ServiceProcessEditor />} />
-              <Route path="pages/services/:serviceId/pricing" element={<ServicePricingEditor />} />
-              <Route path="pages/services/:slug/:id" element={<ServiceWizard />} />
+              <Route path="pages/services/:serviceId/pricing" element={<ServicePricingEditor />} /> 
+               <Route path="pages/services/:slug/:id" element={<ServiceWizard />} />
 
               {/* TECHNICAL CMS */}
               <Route path="pages/technical" element={<TechnicalPageOverview />} />
-              <Route path="pages/technical/tech-hero" element={<TechnicalHeroEditor />} />
-              <Route path="pages/technical/tech-domains" element={<TechnicalDomainsEditor />} />
-              <Route path="pages/technical/tech-specs" element={<HardwareSpecsEditor />} />
-              <Route path="pages/technical/tech-process" element={<TechnicalProcessEditor />} />
-              <Route path="pages/technical/tech-pricing" element={<TechnicalPricingEditor />} />
-              <Route path="pages/technical/tech-faq" element={<TechnicalFAQEditor />} />
-              <Route path="pages/technical/tech-footer" element={<TechnicalTrustEditor />} />
+              <Route path="pages/technical/tech-hero/:id" element={<TechnicalHeroEditor />} />
+              <Route path="pages/technical/tech-domains/:id" element={<TechnicalDomainsEditor />} />
+              <Route path="pages/technical/tech-specs/:id" element={<HardwareSpecsEditor />} />
+              <Route path="pages/technical/tech-process/:id" element={<TechnicalProcessEditor />} />
+              <Route path="pages/technical/tech-pricing/:id" element={<TechnicalPricingEditor />} />
+              <Route path="pages/technical/tech-faq/:id" element={<TechnicalFAQEditor />} />
+              <Route path="pages/technical/tech-footer/:id" element={<TechnicalTrustEditor />} />
 
 
               {/* interaction pages */}
@@ -202,9 +340,6 @@ function App() {
               <Route path='newsletter' element={<NewsletterSubscribers />} />
               <Route path='settings' element={<AdminSettings />} />
 
-
-
-             
 
 
               {/* profile page */}

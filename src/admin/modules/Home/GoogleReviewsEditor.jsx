@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchSingleSubsectionContent, updateSingleSubsectionContent } from '../../../store/index'; 
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent } from '../../redux/slices/adminSlice'; 
 import { 
   ArrowLeft, Plus, Trash2, Star, CheckCircle2, 
-  ArrowUpRight, User, Eye, Edit3, Columns,
-  Globe, MessageSquare, ChevronDown, Settings2, Save, Loader2
+  ArrowUpRight, User, Settings2, Save, Loader2, Globe, ChevronDown
 } from 'lucide-react';
 
 const GoogleLogo = ({ className }) => (
@@ -20,321 +19,223 @@ const GoogleLogo = ({ className }) => (
 const GoogleReviewsEditor = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { id } = useParams();
-  const subsectionId = id || 9;
-
-  const contentData = useSelector((state) => state.content.activeSubsection);
-  const status = useSelector((state) => state.content.status);
+  const location = useLocation();
+  
+  const subsectionId = location.state?.sectionId || 9;
+  const contentData = useSelector((state) => state.adminData.activeSubsection);
+  const status = useSelector((state) => state.adminData.status);
 
   const [viewMode, setViewMode] = useState('split');
   const [activeCard, setActiveCard] = useState(null);
   const [isDeploying, setIsDeploying] = useState(false);
 
   const [stats, setStats] = useState({
-    ratingText: "Excellent",
-    totalReviews: "482 reviews",
-    reviewLink: "#",
-    trustBarText: "TRUSTED BY DUBAI'S BEST",
-    certifications: "Property Finder Approved, Dubai Municipality Certified"
+    ratingText: "", totalReviews: "", reviewLink: "#", trustBarText: "", certifications: ""
   });
-
-  const [reviews, setReviews] = useState([
-    { id: 1, author: "Omar Al-Sayed", time: "2 DAYS AGO", text: "Best maintenance team in Dubai. Fixed my AC in 30 mins! Super professional and polite staff.", rating: 5, avatar: null },
-    { id: 2, author: "Jessica M.", time: "1 WEEK AGO", text: "Highly recommend for deep cleaning. Every corner was spotless. Worth every dirham!", rating: 5, avatar: null }
-  ]);
+  const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
     dispatch(fetchSingleSubsectionContent(subsectionId));
   }, [dispatch, subsectionId]);
 
   useEffect(() => {
-    if (contentData && Object.keys(contentData).length > 0) {
+    if (contentData) {
       setStats({
         ratingText: contentData.mainTitle || "Excellent",
         totalReviews: contentData.reviewCount || "482 reviews",
         reviewLink: contentData.reviewLink || "#",
-        trustBarText: contentData.trustBarText || contentData.badge || "TRUSTED BY DUBAI'S BEST",
-        certifications: contentData.certifications || "Property Finder Approved, Dubai Municipality Certified"
+        trustBarText: contentData.badge || "TRUSTED BY DUBAI'S BEST",
+        certifications: contentData.certifications || ""
       });
-
-      if (contentData.reviews && contentData.reviews.length > 0) {
-        const loadedReviews = contentData.reviews.map((rev, idx) => ({
+      if (contentData.reviews) {
+        setReviews(contentData.reviews.map((rev, idx) => ({
           ...rev,
-          id: rev.id || Date.now() + idx,
+          id: rev.id || `review-${idx}`,
           text: rev.text || rev.comment || '',
-        }));
-        setReviews(loadedReviews);
+        })));
       }
     }
   }, [contentData]);
+
+  const handleLimitChange = (field, val, limit) => {
+    if (val.length <= limit) setStats({ ...stats, [field]: val });
+  };
 
   const updateReview = (id, field, value) => {
     setReviews(reviews.map(r => r.id === id ? { ...r, [field]: value } : r));
   };
 
-  const handleAddReview = () => {
-    const newId = Date.now();
-    setReviews([...reviews, { id: newId, author: "New Reviewer", time: "JUST NOW", text: "Write your review here...", rating: 5 }]);
-    setActiveCard(newId);
-  };
-
   const handleDeploy = async () => {
     setIsDeploying(true);
     try {
-      const finalReviews = reviews.map(({ id, avatar, ...rest }) => rest);
       const payload = {
         mainTitle: stats.ratingText,
         reviewCount: stats.totalReviews,
         reviewLink: stats.reviewLink,
-        trustBarText: stats.trustBarText,
-        certifications: stats.certifications,
         badge: stats.trustBarText,
-        reviews: finalReviews,
+        certifications: stats.certifications,
+        reviews: reviews.map(({ id, ...rest }) => rest),
         images: contentData?.images || [] 
       };
-
       await dispatch(updateSingleSubsectionContent({ subsectionId, updateData: payload })).unwrap();
-      navigate("/admin/pages/home");
-      alert("Google Reviews Deployed Successfully! 🚀");
-    } catch (error) {
-      console.error("Deploy Error:", error);
-      alert(`Deploy Failed: ${error.message}`);
-    } finally {
-      setIsDeploying(false);
-    }
+      dispatch(fetchSingleSubsectionContent(subsectionId));
+      alert("Google Reviews Deployed! 🚀");
+    } catch (error) { alert(`Error: ${error.message}`); } finally { setIsDeploying(false); }
   };
 
   if (status === 'loading' && !contentData) {
-    return (
-      <div className="h-screen flex items-center justify-center font-black text-slate-400 uppercase tracking-widest text-xs">
-        <Loader2 className="animate-spin mr-2" size={16} /> Loading Reviews Lab...
-      </div>
-    );
+    return <div className="h-screen flex items-center justify-center font-black text-slate-400 text-xs animate-pulse">SYNCING REVIEWS LAB...</div>;
   }
 
   return (
-    <div className="h-screen flex flex-col bg-[#F8FAFC] font-sans">
+    <div className="min-h-screen bg-[#FDFDFD] font-sans selection:bg-indigo-100">
       
-      {/* NAVBAR */}
-      <nav className="sticky top-0 z-[50] bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 py-3 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-2 sm:gap-3 w-1/4 sm:w-1/3">
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-xl transition-all">
-            <ArrowLeft size={18} />
-          </button>
-          <h1 className="hidden lg:flex text-lg font-black tracking-tight items-center gap-2 italic">
-            <Settings2 size={20} className="text-blue-600" /> GOOGLE REVIEWS <span className="text-blue-500">LAB</span>
+      {/* 1. SAVAGE NAVBAR */}
+      <nav className="sticky top-0 z-[100] bg-white/80 backdrop-blur-md border-b border-slate-100 px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-50 rounded-xl transition-all text-slate-400 hover:text-slate-900"><ArrowLeft size={18} /></button>
+          <h1 className="text-[12px] font-black italic flex items-center gap-2 uppercase tracking-[0.2em] text-slate-800">
+            <Settings2 size={16} className="text-blue-600" /> Reviews <span className="text-blue-400">Lab</span>
           </h1>
         </div>
 
-        <div className="flex bg-slate-100 p-1 sm:p-1.5 rounded-full shadow-inner w-auto justify-center">
-          <button onClick={() => setViewMode('edit')} className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'edit' ? 'bg-white shadow-md text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}>
-            <Edit3 size={14} className="hidden sm:block" /> Edit
-          </button>
-          <button onClick={() => setViewMode('split')} className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'split' ? 'bg-white shadow-md text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}>
-            <Columns size={14} className="hidden sm:block" /> Split
-          </button>
-          <button onClick={() => setViewMode('preview')} className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-300 ${viewMode === 'preview' ? 'bg-white shadow-md text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}>
-            <Eye size={14} className="hidden sm:block" /> Preview
-          </button>
+        <div className="flex bg-slate-100/50 p-1 rounded-xl border border-slate-100">
+          {['edit', 'split', 'preview'].map(m => (
+            <button key={m} onClick={() => setViewMode(m)} className={`px-5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${viewMode === m ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400'}`}>{m}</button>
+          ))}
         </div>
 
-        <div className="w-1/4 sm:w-1/3 flex justify-end">
-          <button onClick={handleDeploy} disabled={isDeploying} className="bg-slate-900 text-white px-4 sm:px-8 py-2.5 rounded-full font-extrabold text-[10px] sm:text-xs flex items-center gap-2 shadow-lg hover:bg-blue-600 transition-all hover:-translate-y-0.5 disabled:opacity-50">
-            {isDeploying ? <Loader2 size={14} className="animate-spin hidden sm:block" /> : <Save size={14} className="hidden sm:block" />} 
-            {isDeploying ? 'DEPLOYING...' : 'DEPLOY'}
-          </button>
-        </div>
+        <button onClick={handleDeploy} disabled={isDeploying} className="bg-slate-900 text-white px-8 py-2 rounded-xl font-black text-[10px] tracking-widest hover:bg-blue-600 transition-all">
+          {isDeploying ? <Loader2 className="animate-spin" size={14} /> : "DEPLOY"}
+        </button>
       </nav>
 
-      <div className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row">
+      <div className={`mx-auto transition-all duration-700 ${viewMode === 'split' ? 'max-w-[1800px] px-8 py-8 grid grid-cols-12 gap-8' : 'max-w-4xl py-12 px-6'}`}>
         
-        {/* EDITOR PANEL */}
+        {/* 2. EDITOR PANEL */}
         {(viewMode === 'edit' || viewMode === 'split') && (
-          <div className={`${viewMode === 'split' ? 'w-full lg:w-[420px] lg:border-r border-slate-200 lg:h-full lg:overflow-y-auto' : 'w-full h-full lg:overflow-y-auto'} p-4 md:p-6 lg:p-10 bg-[#F8FAFC] custom-scrollbar`}>
-            <div className="max-w-3xl mx-auto space-y-6 md:space-y-8 pb-10">
-              
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4 md:pb-6">
-                <div>
-                  <h2 className="text-lg md:text-xl font-black text-slate-900 tracking-tight">Reviews Content</h2>
-                  <p className="text-[10px] md:text-xs text-slate-500 font-medium mt-0.5">Add or edit customer feedback.</p>
-                </div>
-                <button onClick={handleAddReview} className="bg-blue-600 text-white px-3 py-2 md:px-4 md:py-2.5 rounded-xl font-bold text-[10px] flex items-center gap-1.5 hover:bg-slate-900 transition-all shadow-md active:scale-95 shrink-0">
-                  <Plus size={16} /> <span className="hidden sm:inline">ADD NEW</span>
-                </button>
-              </div>
-
-              {/* STATS SECTION */}
-              <section className="bg-white p-5 md:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4 md:space-y-6">
-                <div className="flex items-center gap-2 text-[10px] font-black text-blue-600 uppercase tracking-widest border-b border-slate-50 pb-3 md:pb-4">
-                  <Globe size={14} /> Global Statistics
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Rating Title</label>
-                    <input value={stats.ratingText} onChange={(e) => setStats({...stats, ratingText: e.target.value})} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:ring-2 ring-blue-50 focus:bg-white transition-all" />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Total Reviews</label>
-                    <input value={stats.totalReviews} onChange={(e) => setStats({...stats, totalReviews: e.target.value})} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:ring-2 ring-blue-50 focus:bg-white transition-all" />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Trust Bar Highlight (Italic)</label>
-                    <input value={stats.trustBarText} onChange={(e) => setStats({...stats, trustBarText: e.target.value})} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:ring-2 ring-blue-50 focus:bg-white transition-all" />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Certifications (Comma separated)</label>
-                    <input value={stats.certifications} onChange={(e) => setStats({...stats, certifications: e.target.value})} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:ring-2 ring-blue-50 focus:bg-white transition-all" />
-                  </div>
-                </div>
-              </section>
-
-              {/* REVIEWS LIST */}
+          <div className={`${viewMode === 'split' ? 'col-span-4' : 'w-full'} space-y-6`}>
+            
+            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm space-y-5">
+              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50 pb-2 block">Global Stats</span>
               <div className="space-y-3">
-                <div className="flex items-center gap-2 px-1 pb-1">
-                  <MessageSquare size={14} className="text-blue-500" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Review Cards</span>
+                <div className="grid grid-cols-2 gap-3">
+                   <input value={stats.ratingText} onChange={e => handleLimitChange('ratingText', e.target.value, 15)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl font-bold text-xs outline-none focus:border-blue-500" placeholder="Rating Text" />
+                   <input value={stats.totalReviews} onChange={e => handleLimitChange('totalReviews', e.target.value, 20)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl font-bold text-xs outline-none focus:border-blue-500" placeholder="Review Count" />
                 </div>
-
-                {reviews.map((rev) => (
-                  <div key={rev.id} className={`bg-white rounded-2xl md:rounded-[1.5rem] border transition-all duration-300 ${activeCard === rev.id ? 'ring-4 ring-blue-50 border-blue-200 shadow-lg' : 'border-slate-200 hover:border-slate-300'}`}>
-                    <div onClick={() => setActiveCard(activeCard === rev.id ? null : rev.id)} className="p-3 md:p-4 flex items-center justify-between cursor-pointer">
-                      <div className="flex items-center gap-3 w-full pr-4">
-                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center border border-slate-100 overflow-hidden shrink-0">
-                          <User className="text-slate-300" size={18} />
-                        </div>
-                        <div className="overflow-hidden w-full">
-                          <h4 className="font-bold text-xs text-slate-800 truncate">{rev.author}</h4>
-                          <p className="text-[9px] font-bold text-blue-500 uppercase mt-0.5 truncate">{rev.time}</p>
-                        </div>
-                      </div>
-                      <ChevronDown size={16} className={`text-slate-300 transition-transform shrink-0 ${activeCard === rev.id ? 'rotate-180 text-blue-500' : ''}`} />
-                    </div>
-
-                    {activeCard === rev.id && (
-                      <div className="px-4 md:px-5 pb-5 md:pb-6 pt-2 border-t border-slate-50 space-y-4 animate-in fade-in slide-in-from-top-1">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <input placeholder="Name" value={rev.author} onChange={(e) => updateReview(rev.id, 'author', e.target.value)} className="w-full p-2.5 bg-slate-50 border border-slate-100 rounded-lg text-xs font-bold outline-none focus:bg-white focus:ring-1 ring-blue-100 transition-all" />
-                          <input placeholder="Time (e.g. 2 DAYS AGO)" value={rev.time} onChange={(e) => updateReview(rev.id, 'time', e.target.value)} className="w-full p-2.5 bg-slate-50 border border-slate-100 rounded-lg text-xs font-bold outline-none focus:bg-white focus:ring-1 ring-blue-100 transition-all uppercase" />
-                        </div>
-                        <textarea placeholder="Write review..." value={rev.text} onChange={(e) => updateReview(rev.id, 'text', e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl text-xs h-20 resize-none outline-none leading-relaxed focus:bg-white focus:ring-1 ring-blue-100 transition-all" />
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-50">
-                           <div className="flex gap-1 bg-slate-50 p-1.5 rounded-lg border border-slate-100">
-                              {[1,2,3,4,5].map(n => (
-                                <Star key={n} size={14} onClick={() => updateReview(rev.id, 'rating', n)} className={`cursor-pointer transition-all ${rev.rating >= n ? 'fill-amber-400 text-amber-400' : 'text-slate-200 hover:text-amber-200'}`} />
-                              ))}
-                           </div>
-                           <button onClick={() => setReviews(reviews.filter(r => r.id !== rev.id))} className="text-rose-500 p-2 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors flex items-center justify-center gap-1.5 px-3">
-                              <Trash2 size={14} /> <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:block">Delete</span>
-                           </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                <input value={stats.trustBarText} onChange={e => handleLimitChange('trustBarText', e.target.value, 40)} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl font-bold text-xs outline-none focus:border-blue-500" placeholder="Trust Bar Text" />
+                <textarea value={stats.certifications} onChange={e => setStats({...stats, certifications: e.target.value})} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl font-medium text-[10px] outline-none h-16 resize-none" placeholder="Certifications (Comma separated)" />
               </div>
+            </div>
+
+            <div className="flex items-center justify-between px-2">
+               <span className="text-[10px] font-black uppercase text-slate-400">Feedback Cards ({reviews.length})</span>
+               <button onClick={() => setReviews([...reviews, { id: Date.now(), author: "New User", time: "Just Now", text: "", rating: 5 }])} className="text-[9px] font-black text-blue-600">+ ADD FEEDBACK</button>
+            </div>
+
+            <div className="space-y-3 pb-10">
+              {reviews.map((rev) => (
+                <div key={rev.id} className={`bg-white rounded-2xl border transition-all ${activeCard === rev.id ? 'border-blue-500 shadow-md' : 'border-slate-100 shadow-sm'}`}>
+                  <div onClick={() => setActiveCard(activeCard === rev.id ? null : rev.id)} className="p-4 flex items-center justify-between cursor-pointer group">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600"><User size={16}/></div>
+                      <span className="text-[11px] font-bold text-slate-700 uppercase tracking-tight">{rev.author || "Unnamed"}</span>
+                    </div>
+                    <ChevronDown size={14} className={`text-slate-300 transition-transform ${activeCard === rev.id ? 'rotate-180' : ''}`} />
+                  </div>
+                  {activeCard === rev.id && (
+                    <div className="p-4 pt-0 space-y-3 border-t border-slate-50 animate-in fade-in">
+                      <div className="grid grid-cols-2 gap-3">
+                        <input value={rev.author} onChange={e => updateReview(rev.id, 'author', e.target.value.substring(0, 20))} className="w-full p-2 bg-slate-50 rounded-lg text-[10px] font-bold outline-none" placeholder="Name" />
+                        <input value={rev.time} onChange={e => updateReview(rev.id, 'time', e.target.value.substring(0, 15))} className="w-full p-2 bg-slate-50 rounded-lg text-[10px] font-bold outline-none uppercase" placeholder="Time" />
+                      </div>
+                      <textarea value={rev.text} onChange={e => updateReview(rev.id, 'text', e.target.value.substring(0, 150))} className="w-full p-2 bg-slate-50 rounded-lg text-[10px] font-medium outline-none h-20 resize-none" placeholder="Feedback Text..." />
+                      <div className="flex items-center justify-between">
+                         <div className="flex gap-1">
+                            {[1,2,3,4,5].map(n => <Star key={n} size={14} onClick={() => updateReview(rev.id, 'rating', n)} className={`cursor-pointer ${rev.rating >= n ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}`} />)}
+                         </div>
+                         <button onClick={() => setReviews(reviews.filter(x => x.id !== rev.id))} className="text-rose-500"><Trash2 size={14}/></button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         )}
 
-        {/* PREVIEW PANEL - MATCHING THE GOOGLE REVIEWS DESIGN */}
+        {/* 3. LIVE PREVIEW (BALANCED SPACE) */}
         {(viewMode === 'preview' || viewMode === 'split') && (
-          <div className={`${viewMode === 'split' ? 'w-full lg:flex-1 min-h-[700px] lg:min-h-0' : 'w-full h-full'} bg-slate-200 p-3 sm:p-4 lg:p-10 flex items-center justify-center overflow-hidden`}>
-            
-            <div className={`w-full h-full max-w-6xl bg-white shadow-2xl rounded-3xl md:rounded-[2.5rem] overflow-hidden flex flex-col border-[4px] md:border-[8px] border-slate-900 transition-all duration-500 ${viewMode === 'split' ? 'lg:scale-[0.95] xl:scale-[0.9]' : 'scale-100'}`}>
-                
-                {/* Browser Header */}
-                <div className="h-8 md:h-10 bg-slate-900 flex items-center px-4 md:px-6 gap-1.5 md:gap-2 shrink-0">
-                    <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-rose-500" />
-                    <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-amber-500" />
-                    <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-emerald-500" />
-                </div>
+          <div className={`${viewMode === 'split' ? 'col-span-8' : 'w-full'} sticky top-24`}>
+            <div className="relative mx-auto bg-slate-900 rounded-[2.5rem] p-3 shadow-2xl border-[10px] border-slate-800 overflow-hidden">
+               {/* Browser UI */}
+               <div className="flex items-center gap-2 mb-3 px-3">
+                  <div className="flex gap-1"><div className="w-1.5 h-1.5 rounded-full bg-slate-700" /><div className="w-1.5 h-1.5 rounded-full bg-slate-700" /><div className="w-1.5 h-1.5 rounded-full bg-slate-700" /></div>
+                  <div className="flex-1 max-w-[120px] mx-auto h-3.5 bg-slate-800 rounded-full flex items-center justify-center text-[6px] text-slate-500 font-bold uppercase tracking-widest">Reviews Preview</div>
+               </div>
 
-                {/* SCROLLABLE CONTENT AREA */}
-                <div className="flex-1 overflow-y-auto bg-white py-10 md:py-16 px-4 md:px-8 lg:px-12 custom-scrollbar-preview flex flex-col items-center">
-                   
-                   <div className="w-full max-w-[1100px] bg-[#F8F9FA] rounded-[2rem] p-6 md:p-8 lg:p-12 flex flex-col lg:flex-row gap-8 lg:gap-12 shadow-sm border border-slate-100">
-                      
-                      {/* Left: Overall Rating Box */}
-                      <div className="flex flex-col justify-center min-w-[220px] shrink-0">
-                        <GoogleLogo className="w-10 h-10 mb-4" />
-                        <h2 className="text-3xl lg:text-4xl font-black text-[#1F2937] tracking-tight mb-3">{stats.ratingText}</h2>
-                        <div className="flex gap-1 mb-3">
-                           {[...Array(5)].map((_, i) => <Star key={i} size={20} className="fill-[#FBBF24] text-[#FBBF24]" />)}
-                        </div>
-                        <p className="text-sm font-medium text-slate-500 mb-6">Based on <span className="font-bold text-slate-900 underline underline-offset-2">{stats.totalReviews}</span></p>
-                        
-                        <a href={stats.reviewLink} className="text-xs font-black uppercase tracking-widest text-slate-900 flex items-center gap-1.5 hover:text-blue-600 transition-colors w-fit">
-                          WRITE A REVIEW <ArrowUpRight size={16} strokeWidth={3} />
-                        </a>
-                      </div>
-
-                      {/* Divider */}
-                      <div className="hidden lg:block w-px bg-slate-200 shrink-0" />
-
-                      {/* Right: Scrollable Cards */}
-                      <div className="flex overflow-x-auto gap-4 md:gap-6 pb-4 custom-scrollbar snap-x w-full">
-                        {reviews.map(rev => (
-                          <div className="min-w-[280px] md:min-w-[340px] bg-white p-5 md:p-6 rounded-2xl md:rounded-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 snap-center flex flex-col justify-between hover:shadow-lg transition-shadow" key={rev.id}>
-                            
-                            {/* Card Header */}
-                            <div className="flex items-start justify-between mb-4">
-                               <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                                    {rev.avatar ? <img src={rev.avatar} className="w-full h-full rounded-full object-cover" /> : <User size={16} className="text-slate-400" />}
-                                  </div>
-                                  <div>
-                                     <div className="flex items-center gap-1 mb-0.5">
-                                        <span className="font-bold text-sm text-slate-900 leading-none">{rev.author}</span>
-                                        <CheckCircle2 size={14} className="text-[#4285F4] fill-blue-50" />
-                                     </div>
-                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide leading-none">{rev.time}</span>
-                                  </div>
-                               </div>
-                               <GoogleLogo className="w-5 h-5 shrink-0" />
-                            </div>
-                            
-                            {/* Card Text */}
-                            <p className="text-[13px] md:text-sm text-slate-600 font-medium mb-6 leading-relaxed line-clamp-3 md:line-clamp-none">
-                              "{rev.text}"
-                            </p>
-                            
-                            {/* Card Stars */}
-                            <div className="flex gap-1 mt-auto">
-                               {[...Array(rev.rating)].map((_, i) => <Star key={i} size={14} className="fill-[#FBBF24] text-[#FBBF24]" />)}
-                            </div>
+               <div className="bg-white rounded-xl overflow-hidden min-h-[500px] flex flex-col items-center justify-center px-10 relative py-12">
+                 <div className="w-full scale-[0.85] -mt-10 animate-in fade-in duration-700">
+                    
+                    <div className="bg-[#F8F9FA] rounded-[2.5rem] p-10 flex flex-col lg:flex-row gap-10 border border-slate-100 shadow-sm relative overflow-hidden">
+                       <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16 blur-2xl" />
+                       
+                       <div className="min-w-[200px] flex flex-col justify-center border-b lg:border-b-0 lg:border-r border-slate-200 pb-8 lg:pb-0 lg:pr-10">
+                          <GoogleLogo className="w-10 h-10 mb-5" />
+                          <h2 className="text-3xl font-black text-slate-800 mb-1">{stats.ratingText}</h2>
+                          <div className="flex gap-0.5 mb-3">
+                             {[...Array(5)].map((_, i) => <Star key={i} size={18} className="fill-[#FBBF24] text-[#FBBF24]" />)}
                           </div>
-                        ))}
-                      </div>
+                          <p className="text-[10px] font-medium text-slate-400 mb-6 uppercase tracking-tighter">Based on <span className="text-slate-900 font-bold underline">{stats.totalReviews}</span></p>
+                          <div className="text-[9px] font-black uppercase tracking-widest text-slate-900 flex items-center gap-2 group cursor-pointer">
+                            WRITE REVIEW <ArrowUpRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                          </div>
+                       </div>
 
-                   </div>
+                       <div className="flex-1 flex overflow-x-auto gap-5 pb-4 custom-scrollbar snap-x no-scrollbar">
+                          {reviews.map(rev => (
+                            <div className="min-w-[280px] bg-white p-5 rounded-[1.5rem] shadow-sm border border-slate-50 snap-center flex flex-col" key={rev.id}>
+                               <div className="flex justify-between items-start mb-4">
+                                  <div className="flex items-center gap-2">
+                                     <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400"><User size={14}/></div>
+                                     <div className="leading-tight">
+                                        <div className="flex items-center gap-1"><span className="font-bold text-[11px] text-slate-800 uppercase">{rev.author}</span><CheckCircle2 size={10} className="text-blue-500" /></div>
+                                        <span className="text-[7px] font-black text-slate-400 uppercase">{rev.time}</span>
+                                     </div>
+                                  </div>
+                                  <GoogleLogo className="w-4 h-4 opacity-30" />
+                               </div>
+                               <p className="text-[11px] text-slate-500 font-medium leading-relaxed italic mb-4 flex-1 line-clamp-3">"{rev.text}"</p>
+                               <div className="flex gap-0.5">
+                                  {[...Array(rev.rating)].map((_, i) => <Star key={i} size={10} className="fill-[#FBBF24] text-[#FBBF24]" />)}
+                               </div>
+                            </div>
+                          ))}
+                       </div>
+                    </div>
 
-                   {/* Trust Bar Bottom */}
-                   <div className="mt-8 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-4 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-slate-400 text-center px-4">
-                      <span className="text-slate-500 text-sm md:text-base tracking-tighter italic">{stats.trustBarText}</span>
-                      <span className="h-4 w-px bg-slate-300 hidden sm:block"></span>
-                      <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
-                        {stats.certifications?.split(',').map((cert, i) => (
-                          <span key={i}>{cert.trim()}</span>
-                        ))}
-                      </div>
-                   </div>
+                    {/* Trust Bar */}
+                    <div className="mt-8 flex items-center justify-center gap-4">
+                       <span className="text-slate-400 font-black uppercase text-[8px] tracking-[0.2em] italic">{stats.trustBarText}</span>
+                       <div className="h-3 w-[1px] bg-slate-200" />
+                       <div className="flex gap-3 overflow-hidden">
+                          {stats.certifications?.split(',').map((c, i) => (
+                            <span key={i} className="text-[8px] font-bold text-slate-500 uppercase whitespace-nowrap">{c.trim()}</span>
+                          ))}
+                       </div>
+                    </div>
 
-                </div>
+                 </div>
+               </div>
             </div>
           </div>
         )}
       </div>
 
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
-        @media (min-width: 768px) { .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; } }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        
-        .custom-scrollbar-preview::-webkit-scrollbar { width: 5px; height: 6px; }
-        .custom-scrollbar-preview::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar-preview::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        .custom-scrollbar-preview::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 3px; height: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
       `}</style>
     </div>
   );

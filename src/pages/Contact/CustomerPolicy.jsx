@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 const CustomerPolicy = () => {
   const navigate = useNavigate();
 
-  // DUMMY DATA (Tricksy ke Customer, Refund aur Cancellation rules)
+  // DUMMY DATA
   const dummyData = {
     title: "Customer Policy",
     lastUpdated: "April 17, 2026",
@@ -37,7 +37,7 @@ const CustomerPolicy = () => {
     <div className="min-h-screen bg-slate-50 py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden relative">
         
-        {/* Header Section - Blue Theme for Trust & Support */}
+        {/* Header Section*/}
         <div className="bg-blue-600 px-8 py-16 text-center relative">
           
           {/* BACK BUTTON */}
@@ -72,7 +72,6 @@ const CustomerPolicy = () => {
                 {item.itemTitle}
               </h2>
               
-              {/* whitespace-pre-wrap zaroori hai spacing ke liye */}
               <p className="text-slate-600 leading-relaxed md:pl-11 text-lg whitespace-pre-wrap">
                 {item.itemDescription}
               </p>

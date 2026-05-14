@@ -1,11 +1,18 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchSections, updateSubsection } from '../../../store/index';
-import PageManager from '../../components/PageManager';
+import { 
+  fetchPageSections, 
+  updateSubsectionConfig, 
+  createSubsection, 
+  deleteSubsection 
+} from '../../redux/slices/adminSlice'; 
+
+import PageManager from '../../components/PageManager'; 
+import { AdminService } from '../../services/adminService';
 import { 
   Sparkles, Wind, Building2, Armchair, Paintbrush, 
   Wrench, Box, ShieldCheck, Zap, Star, LayoutTemplate,
-  Target, Heart, Milestone, Users, Globe, FileText, PlayCircle, Code
+  Target, Heart, Milestone, Users, Globe, FileText, PlayCircle, Code, Loader2 
 } from 'lucide-react';
 
 const iconLibrary = {
@@ -17,55 +24,108 @@ const iconLibrary = {
   file: FileText, play: PlayCircle, code: Code
 };
 
+const getSafeThemeClasses = (theme) => {
+  const themeMap = {
+    indigo: { color: 'text-indigo-500', bg: 'bg-indigo-50' },
+    emerald: { color: 'text-emerald-500', bg: 'bg-emerald-50' },
+    rose: { color: 'text-rose-500', bg: 'bg-rose-50' },
+    amber: { color: 'text-amber-500', bg: 'bg-amber-50' },
+    blue: { color: 'text-blue-500', bg: 'bg-blue-50' },
+    slate: { color: 'text-slate-500', bg: 'bg-slate-50' },
+  };
+  return themeMap[theme] || themeMap.amber; // Default to amber for Services
+};
+
 const ServicesPageOverview = () => {
   const dispatch = useDispatch();
   
-  const sections = useSelector((state) => state.sections.items);
-  const status = useSelector((state) => state.sections.status);
+  // Dynamic Section ID Logic
+  const sidebarTree = useSelector((state) => state.adminData?.sidebarTree || []);
+  const serviceSectionInfo = sidebarTree.find(sec => sec.slug === 'services');
+  const dynamicSectionId = serviceSectionInfo?.id || 3; 
+
+  const sections = useSelector((state) => state.adminData?.pageSections || []);
+  const isSectionsLoading = useSelector((state) => state.adminData?.isSectionsLoading);
 
   useEffect(() => {
-    dispatch(fetchSections(3));
-  }, [dispatch]);
+    if (dynamicSectionId) {
+      dispatch(fetchPageSections(dynamicSectionId));
+    }
+  }, [dispatch, dynamicSectionId]);
 
-  const handleUpdateModule = (dbId, currentSlug, updatedFields) => {
-    dispatch(updateSubsection({ dbId, updatedFields }));
+  // --- Handlers ---
+
+  const handleCreateModule = (newData) => {
+    dispatch(createSubsection({ ...newData, section_id: dynamicSectionId }));
   };
 
-  const formattedSections = sections.map((item) => ({
-    id: item.slug,
-    dbId: item.id,
-    name: item.subsectionName,
-    status: item.isActive ? 'Live' : 'Draft',
-    iconKey: item.icon,
-    isSystem: item.isSystem,
-    path: item.isSystem 
-      ? `/admin/pages/services/${item.slug}` 
-      : `/admin/pages/services/${item.slug}/${item.id}`,
-    theme: item.theme,
-    color: `text-${item.theme}-500`,
-    bg: `bg-${item.theme}-50`
-  }));
+  const handleUpdateModule = (dbId, currentSlug, updatedFields) => {
+    dispatch(updateSubsectionConfig({ dbId, updatedFields }));
+  };
 
-  if (status === 'loading' && sections.length === 0) {
+  const handleDeleteModule = (dbId) => {
+    dispatch(deleteSubsection(dbId));
+  };
+
+  const handleReorderModules = async (newOrderFromDnd) => {
+    try {
+      const orderedDbIds = newOrderFromDnd.map(item => Number(item.dbId));
+      await AdminService.reorderSubsections(orderedDbIds);
+      dispatch(fetchPageSections(dynamicSectionId)); 
+    } catch (error) {
+      console.error("Order update failed:", error);
+    }
+  };
+
+  // Memoized Sorting & Mapping
+  const formattedSections = useMemo(() => {
+    if (!Array.isArray(sections)) return [];
+    
+    const sortedSections = [...sections].sort((a, b) => a.order - b.order);
+    
+    return sortedSections.map((item) => {
+      const safeTheme = getSafeThemeClasses(item.theme);
+      
+      return {
+        id: item.slug || `service-${item.id}`,
+        dbId: item.id,
+        name: item.subsectionName,
+        status: item.isActive ? 'Live' : 'Draft',
+        iconKey: item.icon || 'sparkles',
+        isSystem: item.isSystem,
+        path: item.isSystem 
+          ? `/admin/pages/services/${item.slug}/${item.id}` 
+          : `/admin/pages/services/custom/${item.slug}/${item.id}`,
+        theme: item.theme || 'amber',
+        color: safeTheme.color,
+        bg: safeTheme.bg
+      };
+    });
+  }, [sections]);
+
+  if (isSectionsLoading && sections.length === 0) {
     return (
-      <div className="min-h-[400px] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
-        <span className="ml-3 text-slate-400 font-medium">Loading Services...</span>
+      <div className="min-h-[400px] flex flex-col items-center justify-center">
+        <Loader2 className="animate-spin text-amber-500 mb-3" size={32} />
+        <span className="text-slate-400 font-black uppercase tracking-widest text-[10px]">
+          FETCHING SERVICES...
+        </span>
       </div>
     );
   }
 
   return (
-    <div className="relative">
+    <div className="relative selection:bg-amber-100">
       <PageManager 
-        sectionId={3}
-        title="SERVICE MANAGER"
-        storageKey="tricksy_services_manager"
+        sectionId={dynamicSectionId}
+        title={<>SERVICE <span className="text-amber-500 italic">SECTIONS.</span></>}
         defaultSections={formattedSections}
         iconLibrary={iconLibrary}
-        baseRoute="/admin/pages/services"
-        itemLabel="Service"
+        itemLabel="Service Module"
+        onCreate={handleCreateModule}
         onUpdate={handleUpdateModule}
+        onDelete={handleDeleteModule}
+        onReorder={handleReorderModules}
       />
     </div>
   );

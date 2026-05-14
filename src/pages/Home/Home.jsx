@@ -68,11 +68,11 @@ const dynamicExtraSections = allContent.filter(
   const aboutRaw = allContent.find(i => i.subsectionId === 2);
 
   // 3. Services
-  const servicesRaw = allContent.find(i => i.subsectionId === 3);
-  const servicesProps = servicesRaw ? {
-    ...servicesRaw.textContent, 
-    backendImages: servicesRaw.images?.map(img => getImageUrl(img)) || []
-  } : null;
+  // const servicesRaw = allContent.find(i => i.subsectionId === 3);
+  // const servicesProps = servicesRaw ? {
+  //   ...servicesRaw.textContent, 
+  //   backendImages: servicesRaw.images?.map(img => getImageUrl(img)) || []
+  // } : null;
 
   const popularServicesRaw = allContent.find(i => i.subsectionId === 4);
   const popularServicesProps = popularServicesRaw ? {
@@ -91,8 +91,8 @@ const dynamicExtraSections = allContent.filter(
       
       <AboutSection aboutData={aboutRaw} />
       
-      <ServicesSection servicesData={servicesProps} />
-      
+      {/* <ServicesSection /> */}
+      <ServicesSection />
       <PopularServices servicesData={popularServicesProps} />
       <WhyChooseUs />
       <Testimonials />

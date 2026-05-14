@@ -38,7 +38,6 @@ const NotFound = () => {
           </Link>
         </div>
 
-        {/* Background Grid Pattern */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] opacity-[0.03] -z-10 pointer-events-none" style={{ backgroundImage: 'linear-gradient(to right, #000 2px, transparent 2px), linear-gradient(to bottom, #000 2px, transparent 2px)', backgroundSize: '64px 64px' }}></div>
       </div>
     </div>

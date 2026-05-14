@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchSingleSubsectionContent, updateSingleSubsectionContent, fetchSections } from '../../../store/index';
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent, fetchPageSections } from '../../redux/slices/adminSlice';
 import { 
   ArrowLeft, Save, Settings2, Edit3, Columns, Eye, 
   CheckCircle2, Hammer, Zap, PenTool, Drill, 
@@ -13,17 +13,22 @@ const HardwareSpecsEditor = () => {
   const dispatch = useDispatch();
   const { id } = useParams();
   
-  const sections = useSelector((state) => state.sections.items);
-  const reduxContent = useSelector((state) => state.content.activeSubsection);
-  const status = useSelector((state) => state.content.status);
+  const sidebarTree = useSelector((state) => state.adminData?.sidebarTree || []);
+  const sections = useSelector((state) => state.adminData?.pageSections || []);
+  const reduxContent = useSelector((state) => state.adminData?.activeSubsection);
+  const status = useSelector((state) => state.adminData?.status || '');
+
+  const techSectionInfo = sidebarTree.find(sec => sec.slug === 'technical');
+  const sectionId = techSectionInfo?.id || 4;
 
   const currentSection = sections.find(s => s.slug === 'tech-specs');
   const subsectionId = id || currentSection?.id || 24;
 
   const [viewMode, setViewMode] = useState('split'); 
   const [isSaving, setIsSaving] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
-  // Detailed State Management
+  //  State Management
   const [content, setContent] = useState({
     header: {
       prefix: "THE ",
@@ -48,9 +53,9 @@ const HardwareSpecsEditor = () => {
 
   useEffect(() => {
     if (sections.length === 0) {
-      dispatch(fetchSections(4));
+      dispatch(fetchPageSections(sectionId));
     }
-  }, [dispatch, sections.length]);
+  }, [dispatch, sections.length, sectionId]);
 
   useEffect(() => {
     if (subsectionId) {
@@ -59,17 +64,22 @@ const HardwareSpecsEditor = () => {
   }, [dispatch, subsectionId]);
 
   useEffect(() => {
-    if (reduxContent && reduxContent.description) {
-      try {
-        const parsedData = JSON.parse(reduxContent.description);
-        if (parsedData && parsedData.header) {
-          setContent(parsedData);
+    if (reduxContent && Object.keys(reduxContent).length > 0 && !hasLoaded) {
+      if (reduxContent.id == subsectionId || reduxContent.subsectionId == subsectionId) {
+        if (reduxContent.description) {
+          try {
+            const parsedData = JSON.parse(reduxContent.description);
+            if (parsedData && parsedData.header) {
+              setContent(parsedData);
+            }
+          } catch (error) {
+            console.error("Failed to parse content JSON", error);
+          }
         }
-      } catch (error) {
-        console.error("Failed to parse content JSON");
+        setHasLoaded(true);
       }
     }
-  }, [reduxContent]);
+  }, [reduxContent, subsectionId, hasLoaded]);
 
   const handleUpdate = (section, field, value) => {
     setContent(prev => ({
@@ -85,6 +95,7 @@ const HardwareSpecsEditor = () => {
   };
 
   const handleSave = async () => {
+    if (!subsectionId) return alert("Error: Missing Subsection ID.");
     setIsSaving(true);
     try {
       const payload = {
@@ -98,26 +109,31 @@ const HardwareSpecsEditor = () => {
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
-navigate('/admin/pages/technical');
 
-      alert("Hardware Specs Updated Successfully!");
+      await dispatch(fetchSingleSubsectionContent(subsectionId)).unwrap();
+      navigate('/admin/pages/technical');
+
+      alert("Hardware Specs Deployed Successfully! 🚀");
     } catch (error) {
+      console.error(error);
       alert("Failed to save changes.");
     } finally {
       setIsSaving(false);
     }
   };
 
-  if (status === 'loading' && !reduxContent) {
+  const safeText = (text) => text === '' ? '\u00A0' : text;
+
+  if (status.includes('loading') && !hasLoaded) {
     return (
       <div className="h-screen flex items-center justify-center font-bold text-slate-400 uppercase tracking-widest text-xs bg-[#F8FAFC]">
-        <Loader2 className="animate-spin mr-2" size={16} /> Syncing Data...
+        <Loader2 className="animate-spin mr-2" size={16} /> SYNCING HARDWARE LAB...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col h-screen overflow-hidden font-sans text-slate-900">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col h-screen overflow-hidden font-sans text-slate-900 selection:bg-emerald-100">
       
       {/* NAVBAR */}
       <nav className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0 z-50">
@@ -125,19 +141,19 @@ navigate('/admin/pages/technical');
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-xl transition-all">
             <ArrowLeft size={20} />
           </button>
-          <h1 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-            <Settings2 size={14} /> HARDWARE CMS PRO
+          <h1 className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-600 flex items-center gap-2">
+            <Settings2 size={14} /> HARDWARE <span className="text-emerald-400">LAB</span>
           </h1>
         </div>
 
-        <div className="flex bg-slate-100 p-1 rounded-full border border-slate-200 shadow-inner">
+        <div className="flex bg-slate-100/50 p-1 rounded-xl border border-slate-200 shadow-inner">
           {[{ id: 'edit', icon: Edit3 }, { id: 'split', icon: Columns }, { id: 'preview', icon: Eye }].map((mode) => (
             <button 
               key={mode.id} 
               onClick={() => setViewMode(mode.id)} 
-              className={`flex items-center gap-2 px-6 py-2 rounded-full text-xs font-bold transition-all ${viewMode === mode.id ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`flex items-center gap-2 px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === mode.id ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
             >
-              <mode.icon size={14} /> <span className="capitalize">{mode.id}</span>
+              <mode.icon size={14} /> <span className="hidden md:inline">{mode.id}</span>
             </button>
           ))}
         </div>
@@ -145,10 +161,10 @@ navigate('/admin/pages/technical');
         <button 
           onClick={handleSave} 
           disabled={isSaving}
-          className="bg-zinc-950 text-white px-8 py-2.5 rounded-xl font-bold text-xs hover:bg-emerald-600 transition-all flex items-center gap-2 shadow-lg active:scale-95 disabled:opacity-70"
+          className="bg-slate-900 text-white px-8 py-2.5 rounded-xl font-black text-[10px] tracking-widest hover:bg-emerald-600 transition-all flex items-center gap-2 shadow-lg disabled:opacity-50"
         >
           {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} 
-          {isSaving ? 'SAVING...' : 'SAVE CHANGES'}
+          {isSaving ? 'DEPLOYING...' : 'DEPLOY'}
         </button>
       </nav>
 
@@ -156,7 +172,7 @@ navigate('/admin/pages/technical');
         
         {/* 1. LEFT SIDE: THE DETAILED EDIT FORM */}
         {(viewMode === 'edit' || viewMode === 'split') && (
-          <div className={`${viewMode === 'edit' ? 'flex-1 max-w-4xl mx-auto border-x' : 'w-[400px] shrink-0 border-r'} bg-white flex flex-col h-full z-20`}>
+          <div className={`${viewMode === 'edit' ? 'flex-1 max-w-4xl mx-auto border-x border-slate-100 shadow-2xl bg-white rounded-b-[2rem]' : 'w-[400px] shrink-0 border-r border-slate-100 bg-white'} flex flex-col h-full z-20`}>
             <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-10 custom-scrollbar">
               
               {/* Header Settings */}
@@ -165,9 +181,9 @@ navigate('/admin/pages/technical');
                   <Layout size={16} className="text-emerald-500"/>
                   <h3 className="text-[10px] font-black uppercase text-slate-900 tracking-widest">Header Settings</h3>
                 </div>
-                <input value={content.header.prefix} onChange={(e) => handleUpdate('header', 'prefix', e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none" placeholder="Prefix (THE )" />
-                <input value={content.header.highlight} onChange={(e) => handleUpdate('header', 'highlight', e.target.value)} className="w-full px-4 py-3 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl text-sm font-bold outline-none" placeholder="Highlight" />
-                <input value={content.header.subText} onChange={(e) => handleUpdate('header', 'subText', e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black uppercase outline-none" placeholder="Subtext" />
+                <input value={content.header.prefix} onChange={(e) => handleUpdate('header', 'prefix', e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-emerald-400 transition-colors" placeholder="Prefix (THE )" />
+                <input value={content.header.highlight} onChange={(e) => handleUpdate('header', 'highlight', e.target.value)} className="w-full px-4 py-3 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl text-sm font-bold outline-none focus:border-emerald-400 transition-colors" placeholder="Highlight" />
+                <input value={content.header.subText} onChange={(e) => handleUpdate('header', 'subText', e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black uppercase outline-none focus:border-emerald-400 transition-colors" placeholder="Subtext" />
               </div>
 
               {/* Hero Settings */}
@@ -176,9 +192,17 @@ navigate('/admin/pages/technical');
                   <Drill size={16} className="text-emerald-500"/>
                   <h3 className="text-[10px] font-black uppercase text-slate-900 tracking-widest">Main Card</h3>
                 </div>
-                <input value={content.hero.prefix} onChange={(e) => handleUpdate('hero', 'prefix', e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none" />
-                <input value={content.hero.highlight} onChange={(e) => handleUpdate('hero', 'highlight', e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-emerald-100 text-emerald-600 rounded-xl text-sm font-bold outline-none" />
-                <textarea value={content.hero.desc} onChange={(e) => handleUpdate('hero', 'desc', e.target.value)} rows="3" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium resize-none outline-none focus:bg-white" />
+                <input value={content.hero.prefix} onChange={(e) => handleUpdate('hero', 'prefix', e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-emerald-400" />
+                <input value={content.hero.highlight} onChange={(e) => handleUpdate('hero', 'highlight', e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-emerald-100 text-emerald-600 rounded-xl text-sm font-bold outline-none focus:border-emerald-400" />
+                <textarea value={content.hero.desc} onChange={(e) => handleUpdate('hero', 'desc', e.target.value)} rows="3" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium resize-none outline-none focus:border-emerald-400" />
+                
+                {/* Brands Editor */}
+                <div className="flex flex-col gap-2 pt-2">
+                  <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Brand Tags</label>
+                  {content.hero.brands.map((tag, idx) => (
+                    <input key={idx} value={tag} onChange={(e) => updateArray('hero', 'brands', idx, e.target.value)} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-[10px] font-bold outline-none focus:border-emerald-400" />
+                  ))}
+                </div>
               </div>
 
               {/* Mini Cards Settings */}
@@ -191,20 +215,20 @@ navigate('/admin/pages/technical');
                   {/* Card 1 */}
                   <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl space-y-2 relative">
                     <span className="absolute top-2 right-3 text-[9px] font-bold text-slate-300 uppercase">Card 1</span>
-                    <input value={content.miniCard1.title} onChange={(e) => handleUpdate('miniCard1', 'title', e.target.value)} className="w-full text-xs font-bold bg-white px-3 py-2 rounded-lg outline-none" placeholder="Title" />
+                    <input value={content.miniCard1.title} onChange={(e) => handleUpdate('miniCard1', 'title', e.target.value)} className="w-full text-xs font-bold bg-white px-3 py-2 rounded-lg outline-none border border-transparent focus:border-emerald-200" placeholder="Title" />
                     <input value={content.miniCard1.sub} onChange={(e) => handleUpdate('miniCard1', 'sub', e.target.value)} className="w-full text-[9px] font-black uppercase text-slate-400 bg-transparent px-3 outline-none" placeholder="Subtitle" />
                   </div>
                   {/* Card 2 */}
                   <div className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl space-y-2 relative">
                      <span className="absolute top-2 right-3 text-[9px] font-bold text-emerald-200 uppercase">Card 2</span>
-                    <input value={content.miniCard2.title} onChange={(e) => handleUpdate('miniCard2', 'title', e.target.value)} className="w-full text-xs font-bold bg-white px-3 py-2 rounded-lg outline-none" placeholder="Title" />
+                    <input value={content.miniCard2.title} onChange={(e) => handleUpdate('miniCard2', 'title', e.target.value)} className="w-full text-xs font-bold bg-white px-3 py-2 rounded-lg outline-none border border-transparent focus:border-emerald-200" placeholder="Title" />
                     <input value={content.miniCard2.sub} onChange={(e) => handleUpdate('miniCard2', 'sub', e.target.value)} className="w-full text-[9px] font-black uppercase text-emerald-600 bg-transparent px-3 outline-none" placeholder="Subtitle" />
                   </div>
-                  {/* Card 3 - FIXED & ADDED */}
+                  {/* Card 3 */}
                   <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 relative shadow-xl">
                     <span className="absolute top-2 right-3 text-[9px] font-bold text-slate-700 uppercase">Card 3 (Dark)</span>
-                    <input value={content.miniCard3.title} onChange={(e) => handleUpdate('miniCard3', 'title', e.target.value)} className="w-full text-xs font-bold italic bg-slate-800 text-white px-3 py-2 rounded-lg border-none outline-none" placeholder="DIAGNOSTIC UNIT" />
-                    <input value={content.miniCard3.sub} onChange={(e) => handleUpdate('miniCard3', 'sub', e.target.value)} className="w-full text-[9px] font-black uppercase text-slate-500 bg-transparent px-3 outline-none" placeholder="ULTRA-FAST" />
+                    <input value={content.miniCard3.title} onChange={(e) => handleUpdate('miniCard3', 'title', e.target.value)} className="w-full text-xs font-bold italic bg-slate-800 text-white px-3 py-2 rounded-lg border-none outline-none focus:ring-1 ring-emerald-500" placeholder="DIAGNOSTIC UNIT" />
+                    <input value={content.miniCard3.sub} onChange={(e) => handleUpdate('miniCard3', 'sub', e.target.value)} className="w-full text-[9px] font-black uppercase text-slate-500 bg-transparent px-3 outline-none focus:text-slate-300" placeholder="ULTRA-FAST" />
                   </div>
                 </div>
               </div>
@@ -215,8 +239,11 @@ navigate('/admin/pages/technical');
                   <PenTool size={16} className="text-emerald-500"/>
                   <h3 className="text-[10px] font-black uppercase text-slate-900 tracking-widest">Footer Strip</h3>
                 </div>
-                <input value={content.footer.title} onChange={(e) => handleUpdate('footer', 'title', e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:bg-white" />
-                <div className="flex flex-col gap-2">
+                <input value={content.footer.title} onChange={(e) => handleUpdate('footer', 'title', e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:bg-white focus:border-emerald-400" />
+                <input value={content.footer.desc} onChange={(e) => handleUpdate('footer', 'desc', e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:bg-white focus:border-emerald-400" />
+                
+                <div className="flex flex-col gap-2 pt-2">
+                   <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest ml-1">Assurance Tags</label>
                   {content.footer.tags.map((tag, idx) => (
                     <input key={idx} value={tag} onChange={(e) => updateArray('footer', 'tags', idx, e.target.value)} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-[10px] font-bold outline-none focus:border-emerald-400" />
                   ))}
@@ -227,14 +254,14 @@ navigate('/admin/pages/technical');
           </div>
         )}
 
-        {/* 2. RIGHT SIDE: THE PROFESSIONAL ZOOMED-OUT PREVIEW */}
+        {/* 2. RIGHT SIDE: PREVIEW */}
         {(viewMode === 'split' || viewMode === 'preview') && (
           <div className={`${viewMode === 'preview' ? 'w-full' : 'flex-1'} flex flex-col h-full bg-slate-100 relative overflow-hidden transition-all duration-300`}>
             
             <div className="h-12 flex items-center justify-center bg-white border-b border-slate-200 shrink-0 z-10 shadow-sm">
               <div className="flex items-center gap-2">
                 <Monitor size={14} className="text-slate-400" />
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">High-Resolution Desktop View</span>
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Live Desktop Output</span>
               </div>
             </div>
 
@@ -248,13 +275,12 @@ navigate('/admin/pages/technical');
                   marginBottom: viewMode === 'split' ? '-15%' : '0'
                 }}
               >
-                {/* BLACK BROWSER FRAME */}
                 <div className="w-full max-w-[1400px] mx-auto bg-slate-900 rounded-[2.5rem] border-[10px] border-slate-900 shadow-2xl overflow-hidden relative">
                   
                   {/* Browser Bar */}
                   <div className="h-10 bg-slate-800 flex items-center px-6 gap-2 shrink-0">
                     <div className="flex gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-red-400"></div><div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div><div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div></div>
-                    <div className="mx-auto w-64 h-5 bg-slate-700 rounded-md text-[9px] text-slate-500 flex items-center justify-center font-bold uppercase tracking-widest">tricksy-preview.io/hardware</div>
+                    <div className="mx-auto w-64 h-5 bg-slate-700 rounded-md text-[9px] text-slate-500 flex items-center justify-center font-bold uppercase tracking-widest">tricksy-tech.io/hardware</div>
                   </div>
 
                   {/* PREVIEW CONTENT */}
@@ -264,9 +290,9 @@ navigate('/admin/pages/technical');
                       {/* Section Header */}
                       <div className="text-center mb-16">
                         <h2 className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-none">
-                          {content.header.prefix} <span className="text-emerald-500">{content.header.highlight}</span>
+                          {safeText(content.header.prefix)} <span className="text-emerald-500">{safeText(content.header.highlight)}</span>
                         </h2>
-                        <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.4em] mt-3">{content.header.subText}</p>
+                        <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.4em] mt-3">{safeText(content.header.subText)}</p>
                       </div>
 
                       {/* Main UI Grid */}
@@ -277,14 +303,14 @@ navigate('/admin/pages/technical');
                           <Drill size={350} className="absolute -bottom-10 -right-10 text-white/5 -rotate-12 pointer-events-none" />
                           <div className="relative z-10">
                             <h3 className="text-5xl font-black text-white leading-none uppercase italic mb-6 tracking-tight">
-                              {content.hero.prefix} <br />
-                              <span className="text-emerald-500">{content.hero.highlight}</span>
+                              {safeText(content.hero.prefix)} <br />
+                              <span className="text-emerald-500">{safeText(content.hero.highlight)}</span>
                             </h3>
-                            <p className="text-zinc-400 font-medium text-sm max-w-sm leading-relaxed">{content.hero.desc}</p>
+                            <p className="text-zinc-400 font-medium text-sm max-w-sm leading-relaxed">{safeText(content.hero.desc)}</p>
                           </div>
                           <div className="flex gap-3 relative z-10">
                             {content.hero.brands.map((b, i) => (
-                              <span key={i} className="text-[8px] font-black text-zinc-500 border border-zinc-800 px-3 py-1 rounded-lg uppercase tracking-wider">{b}</span>
+                              <span key={i} className="text-[8px] font-black text-zinc-500 border border-zinc-800 px-3 py-1 rounded-lg uppercase tracking-wider">{safeText(b)}</span>
                             ))}
                           </div>
                         </div>
@@ -294,45 +320,45 @@ navigate('/admin/pages/technical');
                           <div className="bg-white rounded-[2rem] p-6 border border-slate-100 flex items-center gap-4 shadow-sm">
                             <div className="w-12 h-12 bg-zinc-950 text-emerald-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg"><Hammer size={20} /></div>
                             <div className="min-w-0">
-                              <h4 className="font-black text-sm text-slate-900 truncate">{content.miniCard1.title}</h4>
-                              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{content.miniCard1.sub}</p>
+                              <h4 className="font-black text-sm text-slate-900 truncate">{safeText(content.miniCard1.title)}</h4>
+                              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{safeText(content.miniCard1.sub)}</p>
                             </div>
                           </div>
                           <div className="bg-emerald-500 rounded-[2.5rem] p-8 flex items-center gap-4 shadow-xl shadow-emerald-500/10">
                             <div className="w-12 h-12 bg-zinc-950 text-emerald-500 rounded-xl flex items-center justify-center shrink-0"><Zap size={20} /></div>
                             <div className="min-w-0">
-                              <h4 className="font-black text-sm text-zinc-950 truncate">{content.miniCard2.title}</h4>
-                              <p className="text-zinc-950/50 text-[11px] font-black uppercase tracking-widest">{content.miniCard2.sub}</p>
+                              <h4 className="font-black text-sm text-zinc-950 truncate">{safeText(content.miniCard2.title)}</h4>
+                              <p className="text-zinc-950/50 text-[11px] font-black uppercase tracking-widest">{safeText(content.miniCard2.sub)}</p>
                             </div>
                           </div>
                           {/* Third Card Preview */}
                           <div className="bg-slate-50 rounded-[2rem] p-6 border border-slate-100 flex flex-col justify-center shadow-sm">
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{content.miniCard3.sub}</span>
-                            <h5 className="text-xl font-black italic text-slate-900 tracking-tight leading-none">{content.miniCard3.title}</h5>
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{safeText(content.miniCard3.sub)}</span>
+                            <h5 className="text-xl font-black italic text-slate-900 tracking-tight leading-none">{safeText(content.miniCard3.title)}</h5>
                           </div>
                         </div>
 
                         {/* Bottom Warranty Strip */}
-                        <div className="col-span-12 bg-white rounded-[2.5rem] p-8 flex items-center justify-between border border-slate-100 shadow-md mt-2">
+                        <div className="col-span-12 bg-white rounded-[2.5rem] p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 border border-slate-100 shadow-md mt-2">
                            <div className="flex items-center gap-6">
                               <div className="w-14 h-14 bg-slate-50 text-emerald-500 rounded-2xl flex items-center justify-center shrink-0 shadow-inner border border-slate-50"><PenTool size={24} /></div>
                               <div>
-                                <h4 className="text-lg font-black text-slate-900 tracking-tight leading-none mb-1">{content.footer.title}</h4>
-                                <p className="text-slate-400 text-xs font-medium">{content.footer.desc}</p>
+                                <h4 className="text-lg font-black text-slate-900 tracking-tight leading-none mb-1">{safeText(content.footer.title)}</h4>
+                                <p className="text-slate-400 text-xs font-medium">{safeText(content.footer.desc)}</p>
                               </div>
                            </div>
                            <div className="flex gap-4">
                               {content.footer.tags.map((t, idx) => (
                                 <div key={idx} className="flex items-center gap-2">
                                   <CheckCircle2 size={14} className="text-emerald-500" />
-                                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t}</span>
+                                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{safeText(t)}</span>
                                 </div>
                               ))}
                            </div>
                         </div>
                       </div>
-                    </div>
 
+                    </div>
                   </div>
                 </div>
               </div>
@@ -342,6 +368,11 @@ navigate('/admin/pages/technical');
         )}
 
       </div>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+      `}</style>
     </div>
   );
 };

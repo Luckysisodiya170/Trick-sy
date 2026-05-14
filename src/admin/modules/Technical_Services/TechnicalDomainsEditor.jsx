@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchSingleSubsectionContent, updateSingleSubsectionContent, fetchSections } from '../../../store/index';
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent, fetchPageSections } from '../../redux/slices/adminSlice';
+import { AdminService } from '../../services/adminService';
 import { 
   ArrowLeft, Save, Settings2, Edit3, Columns, Eye, Plus, Trash2, 
-  Type, ChevronRight, Upload, AlignLeft, Wand2, Wrench, Zap, 
-  Droplets, LayoutGrid, Scissors, Ruler, Star, Hammer, Lightbulb, 
-  ShieldCheck, PenTool, Smartphone, Monitor, Loader2
+  ChevronRight, Undo, Wrench, Zap, Droplets, LayoutGrid, 
+  Hammer, Lightbulb, ShieldCheck, PenTool, Smartphone, Monitor, Loader2, Upload,Star
 } from 'lucide-react';
 
 const availableIcons = [
@@ -28,9 +28,13 @@ const MasterTechnicalEditor = () => {
   const { id } = useParams();
   const fileInputRef = useRef(null);
   
-  const sections = useSelector((state) => state.sections.items);
-  const content = useSelector((state) => state.content.activeSubsection);
-  const status = useSelector((state) => state.content.status);
+  const sidebarTree = useSelector((state) => state.adminData?.sidebarTree || []);
+  const sections = useSelector((state) => state.adminData?.pageSections || []);
+  const content = useSelector((state) => state.adminData?.activeSubsection); 
+  const status = useSelector((state) => state.adminData?.status || '');
+
+  const techSectionInfo = sidebarTree.find(sec => sec.slug === 'technical');
+  const sectionId = techSectionInfo?.id || 4;
 
   const currentSection = sections.find(s => s.slug === 'tech-domains');
   const subsectionId = id || currentSection?.id || 23;
@@ -39,14 +43,15 @@ const MasterTechnicalEditor = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [viewMode, setViewMode] = useState('split'); 
   const [newImageFiles, setNewImageFiles] = useState({}); 
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   const [domains, setDomains] = useState([]);
 
   useEffect(() => {
     if (sections.length === 0) {
-      dispatch(fetchSections(4));
+      dispatch(fetchPageSections(sectionId));
     }
-  }, [dispatch, sections.length]);
+  }, [dispatch, sections.length, sectionId]);
 
   useEffect(() => {
     if (subsectionId) {
@@ -55,29 +60,36 @@ const MasterTechnicalEditor = () => {
   }, [dispatch, subsectionId]);
 
   useEffect(() => {
-    if (content && content.listItems && content.listItems.length > 0) {
-      const formattedDomains = content.listItems.map(item => ({
-        id: item.id,
-        title: item.itemTitle || "New Service",
-        tag: item.itemSubtitle || "CATEGORY",
-        desc: item.itemDescription || "",
-        image: item.itemImage || null,
-        iconId: item.itemIcon || 'grid'
-      }));
-      setDomains(formattedDomains);
-    } else if (content && (!content.listItems || content.listItems.length === 0) && status === 'succeeded') {
-      setDomains([
-        { title: "Handyman Services", tag: "FURNITURE", desc: "Furniture assembly, TV mounting, drilling.", image: null, iconId: 'wrench' }
-      ]);
+    if (content && Object.keys(content).length > 0 && !hasLoaded) {
+      if (content.id == subsectionId || content.subsectionId == subsectionId) {
+        if (content.listItems && content.listItems.length > 0) {
+          const formattedDomains = content.listItems.map(item => ({
+            id: item.id,
+            title: item.itemTitle ?? "New Service",
+            tag: item.itemSubtitle ?? "CATEGORY",
+            desc: item.itemDescription ?? "",
+            image: item.itemImage ?? null,
+            iconId: item.itemIcon ?? 'grid'
+          }));
+          setDomains(formattedDomains);
+        } else {
+          setDomains([
+            { title: "Handyman Services", tag: "FURNITURE", desc: "Furniture assembly, TV mounting, drilling.", image: null, iconId: 'wrench' }
+          ]);
+        }
+        setHasLoaded(true);
+      }
     }
-  }, [content, status]);
+  }, [content, subsectionId, hasLoaded]);
 
   const getImageUrl = (imagePath) => {
     if (!imagePath) return "";
     if (imagePath.startsWith('http') || imagePath.startsWith('blob:') || imagePath.startsWith('data:')) {
       return imagePath;
     }
-    return `http://localhost:5000${imagePath}`;
+    const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+    const domain = apiBase.replace('/api', ''); 
+    return `${domain}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
   };
 
   const handleUpdate = (field, value) => {
@@ -128,31 +140,40 @@ const MasterTechnicalEditor = () => {
     }
   };
 
-  const handleSave = async () => {
-    if (!subsectionId) {
-      alert("Error: Missing Subsection ID. Please check routing.");
-      return;
+  const handleReset = () => {
+    if(window.confirm('Reset all changes to originally saved values?')) {
+        if (content && content.listItems && content.listItems.length > 0) {
+            const formattedDomains = content.listItems.map(item => ({
+              id: item.id,
+              title: item.itemTitle ?? "New Service",
+              tag: item.itemSubtitle ?? "CATEGORY",
+              desc: item.itemDescription ?? "",
+              image: item.itemImage ?? null,
+              iconId: item.itemIcon ?? 'grid'
+            }));
+            setDomains(formattedDomains);
+        } else {
+            setDomains([{ title: "Handyman Services", tag: "FURNITURE", desc: "Furniture assembly, TV mounting, drilling.", image: null, iconId: 'wrench' }]);
+        }
+        setNewImageFiles({});
     }
+  }
+
+  const handleSave = async () => {
+    if (!subsectionId) return alert("Error: Missing Subsection ID.");
 
     setIsSaving(true);
     try {
-      const token = localStorage.getItem('tricksyAdminToken');
       const processedDomains = [...domains];
 
       for (const [indexStr, file] of Object.entries(newImageFiles)) {
         const index = parseInt(indexStr);
         const formDataUpload = new FormData();
-        formDataUpload.append('heroImage', file); 
+        formDataUpload.append('image', file); 
 
-        const uploadRes = await fetch('http://localhost:5000/api/upload/upload-hero', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
-          body: formDataUpload,
-        });
+        const uploadData = await AdminService.uploadHeroImage(formDataUpload);
         
-        const uploadData = await uploadRes.json();
-        
-        if (uploadData.success) {
+        if (uploadData.success || uploadData.imageUrl) {
           processedDomains[index].image = uploadData.imageUrl;
         } else {
           throw new Error(`Upload failed for item ${index + 1}`);
@@ -169,18 +190,18 @@ const MasterTechnicalEditor = () => {
         itemOrder: index + 1
       }));
 
-      const payload = {
-        listItems: listItemsPayload
-      };
+      const payload = { listItems: listItemsPayload };
 
       await dispatch(updateSingleSubsectionContent({ 
         subsectionId: subsectionId, 
         updateData: payload 
       })).unwrap();
-navigate('/admin/pages/technical');
-
+      
+      await dispatch(fetchSingleSubsectionContent(subsectionId)).unwrap();
+      
       setNewImageFiles({});
-      alert("Expertise Domains Updated Successfully!");
+      navigate('/admin/pages/technical');
+      alert("Services Domains Deployed Successfully! 🚀");
       
     } catch (error) {
       console.error(error);
@@ -191,38 +212,40 @@ navigate('/admin/pages/technical');
   };
 
   const getIcon = (id) => availableIcons.find(icon => icon.id === id)?.component || <LayoutGrid size={18} />;
+  
+  const safeText = (text) => text === '' ? '\u00A0' : text;
 
-  if (status === 'loading' && domains.length === 0) {
+  if (status.includes('loading') && !hasLoaded) {
     return (
-      <div className="h-screen flex items-center justify-center font-bold text-slate-400 uppercase tracking-widest text-xs bg-[#F8FAFC]">
-        <Loader2 className="animate-spin mr-2" size={16} /> Loading Domains...
+      <div className="h-screen flex items-center justify-center font-bold text-slate-400 uppercase tracking-widest text-xs bg-[#FDFDFD]">
+        <Loader2 className="animate-spin mr-2" size={16} /> SYNCING DOMAINS LAB...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col h-screen overflow-hidden font-sans text-slate-900">
+    <div className="min-h-screen bg-[#FDFDFD] flex flex-col h-screen overflow-hidden font-sans selection:bg-emerald-100">
       
-      <nav className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0 z-50">
+      <nav className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-100 px-6 flex items-center justify-between shrink-0 z-50">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-xl transition-all">
-            <ArrowLeft size={20} />
+          <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-50 rounded-full transition-all text-slate-400 hover:text-slate-900">
+            <ArrowLeft size={18} />
           </button>
-          <h1 className="text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 text-slate-400">
-             SERVICE EDITOR
+          <h1 className="text-[13px] font-black italic flex items-center gap-2 uppercase tracking-[0.2em] text-slate-800">
+            <Settings2 size={16} className="text-emerald-600" /> Domain <span className="text-emerald-400">Lab</span>
           </h1>
         </div>
 
-        <div className="flex bg-slate-100 p-1 rounded-full border border-slate-200">
+        <div className="flex bg-slate-100/50 p-1 rounded-xl border border-slate-100">
           {['edit', 'split', 'preview'].map((mode) => (
             <button 
               key={mode} 
               onClick={() => setViewMode(mode)} 
-              className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all capitalize ${
-                viewMode === mode ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'
+              className={`px-5 py-1.5 rounded-lg text-[9px] font-black tracking-widest transition-all ${
+                viewMode === mode ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
-              {mode}
+              {mode.toUpperCase()}
             </button>
           ))}
         </div>
@@ -230,32 +253,37 @@ navigate('/admin/pages/technical');
         <button 
           onClick={handleSave} 
           disabled={isSaving} 
-          className="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-indigo-600 transition-all flex items-center gap-2 disabled:opacity-50"
+          className="bg-slate-900 text-white px-8 py-2 rounded-xl font-black text-[10px] tracking-widest hover:bg-emerald-600 transition-all disabled:opacity-50 flex items-center gap-2"
         >
           {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-          {isSaving ? 'Saving...' : 'Save All'}
+          <span>{isSaving ? 'DEPLOYING...' : 'DEPLOY'}</span>
         </button>
       </nav>
 
-      <div className="flex-1 flex overflow-hidden p-4 gap-4">
+      <div className={`flex-1 flex overflow-hidden p-6 gap-6 mx-auto w-full transition-all duration-700 ${viewMode === 'split' ? 'max-w-[1700px]' : 'max-w-4xl'}`}>
         
         {/* 1. LEFT SIDE: EDITOR */}
         {(viewMode === 'edit' || viewMode === 'split') && domains.length > 0 && domains[activeTab] && (
-          <div className={`flex-1 bg-white rounded-[2rem] overflow-y-auto custom-scrollbar border border-slate-200 shadow-sm ${viewMode === 'edit' ? 'max-w-4xl mx-auto' : ''}`}>
-            <div className="p-10 space-y-8">
-              <h2 className="text-xl font-black uppercase italic border-b border-slate-100 pb-4">Configure Content</h2>
+          <div className="flex-1 bg-white rounded-[2rem] overflow-y-auto custom-scrollbar border border-slate-100 shadow-2xl shadow-slate-200/50 flex flex-col">
+            <div className="p-8 space-y-8 flex-1">
+              <div className="flex items-center justify-between mb-1 border-b border-slate-100 pb-4">
+                 <h2 className="text-sm font-black text-slate-900 tracking-tight uppercase">Configure Service Content</h2>
+                 <button onClick={handleReset} className="text-[8px] font-black uppercase tracking-widest text-slate-400 hover:text-amber-500 transition-colors flex items-center gap-1">
+                    <Undo size={10} /> Reset Config
+                 </button>
+              </div>
 
-              <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Select Domain Icon</label>
-                <div className="flex flex-wrap gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+              <div className="space-y-4 bg-slate-50/50 p-5 rounded-[2rem] border border-slate-100 shadow-inner">
+                <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest ml-1">Select Domain Icon</label>
+                <div className="flex flex-wrap gap-3">
                   {availableIcons.map((icon) => (
                     <button
                       key={icon.id}
                       onClick={() => handleUpdate('iconId', icon.id)}
                       className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
                         domains[activeTab].iconId === icon.id 
-                        ? 'bg-indigo-600 text-white scale-110 shadow-lg' 
-                        : 'bg-white text-slate-400 hover:text-indigo-600 border border-slate-200'
+                        ? 'bg-emerald-600 text-white scale-110 shadow-lg' 
+                        : 'bg-white text-slate-400 hover:text-emerald-600 border border-slate-200'
                       }`}
                       title={icon.label}
                     >
@@ -265,93 +293,126 @@ navigate('/admin/pages/technical');
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Title</label>
-                  <input value={domains[activeTab].title} onChange={(e) => handleUpdate('title', e.target.value)} className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:ring-2 ring-indigo-50 transition-all" />
+              <div className="bg-slate-50/50 p-5 rounded-[2rem] border border-slate-100 shadow-inner space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest ml-1">Title</label>
+                    <input value={domains[activeTab].title} onChange={(e) => handleUpdate('title', e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-xs font-bold outline-none focus:border-emerald-400 transition-all shadow-sm" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black uppercase text-emerald-600 tracking-widest ml-1">Category Tag</label>
+                    <input value={domains[activeTab].tag} onChange={(e) => handleUpdate('tag', e.target.value)} className="w-full px-4 py-3 bg-emerald-50/50 border border-emerald-100 rounded-xl text-[10px] font-black text-emerald-700 uppercase tracking-widest outline-none focus:border-emerald-400 shadow-sm" />
+                  </div>
                 </div>
+
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Tagline</label>
-                  <input value={domains[activeTab].tag} onChange={(e) => handleUpdate('tag', e.target.value)} className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-[10px] font-black text-indigo-600 uppercase tracking-widest outline-none focus:ring-2 ring-indigo-50" />
+                  <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest ml-1">Description</label>
+                  <textarea value={domains[activeTab].desc} onChange={(e) => handleUpdate('desc', e.target.value)} rows="3" className="w-full px-4 py-3 bg-white border border-slate-100 rounded-xl text-xs font-medium text-slate-600 outline-none focus:border-emerald-400 transition-all resize-none shadow-sm" />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Description</label>
-                <textarea value={domains[activeTab].desc} onChange={(e) => handleUpdate('desc', e.target.value)} rows="3" className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium text-slate-600 outline-none focus:ring-2 ring-indigo-50 transition-all resize-none" />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Image</label>
+              <div className="bg-slate-50/50 p-5 rounded-[2rem] border border-slate-100 space-y-4">
+                <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest ml-1">Feature Image</label>
                 <input type="file" ref={fileInputRef} className="hidden" onChange={handleImage} accept="image/*" />
-                <div onClick={() => fileInputRef.current.click()} className="w-full h-32 border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center hover:bg-slate-50 transition-all cursor-pointer overflow-hidden">
-                  {domains[activeTab].image ? <img src={getImageUrl(domains[activeTab].image)} className="w-full h-full object-cover" alt="preview" /> : <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Update Photo</p>}
+                <div onClick={() => fileInputRef.current.click()} className="w-full h-36 border-2 border-dashed border-slate-200 rounded-[1.5rem] bg-white flex flex-col items-center justify-center hover:border-emerald-300 transition-all cursor-pointer overflow-hidden relative group">
+                  {domains[activeTab].image ? (
+                     <img src={getImageUrl(domains[activeTab].image)} className="w-full h-full object-cover" alt="preview" />
+                  ) : (
+                     <div className="text-center">
+                        <Upload size={20} className="mx-auto text-slate-300 mb-2 group-hover:text-emerald-400 transition-colors" />
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-emerald-500">Upload Photo</p>
+                     </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all text-white font-black text-[10px] uppercase tracking-widest">
+                     Edit Media
+                  </div>
                 </div>
               </div>
-              
-              <button onClick={(e) => deleteSection(activeTab, e)} className="text-rose-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:opacity-70">
-                <Trash2 size={14} /> Delete this domain
-              </button>
+            </div>
+            
+            <div className="p-6 border-t border-slate-100 bg-slate-50/50 shrink-0">
+               <button onClick={(e) => deleteSection(activeTab, e)} className="w-full bg-rose-50 text-rose-500 text-[10px] font-black uppercase tracking-widest flex justify-center items-center gap-2 hover:bg-rose-100 hover:text-rose-600 py-3 rounded-xl transition-all">
+                 <Trash2 size={14} /> Delete This Domain
+               </button>
             </div>
           </div>
         )}
 
         {/* 2. MIDDLE SIDE: DOMAIN LIST (SIDEBAR) */}
         {(viewMode === 'split' || viewMode === 'preview') && (
-          <div className="w-[320px] flex flex-col shrink-0 animate-in slide-in-from-left duration-300">
+          <div className="w-[300px] flex flex-col shrink-0">
              <div className="px-2 mb-4 flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Expertise Domains</span>
-                <Plus size={16} onClick={addSection} className="cursor-pointer text-slate-400 hover:text-indigo-600" />
+                <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Expertise List</span>
              </div>
-             <div className="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar">
+             
+             <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
                 {domains.map((item, idx) => (
                   <div 
                     key={idx} 
                     onClick={() => setActiveTab(idx)}
-                    className={`relative flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all border ${
-                      activeTab === idx ? 'bg-black border-black text-white shadow-xl' : 'bg-white border-slate-100 text-slate-900 shadow-sm'
+                    className={`relative flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border ${
+                      activeTab === idx ? 'bg-slate-900 border-slate-900 text-white shadow-xl' : 'bg-white border-slate-100 text-slate-900 shadow-sm hover:border-emerald-200'
                     }`}
                   >
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${activeTab === idx ? 'bg-[#1DB954] text-black' : 'bg-slate-50 text-slate-400'}`}>
+                    <div className={`w-10 h-10 rounded-[1rem] flex items-center justify-center transition-colors ${activeTab === idx ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30' : 'bg-slate-50 text-slate-400'}`}>
                       {getIcon(item.iconId)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-sm truncate">{item.title || "New Service"}</h3>
-                      <p className={`text-[9px] font-bold tracking-widest uppercase ${activeTab === idx ? 'text-[#1DB954]' : 'text-slate-400'}`}>{item.tag || "N/A"}</p>
+                      <h3 className="font-black text-xs truncate">{safeText(item.title) || "New Service"}</h3>
+                      <p className={`text-[8px] font-bold tracking-widest uppercase mt-1 ${activeTab === idx ? 'text-emerald-400' : 'text-slate-400'}`}>{safeText(item.tag) || "N/A"}</p>
                     </div>
-                    {activeTab === idx && <ChevronRight size={14} className="text-[#1DB954]" />}
+                    {activeTab === idx && <ChevronRight size={14} className="text-emerald-400" />}
                   </div>
                 ))}
+             </div>
+
+             <div className="mt-4 pt-4 border-t border-slate-100 shrink-0">
+               <button 
+                 onClick={addSection} 
+                 className="w-full bg-white border-2 border-dashed border-emerald-200 text-emerald-600 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 py-4 rounded-2xl hover:bg-emerald-50 hover:border-emerald-400 transition-all shadow-sm"
+                >
+                  <Plus size={16} /> Add New Domain
+               </button>
              </div>
           </div>
         )}
 
         {/* 3. RIGHT SIDE: PREVIEW */}
         {(viewMode === 'split' || viewMode === 'preview') && domains.length > 0 && domains[activeTab] && (
-          <div className="flex-1 flex flex-col animate-in fade-in duration-500">
-            <div className="flex-1 rounded-[2.5rem] overflow-hidden relative shadow-2xl bg-zinc-900 border border-white/5">
-              {domains[activeTab].image && <img src={getImageUrl(domains[activeTab].image)} className="w-full h-full object-cover opacity-70" alt="bg" />}
+          <div className="flex-1 flex flex-col">
+            <div className="flex-1 rounded-[2.5rem] overflow-hidden relative shadow-2xl bg-zinc-900 border-[10px] border-slate-800">
+              
+              {domains[activeTab].image ? (
+                 <img src={getImageUrl(domains[activeTab].image)} className="w-full h-full object-cover opacity-60" alt="bg" />
+              ) : (
+                 <div className="w-full h-full flex items-center justify-center text-slate-700 font-black uppercase tracking-widest bg-zinc-950">No Image Provided</div>
+              )}
               
               <div className="absolute top-6 right-8 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 flex items-center gap-2">
-                <Star size={12} className="text-yellow-400 fill-yellow-400" />
-                <span className="text-white text-[9px] font-black uppercase tracking-widest">Premium Service</span>
+                <Star size={10} className="text-yellow-400 fill-yellow-400" />
+                <span className="text-white text-[8px] font-black uppercase tracking-widest">Premium Service</span>
               </div>
 
               <div className="absolute bottom-8 left-8 right-8 bg-black/80 backdrop-blur-2xl rounded-[2rem] p-10 border border-white/10">
                 <div className="flex items-center gap-3 mb-4">
-                   <div className="text-[#1DB954]">{getIcon(domains[activeTab].iconId)}</div>
-                   <span className="text-[#1DB954] text-[10px] font-black uppercase tracking-[0.2em]">{domains[activeTab].tag}</span>
+                   <div className="text-emerald-500">{getIcon(domains[activeTab].iconId)}</div>
+                   <span className="text-emerald-500 text-[10px] font-black uppercase tracking-[0.2em]">{safeText(domains[activeTab].tag)}</span>
                 </div>
-                <h4 className="text-white text-5xl font-black uppercase mb-4 tracking-tighter italic leading-none">{domains[activeTab].title}</h4>
-                <p className="text-slate-300 text-sm font-medium mb-8 max-w-lg leading-relaxed">{domains[activeTab].desc}</p>
-                <button className="bg-white text-black px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-4 hover:bg-[#1DB954] transition-all">
-                  Book This Service <ChevronRight size={16} />
+                <h4 className="text-white text-4xl font-black uppercase mb-4 tracking-tighter italic leading-none">{safeText(domains[activeTab].title)}</h4>
+                <p className="text-slate-300 text-sm font-medium mb-8 max-w-lg leading-relaxed">{safeText(domains[activeTab].desc)}</p>
+                <button className="bg-white text-black px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-emerald-500 hover:text-white transition-all">
+                  Book This Service <ChevronRight size={14} />
                 </button>
               </div>
             </div>
           </div>
         )}
       </div>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+      `}</style>
     </div>
   );
 };

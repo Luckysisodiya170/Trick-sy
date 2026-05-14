@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Home, Building2, Briefcase, Utensils, Dumbbell, Factory, Sparkles } from 'lucide-react';
 
-// Default assets imports
 import villaImg from "../../assets/popularimage/Villa.png";
 import officeImg from "../../assets/popularimage/Office.png";
 import apartmentImg from "../../assets/popularimage/Apartment.png";

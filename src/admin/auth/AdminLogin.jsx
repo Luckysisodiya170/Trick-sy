@@ -1,45 +1,35 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
-import { BASE_URL } from '../../api/api'; 
+import { apiRequest } from '../api/api'; 
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false); 
-  
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  /**
-   * @param {Event} e - Form submission event
-   */
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
     
     try {
-      // API call to the backend authentication endpoint
-      const response = await fetch(`${BASE_URL}/admin/login`, {
+      const data = await apiRequest('/admin/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ email, password })
       });
-      
-      const data = await response.json();
 
-      if (data.success) {
+      if (data && data.success) {
         localStorage.setItem('tricksyAdminToken', data.token);
+        localStorage.setItem('tricksyAdminRole', data.role || 'admin');
         navigate('/admin'); 
       } else {
-        setError(data.message || 'Authentication failed. Please check your credentials.');
+        setError(data?.message || 'Invalid Credentials');
       }
     } catch (err) {
-      console.error("Login Error:", err);
-      setError('Unable to connect to the server. Please try again later.');
+      setError(err.message || 'Backend server is offline');
     } finally {
       setIsLoading(false);
     }
@@ -54,68 +44,33 @@ const AdminLogin = () => {
         <h2 className="text-3xl font-black text-white uppercase tracking-tighter">
           Tricksy <span className="text-emerald-500 italic">Command_</span>
         </h2>
-        <p className="mt-2 text-sm text-slate-400 font-medium tracking-widest uppercase">
-          Authorized Personnel Only
-        </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white/5 py-8 px-4 shadow-2xl shadow-black sm:rounded-[2.5rem] sm:px-10 border border-white/10 backdrop-blur-xl">
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
+        <div className="bg-white/5 py-8 px-6 shadow-2xl sm:rounded-[2.5rem] border border-white/10 backdrop-blur-xl">
           <form className="space-y-6" onSubmit={handleLogin}>
-            
             {error && (
-              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold text-center uppercase tracking-widest">
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold text-center uppercase">
                 {error}
               </div>
             )}
-
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                Admin Email
-              </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-slate-500" />
-                </div>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-11 pr-3 py-3 border border-white/10 rounded-2xl bg-zinc-900/50 text-white placeholder-slate-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                  placeholder="admin@tricksy.com"
-                />
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Admin Email</label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-3 h-5 w-5 text-slate-500" />
+                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} 
+                className="block w-full pl-12 pr-4 py-3 border border-white/10 rounded-2xl bg-zinc-900/50 text-white focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="admin@tricksy.com" />
               </div>
             </div>
-
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                Security Key
-              </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-slate-500" />
-                </div>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-11 pr-3 py-3 border border-white/10 rounded-2xl bg-zinc-900/50 text-white placeholder-slate-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                  placeholder="mySecurePassword123"
-                />
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Security Key</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-3 h-5 w-5 text-slate-500" />
+                <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
+                className="block w-full pl-12 pr-4 py-3 border border-white/10 rounded-2xl bg-zinc-900/50 text-white focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="••••••••" />
               </div>
             </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`w-full flex justify-center items-center gap-2 py-4 px-4 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-950 transition-all ${
-                isLoading 
-                ? 'bg-emerald-700 cursor-not-allowed opacity-70' 
-                : 'bg-emerald-500 hover:bg-emerald-400 hover:-translate-y-1'
-              }`}
-            >
+            <button type="submit" disabled={isLoading} className="w-full flex justify-center items-center gap-2 py-4 rounded-2xl text-xs font-black uppercase bg-emerald-500 text-zinc-950 hover:bg-emerald-400 transition-all disabled:opacity-50">
               {isLoading ? 'Authenticating...' : 'Authenticate'} <ArrowRight size={16} />
             </button>
           </form>

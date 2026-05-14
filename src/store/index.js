@@ -1,5 +1,5 @@
 import { configureStore, createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { apiRequest } from '../api/api';
+import { apiRequest } from '../admin/api/api';
 
 // --- (API Calls) ---
 export const fetchSections = createAsyncThunk('sections/fetch', async (sectionId, { rejectWithValue }) => {

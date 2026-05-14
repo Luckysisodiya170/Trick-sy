@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchSingleSubsectionContent, updateSingleSubsectionContent, fetchSections } from '../../../store/index';
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent, fetchPageSections } from '../../redux/slices/adminSlice';
+import { AdminService } from '../../services/adminService';
 import { 
   ArrowLeft, Save, ShieldCheck, Plus, Trash2, 
   Layout, CheckCircle, Edit3, Columns, Eye, Monitor, 
@@ -15,15 +16,20 @@ const TechnicalTrustEditor = () => {
   const fileInputRef = useRef(null);
   const { id } = useParams();
 
-  const sections = useSelector((state) => state.sections.items);
-  const reduxContent = useSelector((state) => state.content.activeSubsection);
-  const status = useSelector((state) => state.content.status);
+  const sidebarTree = useSelector((state) => state.adminData?.sidebarTree || []);
+  const sections = useSelector((state) => state.adminData?.pageSections || []);
+  const reduxContent = useSelector((state) => state.adminData?.activeSubsection);
+  const status = useSelector((state) => state.adminData?.status || '');
+
+  const techSectionInfo = sidebarTree.find(sec => sec.slug === 'technical');
+  const sectionId = techSectionInfo?.id || 4;
 
   const currentSection = sections.find(s => s.slug === 'tech-footer');
   const subsectionId = id || currentSection?.id || 28;
 
   const [viewMode, setViewMode] = useState('split'); 
   const [isSaving, setIsSaving] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [newImageFiles, setNewImageFiles] = useState({});
 
   const availableIcons = [
@@ -52,9 +58,9 @@ const TechnicalTrustEditor = () => {
 
   useEffect(() => {
     if (sections.length === 0) {
-      dispatch(fetchSections(4));
+      dispatch(fetchPageSections(sectionId));
     }
-  }, [dispatch, sections.length]);
+  }, [dispatch, sections.length, sectionId]);
 
   useEffect(() => {
     if (subsectionId) {
@@ -63,28 +69,33 @@ const TechnicalTrustEditor = () => {
   }, [dispatch, subsectionId]);
 
   useEffect(() => {
-    if (reduxContent && Object.keys(reduxContent).length > 0) {
-      const parsedAvatars = reduxContent.images && Array.isArray(reduxContent.images) 
-        ? reduxContent.images 
-        : defaultTrustData.avatars;
+    if (reduxContent && Object.keys(reduxContent).length > 0 && !hasLoaded) {
+      if (reduxContent.id == subsectionId || reduxContent.subsectionId == subsectionId) {
+        const parsedAvatars = reduxContent.images && Array.isArray(reduxContent.images) 
+          ? reduxContent.images 
+          : defaultTrustData.avatars;
 
-      setTrustData({
-        title: reduxContent.titleLine1 || defaultTrustData.title,
-        desc: reduxContent.description || defaultTrustData.desc,
-        count: reduxContent.badgeText || defaultTrustData.count,
-        ctaText: reduxContent.primaryBtnText || defaultTrustData.ctaText,
-        selectedIcon: reduxContent.icon || defaultTrustData.selectedIcon,
-        avatars: parsedAvatars
-      });
+        setTrustData({
+          title: reduxContent.titleLine1 ?? defaultTrustData.title,
+          desc: reduxContent.description ?? defaultTrustData.desc,
+          count: reduxContent.badgeText ?? defaultTrustData.count,
+          ctaText: reduxContent.primaryBtnText ?? defaultTrustData.ctaText,
+          selectedIcon: reduxContent.icon ?? defaultTrustData.selectedIcon,
+          avatars: parsedAvatars
+        });
+        setHasLoaded(true);
+      }
     }
-  }, [reduxContent]);
+  }, [reduxContent, subsectionId, hasLoaded]);
 
   const getImageUrl = (imagePath) => {
     if (!imagePath) return "";
     if (imagePath.startsWith('http') || imagePath.startsWith('blob:') || imagePath.startsWith('data:')) {
       return imagePath;
     }
-    return `http://localhost:5000${imagePath}`;
+    const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+    const domain = apiBase.replace('/api', ''); 
+    return `${domain}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
   };
 
   const ActiveIcon = availableIcons.find(i => i.name === trustData.selectedIcon)?.icon || ShieldCheck;
@@ -135,30 +146,20 @@ const TechnicalTrustEditor = () => {
   };
 
   const handleSave = async () => {
-    if (!subsectionId) {
-      alert("Error: Missing Subsection ID.");
-      return;
-    }
-
+    if (!subsectionId) return alert("Error: Missing Subsection ID.");
+    
     setIsSaving(true);
     try {
-      const token = localStorage.getItem('tricksyAdminToken');
       let finalAvatars = [...trustData.avatars];
 
       for (const [indexStr, file] of Object.entries(newImageFiles)) {
         const index = parseInt(indexStr);
         const formDataUpload = new FormData();
-        formDataUpload.append('heroImage', file); 
+        formDataUpload.append('image', file); 
 
-        const uploadRes = await fetch('http://localhost:5000/api/upload/upload-hero', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
-          body: formDataUpload,
-        });
+        const uploadData = await AdminService.uploadHeroImage(formDataUpload);
         
-        const uploadData = await uploadRes.json();
-        
-        if (uploadData.success) {
+        if (uploadData.success || uploadData.imageUrl) {
           finalAvatars[index] = uploadData.imageUrl;
         } else {
           throw new Error(`Upload failed for avatar ${index + 1}`);
@@ -178,10 +179,12 @@ const TechnicalTrustEditor = () => {
         subsectionId: subsectionId,
         updateData: payload
       })).unwrap();
-navigate('/admin/pages/technical');
+
+      await dispatch(fetchSingleSubsectionContent(subsectionId)).unwrap();
+      navigate('/admin/pages/technical');
 
       setNewImageFiles({});
-      alert("Trust Section Updated Successfully!");
+      alert("Trust Footer Deployed Successfully! 🚀");
     } catch (error) {
       console.error(error);
       alert("Failed to save changes.");
@@ -190,16 +193,18 @@ navigate('/admin/pages/technical');
     }
   };
 
-  if (status === 'loading' && !reduxContent) {
+  const safeText = (text) => text === '' ? '\u00A0' : text;
+
+  if (status.includes('loading') && !hasLoaded) {
     return (
       <div className="h-screen flex items-center justify-center font-bold text-slate-400 uppercase tracking-widest text-xs bg-[#F8FAFC]">
-        <Loader2 className="animate-spin mr-2" size={16} /> Loading Trust Module...
+        <Loader2 className="animate-spin mr-2" size={16} /> SYNCING FOOTER LAB...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FDFDFD] font-sans h-screen overflow-hidden text-slate-900">
+    <div className="min-h-screen flex flex-col bg-[#FDFDFD] font-sans h-screen overflow-hidden text-slate-900 selection:bg-emerald-100">
       
       <nav className="sticky top-0 z-[50] bg-white border-b border-slate-200 px-3 lg:px-6 py-3 flex items-center justify-between shadow-sm gap-2 shrink-0">
         <div className="flex items-center gap-1.5 lg:gap-3 flex-shrink-0">
@@ -208,7 +213,7 @@ navigate('/admin/pages/technical');
           </button>
           <h1 className="text-sm lg:text-lg font-black tracking-tighter italic flex items-center gap-1.5">
             <Settings2 size={18} className="text-emerald-600 lg:w-5 lg:h-5" /> 
-            <span className="tracking-tight uppercase">TRUST CMS EDITOR</span> 
+            <span className="tracking-tight uppercase">TRUST FOOTER LAB</span> 
           </h1>
         </div>
 
@@ -236,12 +241,13 @@ navigate('/admin/pages/technical');
           className="bg-slate-900 text-white p-2.5 lg:px-6 lg:py-2.5 rounded-full font-extrabold text-[10px] lg:text-xs flex items-center gap-2 shadow-lg hover:bg-emerald-600 transition-all flex-shrink-0 disabled:opacity-70 active:scale-95"
         >
           {isSaving ? <Loader2 size={16} className="animate-spin lg:w-[14px] lg:h-[14px]" /> : <Save size={16} className="lg:w-[14px] lg:h-[14px]" />}
-          <span className="hidden md:inline">{isSaving ? 'Syncing...' : 'Save Changes'}</span>
+          <span className="hidden md:inline">{isSaving ? 'DEPLOYING...' : 'DEPLOY CHANGES'}</span>
         </button>
       </nav>
 
       <div className="flex-1 flex overflow-hidden">
         
+        {/* LEFT SIDE: EDITOR */}
         {(viewMode === 'edit' || viewMode === 'split') && (
           <div className={`${viewMode === 'edit' ? 'flex-1 bg-[#F1F3F5] flex items-center justify-center p-6 lg:p-10' : 'w-full lg:w-[450px] border-r bg-white'} flex flex-col h-full shrink-0 z-20 transition-all duration-300`}>
             <div className={`${viewMode === 'edit' ? 'w-full max-w-3xl bg-white rounded-[2.5rem] shadow-2xl flex flex-col h-full overflow-hidden border border-slate-200' : 'w-full h-full flex flex-col shadow-inner'}`}>
@@ -258,8 +264,8 @@ navigate('/admin/pages/technical');
                         onClick={() => handleUpdate('selectedIcon', item.name)}
                         className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all border-2 ${
                           trustData.selectedIcon === item.name 
-                          ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg' 
-                          : 'bg-white border-slate-100 text-slate-400 hover:border-emerald-200'
+                          ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/30' 
+                          : 'bg-white border-slate-100 text-slate-400 hover:border-emerald-200 hover:text-emerald-500'
                         }`}
                       >
                         <item.icon size={18} />
@@ -271,26 +277,26 @@ navigate('/admin/pages/technical');
                 <div className="space-y-6">
                   <div className="group">
                     <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 block px-1">Main Heading</label>
-                    <input value={trustData.title} onChange={(e) => handleUpdate('title', e.target.value)} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-lg font-black outline-none focus:bg-white focus:ring-4 focus:ring-emerald-500/5 transition-all" />
+                    <input value={trustData.title} onChange={(e) => handleUpdate('title', e.target.value)} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-lg font-black outline-none focus:bg-white focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-400 transition-all shadow-sm" />
                   </div>
 
                   <div className="group">
                     <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 block px-1">Trust Description</label>
-                    <textarea value={trustData.desc} onChange={(e) => handleUpdate('desc', e.target.value)} rows="3" className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium text-slate-500 outline-none focus:bg-white focus:ring-4 focus:ring-emerald-500/5 transition-all resize-none" />
+                    <textarea value={trustData.desc} onChange={(e) => handleUpdate('desc', e.target.value)} rows="3" className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium text-slate-500 outline-none focus:bg-white focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-400 transition-all resize-none shadow-sm" />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 block px-1">Metric Value</label>
-                      <input value={trustData.count} onChange={(e) => handleUpdate('count', e.target.value)} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-black text-emerald-600 outline-none focus:bg-white focus:border-emerald-500" />
+                      <input value={trustData.count} onChange={(e) => handleUpdate('count', e.target.value)} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-black text-emerald-600 outline-none focus:bg-white focus:border-emerald-500 shadow-sm" />
                     </div>
                     <div>
                       <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3 block px-1">CTA Label</label>
-                      <input value={trustData.ctaText} onChange={(e) => handleUpdate('ctaText', e.target.value)} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-black outline-none focus:bg-white focus:border-emerald-500" />
+                      <input value={trustData.ctaText} onChange={(e) => handleUpdate('ctaText', e.target.value)} className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-black outline-none focus:bg-white focus:border-emerald-500 shadow-sm" />
                     </div>
                   </div>
 
-                  <div className="p-6 bg-slate-50 rounded-[2.5rem] border border-slate-100">
+                  <div className="p-6 bg-slate-50 rounded-[2.5rem] border border-slate-100 shadow-sm">
                     <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4 block">Technician Profiles</label>
                     <div className="flex flex-wrap gap-3">
                       {trustData.avatars.map((img, i) => (
@@ -300,7 +306,7 @@ navigate('/admin/pages/technical');
                         </div>
                       ))}
                       {trustData.avatars.length < 5 && (
-                        <button onClick={() => fileInputRef.current.click()} className="w-12 h-12 rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-400 hover:border-emerald-500 hover:text-emerald-500 bg-white"><Plus size={20} /></button>
+                        <button onClick={() => fileInputRef.current.click()} className="w-12 h-12 rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-400 hover:border-emerald-500 hover:text-emerald-500 bg-white hover:bg-emerald-50 transition-all"><Plus size={20} /></button>
                       )}
                     </div>
                     <input type="file" ref={fileInputRef} className="hidden" onChange={handleAvatarUpload} accept="image/*" />
@@ -311,6 +317,7 @@ navigate('/admin/pages/technical');
           </div>
         )}
 
+        {/* RIGHT SIDE: PREVIEW */}
         {(viewMode === 'preview' || viewMode === 'split') && (
           <div className={`${viewMode === 'preview' ? 'w-full' : 'flex-1'} flex flex-col h-full bg-slate-100/50 relative overflow-hidden transition-all duration-300`}>
             <div className="h-12 flex items-center justify-center px-6 bg-white border-b border-slate-200 shrink-0 z-10 shadow-sm">
@@ -351,6 +358,7 @@ navigate('/admin/pages/technical');
                     )}
                   </div>
 
+                  {/* PREVIEW CONTAINER */}
                   <div className="w-full relative group mt-8">
                     <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-[2.5rem] lg:rounded-[4rem] blur-xl opacity-10 group-hover:opacity-20 transition-opacity"></div>
                     
@@ -371,12 +379,12 @@ navigate('/admin/pages/technical');
                           <h4 className={`text-white font-black tracking-tighter mb-1 uppercase italic leading-[0.9]
                             ${viewMode === 'split' ? 'text-xl lg:text-2xl' : 'text-4xl lg:text-5xl'}`}
                           >
-                            {trustData.title}
+                            {safeText(trustData.title)}
                           </h4>
                           <p className={`text-zinc-500 font-medium leading-tight
                             ${viewMode === 'split' ? 'text-[10px] max-w-[180px]' : 'text-sm lg:text-base max-w-[320px]'}`}
                           >
-                            {trustData.desc}
+                            {safeText(trustData.desc)}
                           </p>
                         </div>
                       </div>
@@ -398,7 +406,7 @@ navigate('/admin/pages/technical');
                         <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                           <CheckCircle size={10} className="text-emerald-500" />
                           <span className="text-emerald-500 text-[9px] font-black uppercase tracking-widest leading-none">
-                            {trustData.count}
+                            {safeText(trustData.count)}
                           </span>
                         </div>
                       </div>
@@ -409,7 +417,7 @@ navigate('/admin/pages/technical');
                             ? 'px-6 py-4 text-[9px] rounded-2xl w-full lg:w-auto' 
                             : 'px-14 py-6 text-[10px] rounded-[2.5rem]'}`}
                         >
-                            {trustData.ctaText}
+                            {safeText(trustData.ctaText)}
                         </button>
                       </div>
 
@@ -421,6 +429,11 @@ navigate('/admin/pages/technical');
           </div>
         )}
       </div>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+      `}</style>
     </div>
   );
 };

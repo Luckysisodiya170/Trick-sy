@@ -91,7 +91,6 @@ const BlogDetail = ({ previewData }) => {
             {post.excerpt}
           </p>
 
-          {/* Render dynamic blocks if they exist */}
           {post.blocks?.map((block, index) => (
             <div key={index}>
               {block.type === 'subheading' && <h2 className="text-3xl font-black text-zinc-950 tracking-tight mt-12">{block.value}</h2>}

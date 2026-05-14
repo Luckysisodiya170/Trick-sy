@@ -114,7 +114,7 @@ const Topbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 </button>
               </div>
               <div className="border-t border-slate-100 py-2">
-                <button onClick={() => { localStorage.removeItem('tricksyAdminToken'); localStorage.removeItem('adminProfileImage'); navigate('/admin-login'); }} className="w-full flex items-center gap-3 px-5 py-3 text-xs font-black text-rose-500 hover:bg-rose-50 transition-colors">
+                <button onClick={() => { localStorage.removeItem('tricksyAdminToken'); localStorage.removeItem('adminProfileImage');localStorage.removeItem('tricksyAdminRole');  navigate('/admin-login'); }} className="w-full flex items-center gap-3 px-5 py-3 text-xs font-black text-rose-500 hover:bg-rose-50 transition-colors">
                   <LogOut size={16} /> Secure Logout
                 </button>
               </div>

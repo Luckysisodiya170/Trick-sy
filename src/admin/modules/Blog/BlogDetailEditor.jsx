@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { 
-  fetchSingleSubsectionContent, 
-  updateSingleSubsectionContent, 
-  fetchSections 
-} from '../../../store/index'; 
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent } from '../../redux/slices/adminSlice'; 
+import { AdminService } from '../../services/adminService';
 import { 
   ArrowLeft, Save, Settings2, Columns, Eye,   
   Trash2, Type, AlignLeft, Quote, Image as ImageIcon,
-  Monitor, UploadCloud, Search, ChevronLeft, LayoutDashboard, Loader2
+  Monitor, UploadCloud, Search, ChevronLeft, LayoutDashboard, Loader2, Plus, PenTool
 } from 'lucide-react';
 import BlogDetail from '../../../pages/Blog/BlogDetail';
 
@@ -17,12 +14,10 @@ const BlogDetailEditor = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   
-  const sections = useSelector((state) => state.sections.items);
-  const content = useSelector((state) => state.content.activeSubsection);
-  const status = useSelector((state) => state.content.status);
+  const targetSubsectionId = 30; 
 
-  const currentSection = sections.find(s => s.slug === 'blog-posts');
-  const subsectionId = currentSection?.id;
+  const content = useSelector((state) => state.adminData.activeSubsection);
+  const status = useSelector((state) => state.adminData.status);
 
   const [viewMode, setViewMode] = useState('split');
   const [isSelecting, setIsSelecting] = useState(true); 
@@ -34,12 +29,8 @@ const BlogDetailEditor = () => {
   const [postData, setPostData] = useState(null);
 
   useEffect(() => {
-    if (sections.length === 0) dispatch(fetchSections(5)); 
-  }, [dispatch, sections.length]);
-
-  useEffect(() => {
-    if (subsectionId) dispatch(fetchSingleSubsectionContent(subsectionId));
-  }, [dispatch, subsectionId]);
+    dispatch(fetchSingleSubsectionContent(targetSubsectionId));
+  }, [dispatch]);
 
   useEffect(() => {
     if (content?.posts) {
@@ -47,42 +38,30 @@ const BlogDetailEditor = () => {
     }
   }, [content]);
 
-  // FIXED: Standard image resolver using your .env (strips /api for images)
   const getImageUrl = (path) => {
     if (!path) return "";
     if (path.startsWith('http') || path.startsWith('data:')) return path;
-    
     const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
     const domain = apiBase.replace('/api', ''); 
     return `${domain}${path.startsWith('/') ? '' : '/'}${path}`;
   };
 
   const handleSelectToEdit = (article) => {
-    setPostData({
-      ...article,
-      blocks: article.blocks || [] 
+    setPostData({ 
+      ...article, 
+      blocks: article.blocks || [],
+      detailTitle: article.detailTitle || article.title,
+      detailIntro: article.detailIntro || article.excerpt,
+      detailBanner: article.detailBanner || article.image 
     });
     setIsSelecting(false);
   };
 
-  const handleDeleteBlog = async (id, e) => {
-    e.stopPropagation();
-    if(window.confirm("Are you sure you want to delete this blog permanently?")) {
-      const updatedBlogs = allBlogs.filter(b => b.id !== id);
-      setAllBlogs(updatedBlogs);
-      await saveToDatabase(updatedBlogs);
-    }
-  };
-
   const handleSaveAndSync = async () => {
+    if (!postData) return;
     const postIndex = allBlogs.findIndex(b => b.id === postData.id);
     let updatedBlogs = [...allBlogs];
-
-    if (postIndex !== -1) {
-      updatedBlogs[postIndex] = postData;
-    } else {
-      updatedBlogs.push(postData);
-    }
+    if (postIndex !== -1) updatedBlogs[postIndex] = postData;
     
     setAllBlogs(updatedBlogs);
     await saveToDatabase(updatedBlogs);
@@ -90,232 +69,202 @@ const BlogDetailEditor = () => {
   };
 
   const saveToDatabase = async (blogsArray) => {
-    if (!subsectionId) return alert("Error: Missing Subsection ID.");
-
     setIsSaving(true);
     try {
-      // Collect all relative paths from all articles to sync the "images" column
       const assetList = [];
       blogsArray.forEach(blog => {
         if (blog.image && !blog.image.startsWith('http')) assetList.push(blog.image);
+        if (blog.detailBanner && !blog.detailBanner.startsWith('http')) assetList.push(blog.detailBanner);
         blog.blocks?.forEach(blk => {
-          if (blk.type === 'image' && blk.value && !blk.value.startsWith('http')) {
-            assetList.push(blk.value);
-          }
+          if (blk.type === 'image' && blk.value && !blk.value.startsWith('http')) assetList.push(blk.value);
         });
       });
 
-      const payload = { 
-        posts: blogsArray,
-        images: [...new Set(assetList)] // Unique relative paths only
-      };
-
-      await dispatch(updateSingleSubsectionContent({ 
-        subsectionId: subsectionId, 
-        updateData: payload 
-      })).unwrap();
-navigate('/admin/pages/blog');
-
-      alert("Article Updated Successfully!");
+      const payload = { posts: blogsArray, images: [...new Set(assetList)] };
+      await dispatch(updateSingleSubsectionContent({ subsectionId: targetSubsectionId, updateData: payload })).unwrap();
+      alert("Article Deep-Synced Successfully! 🚀");
     } catch (error) {
-      console.error("Failed to save blog:", error);
-      alert("Failed to save article.");
-    } finally {
-      setIsSaving(false);
-    }
+      alert("Sync Failed.");
+    } finally { setIsSaving(false); }
   };
 
   const addBlock = (type) => setPostData({ ...postData, blocks: [...postData.blocks, { type, value: '' }] });
   
   const updateBlock = (index, val) => {
-    setPostData(prev => {
-      const newBlocks = [...prev.blocks];
-      newBlocks[index].value = val;
-      return { ...prev, blocks: newBlocks };
-    });
+    const newBlocks = [...postData.blocks];
+    newBlocks[index] = { ...newBlocks[index], value: val };
+    setPostData({ ...postData, blocks: newBlocks });
   };
-  
+
   const removeBlock = (index) => setPostData({ ...postData, blocks: postData.blocks.filter((_, i) => i !== index) });
 
   const handleImageUpload = async (index, e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     setIsUploading(true);
     try {
-      const formDataUpload = new FormData();
-      formDataUpload.append('heroImage', file); 
-
-      const uploadRes = await fetch('http://localhost:5000/api/upload/upload-hero', {
-        method: 'POST',
-        body: formDataUpload,
-      });
+      const formData = new FormData();
+      formData.append('image', file); 
+      const res = await AdminService.uploadHeroImage(formData);
       
-      const uploadData = await uploadRes.json();
-      
-      if (uploadData.success) {
-        // Save ONLY the relative path to state
-        const relativePath = uploadData.imageUrl; 
-        if (index === 'hero') {
-          setPostData(prev => ({ ...prev, image: relativePath }));
+      if (res.success || res.imageUrl) {
+        if (index === 'detailBanner') {
+          setPostData(prev => ({ ...prev, detailBanner: res.imageUrl }));
         } else {
-          updateBlock(index, relativePath);
+          updateBlock(index, res.imageUrl);
         }
       }
-    } catch (error) {
-      console.error("Upload error:", error);
-    } finally {
-      setIsUploading(false);
-    }
+    } catch (error) { console.error(error); } finally { setIsUploading(false); }
   };
 
   if (isSelecting) {
     return (
-      <div className="min-h-screen bg-[#FDFDFD] p-6 lg:p-12 font-sans overflow-y-auto">
+      <div className="min-h-screen bg-[#FDFDFD] p-8 lg:p-12 font-sans overflow-y-auto selection:bg-violet-100">
         <div className="max-w-7xl mx-auto">
-          <button onClick={() => navigate(-1)} className="mb-10 flex items-center gap-2 text-zinc-400 font-bold hover:text-zinc-900 transition-all">
-            <ArrowLeft size={18} /> Back to Overview
+          <button onClick={() => navigate('/admin/pages/blog')} className="mb-10 flex items-center gap-2 text-zinc-400 font-black text-[10px] uppercase tracking-widest hover:text-indigo-600 transition-all">
+            <ArrowLeft size={16} /> Back to Modules
           </button>
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-violet-100 rounded-[1.5rem] flex items-center justify-center text-violet-600">
-                <LayoutDashboard size={28} />
+              <div className="w-14 h-14 bg-violet-600 rounded-[1.5rem] flex items-center justify-center text-white shadow-xl shadow-violet-200">
+                <PenTool size={28} />
               </div>
               <div>
-                <h1 className="text-4xl font-black text-slate-900 tracking-tighter leading-none">Article Designer</h1>
-                <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-2">Update Existing Blog Content</p>
+                <h1 className="text-4xl font-black text-slate-900 tracking-tighter">Article Designer</h1>
+                <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-1">Design Internal Content & Layout</p>
               </div>
             </div>
-            
-            <div className="flex items-center gap-3">
-              <div className="relative mr-2">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                <input 
-                  type="text" placeholder="Search articles..." 
-                  className="pl-11 pr-6 py-3 bg-white border border-slate-200 rounded-2xl w-[300px] outline-none focus:ring-2 ring-violet-500 shadow-sm text-sm font-bold"
-                  value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <input type="text" placeholder="Search articles..." className="pl-11 pr-6 py-3 bg-white border border-slate-200 rounded-2xl w-[320px] outline-none focus:border-violet-500 shadow-sm font-bold text-sm" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
           </div>
 
-          {status === 'loading' && allBlogs.length === 0 ? (
-            <div className="flex items-center justify-center py-20 text-slate-400 font-bold text-xs uppercase tracking-widest">
-              <Loader2 className="animate-spin mr-2" size={18} /> Loading Articles...
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {allBlogs.filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase())).map((article) => (
-                <div key={article.id} className="group bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all relative flex flex-col h-full">
-                  <div className="aspect-video overflow-hidden relative">
-                    <img src={getImageUrl(article.image)} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                    <div className="absolute top-4 right-4">
-                      <button onClick={(e) => handleDeleteBlog(article.id, e)} className="p-2.5 bg-white/90 backdrop-blur-md rounded-xl text-slate-400 hover:text-rose-600 shadow-sm opacity-0 group-hover:opacity-100 transition-all">
-                         <Trash2 size={16} />
-                      </button>
-                    </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {allBlogs.filter(p => p.title.toLowerCase().includes(searchQuery.toLowerCase())).map((article) => (
+              <div key={article.id} onClick={() => handleSelectToEdit(article)} className="group bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 cursor-pointer relative flex flex-col h-full">
+                <div className="aspect-[4/3] overflow-hidden bg-slate-100">
+                  <img src={getImageUrl(article.image)} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700" alt="" />
+                </div>
+                <div className="p-7 flex-1 flex flex-col justify-between">
+                  <div>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-violet-600 bg-violet-50 px-3 py-1 rounded-full">{article.category}</span>
+                    <h3 className="text-lg font-black text-slate-900 mt-4 leading-tight group-hover:text-violet-600 transition-colors line-clamp-2">{article.title}</h3>
                   </div>
-                  <div className="p-6 flex-1 flex flex-col justify-between" onClick={() => handleSelectToEdit(article)}>
-                    <div>
-                      <span className="text-[9px] font-black uppercase tracking-widest text-violet-600 bg-violet-50 px-3 py-1 rounded-full">{article.category}</span>
-                      <h3 className="text-[16px] font-black text-slate-900 mt-3 leading-tight group-hover:text-violet-600 transition-colors cursor-pointer line-clamp-2">{article.title}</h3>
-                    </div>
-                    <div className="mt-6 flex items-center justify-between border-t pt-4 border-slate-50">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{article.date}</span>
-                      <button className="text-[10px] font-black uppercase text-zinc-900 flex items-center gap-1 group-hover:gap-2 transition-all">Edit Page <ArrowLeft size={12} className="rotate-180" /></button>
-                    </div>
+                  <div className="mt-8 flex items-center justify-between border-t pt-5 border-slate-50 text-[10px] font-black uppercase text-slate-400">
+                    <span>{article.date}</span>
+                    <span className="text-slate-900 flex items-center gap-1 font-black">Edit Detail <ChevronLeft size={12} className="rotate-180" /></span>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8F9FA] h-screen overflow-hidden font-sans">
-      <nav className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shadow-sm z-50">
-        <div className="flex items-center gap-3">
-          <button onClick={() => setIsSelecting(true)} className="p-2 hover:bg-slate-100 rounded-xl transition-all"><ChevronLeft size={18} /></button>
+    <div className="min-h-screen flex flex-col bg-[#FDFDFD] h-screen overflow-hidden font-sans">
+      <nav className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-100 px-6 py-3 flex items-center justify-between shadow-sm z-[100] shrink-0">
+        <div className="flex items-center gap-4">
+          <button onClick={() => setIsSelecting(true)} className="p-2 hover:bg-slate-100 rounded-xl transition-all text-slate-400 hover:text-slate-900"><ChevronLeft size={18} /></button>
           <div className="flex flex-col">
-            <h1 className="text-[10px] font-black tracking-widest text-violet-600 uppercase">Updating Article</h1>
-            <p className="text-sm font-bold text-slate-900 truncate max-w-[200px]">{postData.title}</p>
+            <h1 className="text-[10px] font-black tracking-widest text-violet-600 uppercase">Internal Layout</h1>
+            <p className="text-sm font-bold text-slate-900 truncate max-w-[250px]">{postData.detailTitle}</p>
           </div>
         </div>
         
-        <div className="flex bg-slate-100 p-1 rounded-full">
+        <div className="flex bg-slate-100/50 p-1 rounded-xl border border-slate-100">
           {['edit', 'split', 'preview'].map(m => (
-            <button key={m} onClick={() => setViewMode(m)} className={`px-5 py-1.5 rounded-full text-[10px] font-black transition-all ${viewMode === m ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500'}`}>{m.toUpperCase()}</button>
+            <button key={m} onClick={() => setViewMode(m)} className={`px-5 py-1.5 rounded-lg text-[9px] font-black transition-all uppercase tracking-widest ${viewMode === m ? 'bg-white shadow-sm text-violet-600' : 'text-slate-400 hover:text-slate-600'}`}>{m}</button>
           ))}
         </div>
 
-        <button 
-          onClick={handleSaveAndSync} 
-          disabled={isSaving || isUploading}
-          className="bg-slate-900 text-white px-6 py-2.5 rounded-full font-black text-xs shadow-lg hover:bg-emerald-600 transition-all flex items-center gap-2 disabled:opacity-70 active:scale-95"
-        >
-          {(isSaving || isUploading) ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-          {isSaving ? "UPDATING..." : "UPDATE & SYNC"}
+        <button onClick={handleSaveAndSync} disabled={isSaving || isUploading} className="bg-slate-900 text-white px-8 py-2 rounded-xl font-black text-[10px] tracking-widest hover:bg-emerald-600 transition-all flex items-center gap-2 disabled:opacity-50">
+          {isSaving || isUploading ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} <span>{isSaving ? "SAVING..." : "DEPLOY DETAIL"}</span>
         </button>
       </nav>
 
-      <div className="flex-1 flex overflow-hidden">
-        <div className={`${viewMode === 'edit' || viewMode === 'split' ? 'block' : 'hidden'} ${viewMode === 'edit' ? 'w-full max-w-4xl mx-auto' : 'w-[480px] border-r'} bg-white h-full overflow-y-auto p-8 space-y-10 no-scrollbar pb-40`}>
-          <section className="space-y-4">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Article Title</label>
-            <input value={postData.title} onChange={(e) => setPostData({...postData, title: e.target.value})} className="w-full p-4 bg-slate-50 border rounded-2xl font-black text-lg outline-none focus:ring-2 ring-violet-500 transition-all" />
+      <div className={`flex-1 flex overflow-hidden ${viewMode === 'split' ? 'flex-row' : 'flex-col'}`}>
+        {(viewMode === 'edit' || viewMode === 'split') && (
+          <div className={`${viewMode === 'split' ? 'w-5/12 border-r border-slate-100' : 'w-full max-w-4xl mx-auto'} bg-white h-full overflow-y-auto p-8 space-y-8 custom-scrollbar pb-40`}>
             
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Intro Excerpt</label>
-            <textarea value={postData.excerpt} onChange={(e) => setPostData({...postData, excerpt: e.target.value})} rows="3" className="w-full p-4 bg-slate-50 border rounded-2xl text-sm outline-none focus:ring-2 ring-violet-500 transition-all resize-none" />
-
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Main Banner Image</label>
-            <div className="relative group aspect-video rounded-[2rem] overflow-hidden bg-slate-100 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center">
-              <img src={getImageUrl(postData.image)} className="w-full h-full object-cover" alt="Hero"/>
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white font-bold text-xs pointer-events-none">
-                <UploadCloud size={20} className="mr-2"/> Replace Image
+            {/* Internal Detail Title & Intro Fields */}
+            <div className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 space-y-5">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block border-b border-slate-100 pb-2">Page Header Content</span>
+              <div>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Detail Heading</label>
+                <input value={postData.detailTitle} onChange={(e) => setPostData({...postData, detailTitle: e.target.value})} className="w-full p-4 bg-white border border-slate-100 rounded-2xl font-black text-xl outline-none focus:border-violet-400 transition-all" />
               </div>
-              <input type="file" accept="image/*" onChange={(e) => handleImageUpload('hero', e)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50" />
+              <div>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Detail Intro Para</label>
+                <textarea value={postData.detailIntro} onChange={(e) => setPostData({...postData, detailIntro: e.target.value})} rows="3" className="w-full p-4 bg-white border border-slate-100 rounded-2xl text-xs font-medium outline-none resize-none leading-relaxed" />
+              </div>
             </div>
-          </section>
 
-          <section className="space-y-6">
-            <h2 className="text-xl font-black text-slate-900 border-b pb-4">Content Blocks</h2>
-            {postData.blocks.map((block, idx) => (
-                <div key={idx} className="group bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
-                    <div className="flex items-center justify-between mb-4">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-violet-600 bg-violet-50 px-3 py-1 rounded-full">{block.type}</span>
-                        <button onClick={() => removeBlock(idx)} className="text-slate-300 hover:text-rose-600 transition-colors"><Trash2 size={16}/></button>
-                    </div>
-                    {block.type === 'image' ? (
-                        <div className="relative h-40 bg-white rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden">
-                            {block.value ? <img src={getImageUrl(block.value)} className="w-full h-full object-cover" alt="Block" /> : <ImageIcon size={24} className="text-slate-300" />}
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white font-bold text-[10px] pointer-events-none">
-                               <UploadCloud size={14} className="mr-1"/> Replace Image
-                            </div>
-                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(idx, e)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50" />
-                        </div>
-                    ) : (
-                        <textarea value={block.value} onChange={(e) => updateBlock(idx, e.target.value)} rows={3} className="w-full p-4 bg-white border border-slate-100 rounded-2xl text-sm font-medium outline-none focus:ring-2 ring-violet-500" />
-                    )}
+            <div className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 space-y-4">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block border-b border-slate-100 pb-2">Internal Page Banner</span>
+              <div className="relative group aspect-video rounded-[2rem] overflow-hidden bg-white border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer">
+                {postData.detailBanner ? <img src={getImageUrl(postData.detailBanner)} className="w-full h-full object-cover" /> : <ImageIcon className="text-slate-300" />}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white font-bold text-[10px] uppercase tracking-widest">Change Banner</div>
+                <input type="file" accept="image/*" onChange={(e) => handleImageUpload('detailBanner', e)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between px-2">
+                <h2 className="text-sm font-black text-slate-900 uppercase tracking-tight">Post Content Blocks</h2>
+                <div className="flex gap-1">
+                   {['paragraph', 'subheading', 'quote', 'image'].map(type => (
+                     <button key={type} onClick={() => addBlock(type)} className="p-2 bg-slate-50 hover:bg-violet-600 hover:text-white rounded-lg text-[8px] font-black uppercase transition-all border border-slate-100">+{type}</button>
+                   ))}
                 </div>
-            ))}
-            <div className="grid grid-cols-2 gap-3 pt-4">
-                <button onClick={() => addBlock('subheading')} className="p-4 bg-white border rounded-[1.5rem] text-[9px] font-black uppercase hover:bg-slate-50 transition-all">Add Subheading</button>
-                <button onClick={() => addBlock('paragraph')} className="p-4 bg-white border rounded-[1.5rem] text-[9px] font-black uppercase hover:bg-slate-50 transition-all">Add Paragraph</button>
-                <button onClick={() => addBlock('quote')} className="p-4 bg-white border rounded-[1.5rem] text-[9px] font-black uppercase hover:bg-slate-50 transition-all">Add Quote</button>
-                <button onClick={() => addBlock('image')} className="p-4 bg-white border rounded-[1.5rem] text-[9px] font-black uppercase hover:bg-slate-50 transition-all">Add Image</button>
-            </div>
-          </section>
-        </div>
+              </div>
 
-        <div className={`${viewMode === 'preview' || viewMode === 'split' ? 'flex' : 'hidden'} flex-1 bg-zinc-100 overflow-y-auto no-scrollbar`}>
-           <div className="pointer-events-none origin-top scale-[0.98] w-full">
-             <BlogDetail previewData={{...postData, image: getImageUrl(postData.image)}} />
-           </div>
-        </div>
+              {postData.blocks.map((block, idx) => (
+                <div key={idx} className="group bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm relative hover:border-violet-200 transition-all">
+                  <div className="flex items-center justify-between mb-3 border-b border-slate-50 pb-2">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-violet-600">{block.type}</span>
+                    <button onClick={() => removeBlock(idx)} className="text-slate-300 hover:text-rose-500 transition-colors"><Trash2 size={14}/></button>
+                  </div>
+                  {block.type === 'image' ? (
+                    <div className="relative h-32 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer">
+                      {block.value ? <img src={getImageUrl(block.value)} className="w-full h-full object-cover" /> : <ImageIcon size={20} className="text-slate-300" />}
+                      <input type="file" accept="image/*" onChange={(e) => handleImageUpload(idx, e)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                    </div>
+                  ) : (
+                    <textarea value={block.value} onChange={(e) => updateBlock(idx, e.target.value)} rows={3} className="w-full p-3 bg-slate-50/50 border border-slate-100 rounded-xl text-xs font-medium outline-none focus:bg-white focus:border-violet-400 transition-all resize-none" placeholder={`Type ${block.type} content...`} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PREVIEW SIDE */}
+        {(viewMode === 'preview' || viewMode === 'split') && (
+          <div className={`${viewMode === 'split' ? 'w-7/12' : 'w-full'} bg-slate-50 flex flex-col items-center justify-start p-8 relative overflow-y-auto no-scrollbar`}>
+            <div className="w-full max-w-[900px] bg-slate-900 rounded-[2.5rem] p-2.5 shadow-2xl border-[10px] border-slate-800 flex flex-col shrink-0">
+               <div className="flex h-8 bg-slate-900 items-center px-4 gap-1.5 border-b border-slate-800/50 shrink-0">
+                  <div className="w-1.5 h-1.5 rounded-full bg-rose-500/50" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-500/50" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50" />
+               </div>
+               <div className="bg-white rounded-xl overflow-hidden pointer-events-none origin-top scale-[1.0] w-full">
+                  {/* Passing Detail Data to Preview Component */}
+                  <BlogDetail previewData={{
+                    ...postData, 
+                    title: postData.detailTitle, 
+                    excerpt: postData.detailIntro, 
+                    image: getImageUrl(postData.detailBanner || postData.image),
+                    blocks: postData.blocks.map(b => b.type === 'image' ? {...b, value: getImageUrl(b.value)} : b)
+                  }} />
+               </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

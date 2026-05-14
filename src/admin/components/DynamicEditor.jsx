@@ -1,257 +1,274 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchSingleSubsectionContent, updateSingleSubsectionContent } from '../../store/index'; 
+import { fetchSingleSubsectionContent, updateSingleSubsectionContent } from '../redux/slices/adminSlice';
+import { AdminService } from '../services/adminService';
 import { 
-  ArrowLeft, Save, Settings2, Edit3, Columns, Eye, 
-  LayoutTemplate, Plus, Trash2, Type, AlignLeft, Image as ImageIcon, Upload,
-  Link as LinkIcon, List as ListIcon, Minus, GripVertical, ChevronUp, ChevronDown, Loader2
+  ArrowLeft, Save, Plus, Trash2, GripVertical, 
+  Type, Image as ImageIcon, MousePointer2, List as ListIcon, Heading, Loader2, Upload, Monitor
 } from 'lucide-react';
 
-const DynamicEditor = () => {
-  const { slug, id } = useParams(); 
+import { DndContext, closestCenter } from '@dnd-kit/core';
+import { arrayMove, SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+const BlockWrapper = ({ id, onRemove, children }) => {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+  const style = { transform: CSS.Transform.toString(transform), transition };
+
+  return (
+    <div ref={setNodeRef} style={style} className="group relative bg-white border border-slate-200 rounded-2xl p-6 mb-4 shadow-sm hover:border-indigo-500/50 transition-all">
+      <div className="absolute -left-10 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all cursor-grab" {...attributes} {...listeners}>
+        <GripVertical className="text-slate-400" size={20} />
+      </div>
+      <button onClick={onRemove} className="absolute -right-3 -top-3 w-8 h-8 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-sm border border-rose-100 z-10">
+        <Trash2 size={14} />
+      </button>
+      {children}
+    </div>
+  );
+};
+
+const DynamicBlockEditor = () => {
+  const { id, slug } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const subsectionId = id;
-
-  // --- Redux States ---
-  const contentData = useSelector((state) => state.content.activeSubsection);
-  const status = useSelector((state) => state.content.status);
-
-  const [viewMode, setViewMode] = useState('split');
-  const [draggedIdx, setDraggedIdx] = useState(null); 
+  
+  const [blocks, setBlocks] = useState([]);
   const [isDeploying, setIsDeploying] = useState(false);
+  const [viewMode, setViewMode] = useState('split');
 
-  // Local State
-  const [moduleData, setModuleData] = useState({ fields: [] });
+  const contentData = useSelector((state) => state.adminData.activeSubsection);
 
-  // 1. Fetch data on Mount
   useEffect(() => {
-    if (subsectionId) {
-      dispatch(fetchSingleSubsectionContent(subsectionId));
-    }
-  }, [dispatch, subsectionId]);
+    if (id) dispatch(fetchSingleSubsectionContent(id));
+  }, [id, dispatch]);
 
-  // 2. Sync Redux to Local State
   useEffect(() => {
-    if (contentData && Object.keys(contentData).length > 0) {
-      setModuleData({
-fields: contentData.fields || (contentData.textContent && contentData.textContent.fields) || []      });
+    if (contentData?.content) {
+      setBlocks(typeof contentData.content === 'string' ? JSON.parse(contentData.content) : contentData.content);
     }
   }, [contentData]);
 
-  const addField = (type) => {
-    const newField = {
-      id: `field_${Date.now()}`,
-      type: type, 
-      label: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
-      value: '',
-      link: '' 
+  const addBlock = (type) => {
+    const newBlock = {
+      id: Date.now().toString(),
+      type,
+      value: type === 'list' ? [''] : '',
+      settings: type === 'button' ? { link: '', style: 'solid' } : {}
     };
-    setModuleData(prev => ({ ...prev, fields: [...prev.fields, newField] }));
+    setBlocks([...blocks, newBlock]);
   };
 
-  const updateFieldValue = (id, key, newValue) => {
-    setModuleData(prev => ({
-      ...prev,
-      fields: prev.fields.map(f => f.id === id ? { ...f, [key]: newValue } : f)
-    }));
+  const updateBlock = (id, newValue, newSettings = {}) => {
+    setBlocks(blocks.map(b => b.id === id ? { ...b, value: newValue, settings: { ...b.settings, ...newSettings } } : b));
   };
 
-  const deleteField = (id) => {
-    setModuleData(prev => ({ ...prev, fields: prev.fields.filter(f => f.id !== id) }));
-  };
-
-  const moveField = (index, direction) => {
-    const newFields = [...moduleData.fields];
-    if (direction === 'up' && index > 0) {
-      [newFields[index - 1], newFields[index]] = [newFields[index], newFields[index - 1]];
-    } else if (direction === 'down' && index < newFields.length - 1) {
-      [newFields[index + 1], newFields[index]] = [newFields[index], newFields[index + 1]];
-    }
-    setModuleData({ ...moduleData, fields: newFields });
-  };
-
-  // Drag handlers
-  const handleDragStart = (e, index) => { setDraggedIdx(index); e.dataTransfer.effectAllowed = 'move'; };
-  const handleDragOver = (e) => { e.preventDefault(); };
-  const handleDrop = (e, dropIndex) => {
-    e.preventDefault();
-    if (draggedIdx === null || draggedIdx === dropIndex) return;
-    const newFields = [...moduleData.fields];
-    const draggedItem = newFields[draggedIdx];
-    newFields.splice(draggedIdx, 1);
-    newFields.splice(dropIndex, 0, draggedItem);
-    setModuleData({ ...moduleData, fields: newFields });
-    setDraggedIdx(null);
-  };
-
-  const handleImageUpload = async (id, e) => {
+  const handleImageUpload = async (e, blockId) => {
     const file = e.target.files[0];
-    if (!file) return;
-    const formData = new FormData();
-    formData.append('heroImage', file);
-    try {
-      const token = localStorage.getItem('tricksyAdminToken');
-      const res = await fetch('http://localhost:5000/api/upload/upload-hero', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData
+    if (file) {
+      const previewUrl = URL.createObjectURL(file);
+      updateBlock(blockId, previewUrl, { file }); // Temp preview
+    }
+  };
+
+  const removeBlock = (id) => setBlocks(blocks.filter(b => b.id !== id));
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setBlocks((items) => {
+        const oldIndex = items.findIndex(i => i.id === active.id);
+        const newIndex = items.findIndex(i => i.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
       });
-      const data = await res.json();
-      if (data.success) {
-        updateFieldValue(id, 'value', data.imageUrl);
-      }
-    } catch (err) { alert("Upload failed!"); }
+    }
   };
 
   const handleDeploy = async () => {
     setIsDeploying(true);
     try {
-      const payload = {
-        fields: moduleData.fields,
-        images: moduleData.fields.filter(f => f.type === 'image').map(f => f.value)
-      };
-      await dispatch(updateSingleSubsectionContent({ subsectionId, updateData: payload })).unwrap();
+      const processedBlocks = await Promise.all(blocks.map(async (block) => {
+        if (block.type === 'image' && block.settings?.file) {
+          const formData = new FormData();
+          formData.append('image', block.settings.file);
+          const res = await AdminService.uploadHeroImage(formData);
+          return { ...block, value: res.imageUrl, settings: {} };
+        }
+        return block;
+      }));
+
+      await dispatch(updateSingleSubsectionContent({ 
+        subsectionId: id, 
+        updateData: { content: processedBlocks } 
+      })).unwrap();
       alert("Custom Module Deployed! 🚀");
-    } catch (error) { alert("Deploy Failed: " + error.message); }
-    finally { setIsDeploying(false); }
+    } catch (err) {
+      alert("Deploy Error: " + err.message);
+    } finally { setIsDeploying(false); }
   };
 
   const getImageUrl = (path) => {
     if (!path) return "";
-    if (path.startsWith('http') || path.startsWith('blob:')) return path;
-    return `http://localhost:5000${path}`;
+    return (path.startsWith('blob:') || path.startsWith('http')) ? path : `http://localhost:5000${path}`;
   };
 
-  if (status === 'loading' && !contentData) {
-    return <div className="h-screen flex items-center justify-center font-black text-slate-400 uppercase tracking-widest text-xs">
-      <Loader2 className="animate-spin mr-2" size={16} /> Loading Custom Lab...
-    </div>;
-  }
-
   return (
-    <div className="h-screen flex flex-col bg-[#F8FAFC] font-sans">
-      <nav className="sticky top-0 z-[50] bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 py-3 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-2 sm:gap-3 w-1/4 sm:w-1/3">
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-xl transition-all"><ArrowLeft size={18} /></button>
-          <h1 className="hidden lg:flex text-lg font-black tracking-tight items-center gap-2 italic truncate">
-            <Settings2 size={20} className="text-slate-600 shrink-0" /> <span className="truncate">{slug?.toUpperCase()}</span> <span className="text-slate-400">LAB</span>
+    <div className="min-h-screen bg-[#FDFDFD] font-sans selection:bg-indigo-100">
+      {/* Savage Navbar */}
+      <nav className="sticky top-0 z-[100] bg-white border-b border-slate-100 px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-50 rounded-full transition-all text-slate-400">
+            <ArrowLeft size={18} />
+          </button>
+          <h1 className="text-[13px] font-black italic uppercase tracking-[0.2em] text-slate-800">
+            {contentData?.subsectionName || slug?.replace(/-/g, ' ')} <span className="text-indigo-600">LAB</span>
           </h1>
         </div>
 
-        <div className="flex bg-slate-100 p-1 sm:p-1.5 rounded-full shadow-inner w-auto justify-center">
-          <button onClick={() => setViewMode('edit')} className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${viewMode === 'edit' ? 'bg-white shadow-md text-slate-800' : 'text-slate-500'}`}>Edit</button>
-          <button onClick={() => setViewMode('split')} className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${viewMode === 'split' ? 'bg-white shadow-md text-slate-800' : 'text-slate-500'}`}>Split</button>
-          <button onClick={() => setViewMode('preview')} className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${viewMode === 'preview' ? 'bg-white shadow-md text-slate-800' : 'text-slate-500'}`}>Preview</button>
+        <div className="flex bg-slate-100/50 p-1 rounded-xl border border-slate-100">
+          {['edit', 'split', 'preview'].map(m => (
+            <button key={m} onClick={() => setViewMode(m)} className={`px-6 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${viewMode === m ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}>{m}</button>
+          ))}
         </div>
 
-        <div className="w-1/4 sm:w-1/3 flex justify-end">
-          <button onClick={handleDeploy} disabled={isDeploying} className="bg-slate-900 text-white px-6 py-2.5 rounded-full font-extrabold text-xs flex items-center gap-2 shadow-lg hover:bg-emerald-600 transition-all disabled:opacity-50">
-            {isDeploying ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} 
-            {isDeploying ? 'DEPLOYING...' : 'DEPLOY'}
-          </button>
-        </div>
+        <button onClick={handleDeploy} disabled={isDeploying} className="bg-slate-900 text-white px-8 py-2 rounded-xl font-black text-[10px] tracking-widest hover:bg-indigo-600 transition-all flex items-center gap-2">
+          {isDeploying ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />} 
+          {isDeploying ? 'DEPLOYING...' : 'DEPLOY'}
+        </button>
       </nav>
 
-      <div className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row">
+      <div className={`mx-auto transition-all duration-700 ${viewMode === 'split' ? 'max-w-[1800px] px-8 py-8 grid grid-cols-12 gap-8' : 'max-w-4xl py-12 px-6'}`}>
         
-        {/* --- EDITOR PANEL --- */}
+        {/* LEFT: EDITOR PANEL */}
         {(viewMode === 'edit' || viewMode === 'split') && (
-          <div className={`${viewMode === 'split' ? 'w-full lg:w-[42%] lg:border-r border-slate-200 lg:h-full lg:overflow-y-auto' : 'w-full h-full lg:overflow-y-auto'} p-4 md:p-8 custom-scrollbar bg-[#F1F5F9]/40`}>
-            <div className="max-w-2xl mx-auto space-y-6 pb-10">
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <h2 className="text-2xl font-black text-slate-800">Blocks</h2>
-                <div className="flex gap-1.5 bg-white p-1.5 rounded-xl shadow-sm border border-slate-200 flex-wrap justify-end">
-                  <button onClick={() => addField('text')} className="text-slate-600 p-2 rounded-lg font-bold text-[10px] flex items-center gap-1 hover:bg-slate-50 transition-all"><Type size={14}/> Text</button>
-                  <button onClick={() => addField('textarea')} className="text-slate-600 p-2 rounded-lg font-bold text-[10px] flex items-center gap-1 hover:bg-slate-50 transition-all"><AlignLeft size={14}/> Para</button>
-                  <button onClick={() => addField('image')} className="text-blue-600 p-2 rounded-lg font-bold text-[10px] flex items-center gap-1 hover:bg-blue-50 transition-all"><ImageIcon size={14}/> Image</button>
-                  <button onClick={() => addField('button')} className="text-emerald-600 p-2 rounded-lg font-bold text-[10px] flex items-center gap-1 hover:bg-emerald-50 transition-all"><LinkIcon size={14}/> Button</button>
-                  <button onClick={() => addField('list')} className="text-amber-600 p-2 rounded-lg font-bold text-[10px] flex items-center gap-1 hover:bg-amber-50 transition-all"><ListIcon size={14}/> List</button>
-                  <button onClick={() => addField('divider')} className="text-slate-400 p-2 rounded-lg font-bold text-[10px] flex items-center gap-1 hover:bg-slate-50 transition-all"><Minus size={14}/> Line</button>
-                </div>
-              </div>
-
-              {moduleData.fields.length === 0 ? (
-                <div className="text-center p-12 border-2 border-dashed border-slate-300 rounded-[2rem] bg-slate-50/50">
-                  <LayoutTemplate size={40} className="text-slate-300 mx-auto mb-4" />
-                  <p className="text-slate-500 font-medium text-sm">Empty module. Click buttons above to build.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {moduleData.fields.map((field, index) => (
-                    <div key={field.id} draggable onDragStart={(e) => handleDragStart(e, index)} onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, index)} className={`bg-white p-5 rounded-2xl border ${draggedIdx === index ? 'border-blue-400 opacity-50' : 'border-slate-200 shadow-sm'} relative group transition-all`}>
-                      <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-                         <div className="flex items-center gap-2 w-full">
-                           <div className="cursor-grab text-slate-300 hover:text-slate-600"><GripVertical size={18} /></div>
-                           <input value={field.label} onChange={(e) => updateFieldValue(field.id, 'label', e.target.value)} className="bg-transparent text-[10px] font-black uppercase tracking-widest text-slate-400 outline-none w-full" />
-                         </div>
-                         <div className="flex items-center gap-1 ml-4 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                           <button onClick={() => moveField(index, 'up')} disabled={index === 0} className="text-slate-400 hover:text-blue-500 disabled:opacity-30"><ChevronUp size={16} /></button>
-                           <button onClick={() => moveField(index, 'down')} disabled={index === moduleData.fields.length - 1} className="text-slate-400 hover:text-blue-500 disabled:opacity-30"><ChevronDown size={16} /></button>
-                           <button onClick={() => deleteField(field.id)} className="text-slate-400 hover:text-rose-500 p-1"><Trash2 size={16} /></button>
-                         </div>
-                      </div>
-                      
-                      {/* Dynamic Inputs Based on Type */}
-                      {field.type === 'text' && <input value={field.value} onChange={(e) => updateFieldValue(field.id, 'value', e.target.value)} className="w-full px-4 py-3 bg-slate-50 rounded-xl text-sm font-bold outline-none" placeholder="Heading..." />}
-                      {field.type === 'textarea' && <textarea value={field.value} onChange={(e) => updateFieldValue(field.id, 'value', e.target.value)} className="w-full px-4 py-3 bg-slate-50 rounded-xl text-sm h-24 outline-none" placeholder="Paragraph..." />}
-                      {field.type === 'list' && <textarea value={field.value} onChange={(e) => updateFieldValue(field.id, 'value', e.target.value)} className="w-full px-4 py-3 bg-slate-50 rounded-xl text-sm h-24 outline-none" placeholder="Bullet points (New line for each)..." />}
-                      {field.type === 'button' && (
-                        <div className="grid grid-cols-2 gap-3">
-                          <input value={field.value} onChange={(e) => updateFieldValue(field.id, 'value', e.target.value)} className="px-4 py-2 bg-slate-50 rounded-lg text-xs font-bold" placeholder="Btn Text" />
-                          <input value={field.link} onChange={(e) => updateFieldValue(field.id, 'link', e.target.value)} className="px-4 py-2 bg-slate-50 rounded-lg text-xs" placeholder="URL" />
-                        </div>
-                      )}
-                      {field.type === 'image' && (
-                        <div className="space-y-3">
-                          <input type="file" id={`f-${field.id}`} hidden onChange={(e) => handleImageUpload(field.id, e)} />
-                          <button onClick={() => document.getElementById(`f-${field.id}`).click()} className="w-full py-3 border-2 border-dashed border-blue-100 rounded-xl text-xs font-bold text-blue-500 bg-blue-50/50">Upload Visual</button>
-                          {field.value && <img src={getImageUrl(field.value)} className="w-full h-32 object-cover rounded-xl border border-slate-100" alt="Preview" />}
-                        </div>
-                      )}
-                      {field.type === 'divider' && <div className="py-2 text-center text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em]">Section Divider</div>}
-                    </div>
-                  ))}
-                </div>
-              )}
+          <div className={`${viewMode === 'split' ? 'col-span-4' : 'w-full'} space-y-6`}>
+            
+            {/* Toolbar Area */}
+            <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm flex flex-wrap gap-2 justify-center sticky top-24 z-50">
+               {[
+                 { type: 'heading', icon: Heading, label: 'Heading' },
+                 { type: 'text', icon: Type, label: 'Text' },
+                 { type: 'list', icon: ListIcon, label: 'List' },
+                 { type: 'image', icon: ImageIcon, label: 'Image' },
+                 { type: 'button', icon: MousePointer2, label: 'Button' }
+               ].map(btn => (
+                 <button key={btn.type} onClick={() => addBlock(btn.type)} className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 transition-all">
+                    <btn.icon size={16} />
+                    <span className="text-[8px] font-black uppercase tracking-tighter">{btn.label}</span>
+                 </button>
+               ))}
             </div>
+
+            <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
+                <div className="pb-20">
+                {blocks.map((block) => (
+                  <BlockWrapper key={block.id} id={block.id} onRemove={() => removeBlock(block.id)}>
+                    {block.type === 'heading' && (
+                      <input className="w-full text-xl font-black outline-none text-slate-800 placeholder:text-slate-200" placeholder="Main Heading..." value={block.value} onChange={(e) => updateBlock(block.id, e.target.value)} />
+                    )}
+                    {block.type === 'text' && (
+                      <textarea className="w-full text-xs text-slate-500 font-medium leading-relaxed outline-none resize-none min-h-[80px] placeholder:text-slate-200" placeholder="Write content..." value={block.value} onChange={(e) => updateBlock(block.id, e.target.value)} />
+                    )}
+                    {block.type === 'image' && (
+                       <div className="space-y-3">
+                         <div onClick={() => document.getElementById(`img-${block.id}`).click()} className="w-full aspect-video bg-slate-50 border-2 border-dashed border-slate-100 rounded-xl flex items-center justify-center cursor-pointer overflow-hidden group relative">
+                            <input type="file" id={`img-${block.id}`} hidden onChange={(e) => handleImageUpload(e, block.id)} />
+                            {block.value ? <img src={getImageUrl(block.value)} className="w-full h-full object-cover" /> : <Upload className="text-slate-300" />}
+                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all underline text-white font-black text-[8px]">CHANGE IMAGE</div>
+                         </div>
+                       </div>
+                    )}
+                    {block.type === 'button' && (
+                      <div className="grid grid-cols-2 gap-3">
+                        <input className="px-3 py-2 bg-slate-50 rounded-lg outline-none font-bold text-[10px] uppercase" placeholder="Text" value={block.value} onChange={(e) => updateBlock(block.id, e.target.value)} />
+                        <input className="px-3 py-2 bg-slate-50 rounded-lg outline-none text-slate-400 text-[10px]" placeholder="Link" value={block.settings.link} onChange={(e) => updateBlock(block.id, block.value, { link: e.target.value })} />
+                      </div>
+                    )}
+                    {block.type === 'list' && (
+                       <div className="space-y-2">
+                         {block.value.map((item, idx) => (
+                           <div key={idx} className="flex items-center gap-2">
+                             <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full shrink-0" />
+                             <input className="flex-1 outline-none font-medium text-[11px] text-slate-600" value={item} onChange={(e) => {
+                               const newList = [...block.value]; newList[idx] = e.target.value; updateBlock(block.id, newList);
+                             }} />
+                             {idx === block.value.length - 1 && <button onClick={() => updateBlock(block.id, [...block.value, ''])} className="text-indigo-600 text-[9px] font-black">+ ADD</button>}
+                           </div>
+                         ))}
+                       </div>
+                    )}
+                  </BlockWrapper>
+                ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           </div>
         )}
 
-        {/* --- PREVIEW PANEL --- */}
+        {/* RIGHT: LIVE PREVIEW (MACBOOK MOCKUP) */}
         {(viewMode === 'preview' || viewMode === 'split') && (
-          <div className={`${viewMode === 'split' ? 'w-full lg:flex-1 min-h-[700px] lg:min-h-0' : 'w-full h-full'} bg-slate-200 p-4 lg:p-10 flex items-center justify-center relative overflow-hidden`}>
-            <div className={`w-full h-full max-w-5xl bg-white shadow-2xl rounded-3xl md:rounded-[3rem] overflow-hidden flex flex-col border-[4px] md:border-[10px] border-slate-900 transition-all duration-500 ${viewMode === 'split' ? 'lg:scale-[0.95]' : 'scale-100'}`}>
-                <div className="h-8 md:h-10 bg-slate-100 border-b border-slate-200 flex items-center px-4 md:px-6 gap-2 shrink-0">
-                    <div className="flex gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-rose-500" /><div className="w-2.5 h-2.5 rounded-full bg-amber-500" /><div className="w-2.5 h-2.5 rounded-full bg-emerald-500" /></div>
-                </div>
-                <div className="flex-1 overflow-y-auto bg-white p-8 md:p-16 custom-scrollbar text-center md:text-left">
-                    <div className="max-w-3xl mx-auto flex flex-col gap-6">
-                      {moduleData.fields.map((field) => (
-                        <React.Fragment key={field.id}>
-                          {field.type === 'text' && <h2 className="text-3xl md:text-5xl font-black text-slate-900 leading-tight">{field.value || field.label}</h2>}
-                          {field.type === 'textarea' && <p className="text-slate-500 text-sm md:text-base leading-relaxed whitespace-pre-line">{field.value}</p>}
-                          {field.type === 'list' && (
-                            <ul className="list-disc ml-5 space-y-2 text-slate-600 text-sm md:text-base text-left">
-                              {field.value.split('\n').filter(i => i.trim()).map((li, i) => <li key={i}>{li}</li>)}
-                            </ul>
+          <div className={`${viewMode === 'split' ? 'col-span-8' : 'w-full'} sticky top-24`}>
+            <div className="relative mx-auto bg-slate-900 rounded-[2.5rem] p-3 shadow-2xl border-[10px] border-slate-800 overflow-hidden">
+               <div className="h-8 bg-slate-900 flex items-center px-4 gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-rose-500/50" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-500/50" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-indigo-500/50" />
+                  <div className="flex-1 max-w-[150px] mx-auto h-3.5 bg-slate-800 rounded-full flex items-center justify-center text-[6px] text-slate-500 font-bold uppercase tracking-widest">Preview Mode</div>
+               </div>
+
+               <div className="bg-white rounded-xl overflow-hidden min-h-[550px] max-h-[70vh] overflow-y-auto custom-scrollbar p-12 relative flex flex-col items-center">
+                 <div className="w-full max-w-2xl space-y-8 animate-in fade-in duration-500">
+                    {blocks.map((block) => (
+                       <div key={block.id} className="animate-in slide-in-from-bottom-2 duration-300">
+                          {block.type === 'heading' && <h1 className="text-4xl font-black text-slate-900 tracking-tighter leading-tight">{block.value || "Enter Heading"}</h1>}
+                          
+                          {block.type === 'text' && <p className="text-sm text-slate-500 leading-relaxed font-medium">{block.value || "Start typing your content here..."}</p>}
+                          
+                          {block.type === 'image' && block.value && (
+                             <div className="rounded-[2rem] overflow-hidden shadow-xl border-4 border-white">
+                                <img src={getImageUrl(block.value)} className="w-full h-full object-cover" alt="Custom block" />
+                             </div>
                           )}
-                          {field.type === 'button' && (
-                            <div><a href={field.link} className="inline-flex px-8 py-4 bg-emerald-500 text-white rounded-full font-black uppercase text-xs shadow-lg">{field.value || 'Action'}</a></div>
+
+                          {block.type === 'list' && (
+                             <ul className="space-y-3">
+                               {block.value.map((item, i) => item && (
+                                 <li key={i} className="flex items-start gap-3">
+                                   <div className="w-5 h-5 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center mt-0.5"><Plus size={12}/></div>
+                                   <span className="text-[13px] font-bold text-slate-700">{item}</span>
+                                 </li>
+                               ))}
+                             </ul>
                           )}
-                          {field.type === 'image' && field.value && <img src={getImageUrl(field.value)} className="w-full rounded-[2rem] shadow-lg border border-slate-100" alt="content" />}
-                          {field.type === 'divider' && <hr className="my-4 border-t-2 border-slate-100" />}
-                        </React.Fragment>
-                      ))}
-                    </div>
-                </div>
+
+                          {block.type === 'button' && block.value && (
+                             <button className="px-8 py-3.5 bg-indigo-600 text-white rounded-2xl font-black text-[11px] uppercase shadow-lg shadow-indigo-100 hover:scale-105 transition-all">
+                               {block.value}
+                             </button>
+                          )}
+                       </div>
+                    ))}
+                    {blocks.length === 0 && (
+                       <div className="h-[400px] flex flex-col items-center justify-center text-slate-300 opacity-50">
+                          <Monitor size={48} strokeWidth={1} className="mb-4" />
+                          <p className="text-[10px] font-black uppercase tracking-[0.2em]">Build your experience</p>
+                       </div>
+                    )}
+                 </div>
+               </div>
             </div>
           </div>
         )}
       </div>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+      `}</style>
     </div>
   );
 };
 
-export default DynamicEditor;
+export default DynamicBlockEditor;
